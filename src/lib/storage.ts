@@ -6,6 +6,8 @@ export const STORAGE_KEYS = {
   PROGRESS: 'members-progress',
   COMMENTS: 'members-comments',
   SESSION: 'members-session',
+  BANNERS: 'members-banners',
+  CATEGORIES: 'members-categories',
   SWIPEFILE_PROCESSES: 'swipefile-processes',
   SWIPEFILE_CATEGORIES: 'swipefile-categories',
 } as const;
@@ -42,12 +44,36 @@ export interface Course {
   thumbnail?: string;
   instructorId: string;
   category: string;
+  categoryIds?: string[];
   level: 'Iniciante' | 'Intermediário' | 'Avançado';
   status: 'draft' | 'published' | 'private';
   locked: boolean;
   totalDuration: string;
   createdAt: string;
   modules: Module[];
+  isNew?: boolean;
+}
+
+export interface Banner {
+  id: string;
+  title: string;
+  subtitle?: string;
+  imageUrl: string;
+  linkType: 'course' | 'external' | 'page';
+  linkTo: string;
+  ctaText?: string;
+  active: boolean;
+  order: number;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  description?: string;
+  slug: string;
+  order: number;
+  active: boolean;
 }
 
 export interface Lesson {

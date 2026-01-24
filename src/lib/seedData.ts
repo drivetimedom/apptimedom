@@ -57,7 +57,7 @@ const initialUsers: User[] = [
     avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcabd36?w=150&h=150&fit=crop&crop=face',
     active: true,
     createdAt: '2026-01-15',
-    unlockedCourses: ['course-1', 'course-2', 'course-3', 'course-5', 'course-6'],
+    unlockedCourses: ['course-1', 'course-2', 'course-3', 'course-5', 'course-6', 'hc-trilha-1', 'hc-trilha-2', 'hc-desafio-1', 'hc-desafio-2', 'hc-desafio-3', 'hc-material'],
   },
 ];
 
@@ -98,8 +98,52 @@ const initialBanners: Banner[] = [
   },
 ];
 
-// Initial categories
+// Initial categories with Hoff Circle
 const initialCategories: Category[] = [
+  {
+    id: 'cat-hoff-circle',
+    name: 'Hoff Circle',
+    icon: 'Target',
+    description: 'Programa de Aceleração com trilhas de implementação',
+    slug: 'hoff-circle',
+    order: 0,
+    active: true,
+    hasDedicatedPage: true,
+    showInMainMenu: true,
+    pageConfig: {
+      bannerTitle: 'Programa de Aceleração Hoff Circle',
+      bannerSubtitle: '7 Trilhas de Implementação + 3 Desafios + Material Extra',
+      bannerImageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1920&h=600&fit=crop',
+      bannerCtaText: 'Começar Jornada',
+      aboutText: 'O Hoff Circle é um programa completo de aceleração projetado para transformar seu negócio. Com 7 trilhas de implementação sequenciais, 3 desafios opcionais e material extra exclusivo, você terá todas as ferramentas necessárias para alcançar resultados extraordinários.\n\nAs trilhas 1, 2 e 3 são os pilares fundamentais do método e devem ser completadas em sequência. Após concluir esses pilares, você terá acesso às trilhas complementares (4-7) que podem ser feitas em qualquer ordem.\n\nOs desafios são opcionais e estão sempre disponíveis para aprofundar seu aprendizado em áreas específicas.',
+    },
+    subcategories: [
+      {
+        id: 'subcat-trilhas',
+        name: 'Trilhas de Implementação',
+        slug: 'trilhas',
+        description: 'Trilhas 1-3 são os pilares do método (sequenciais). Trilhas 4-7 são complementares.',
+        order: 1,
+        showRoadmap: true,
+      },
+      {
+        id: 'subcat-desafios',
+        name: 'Desafios',
+        slug: 'desafios',
+        description: 'Desafios opcionais para aprofundar seu aprendizado',
+        order: 2,
+        showRoadmap: false,
+      },
+      {
+        id: 'subcat-material',
+        name: 'Material Extra',
+        slug: 'material-extra',
+        description: 'Recursos complementares sempre disponíveis',
+        order: 3,
+        showRoadmap: false,
+      },
+    ],
+  },
   {
     id: 'cat-1',
     name: 'Marketing Digital',
@@ -138,8 +182,445 @@ const initialCategories: Category[] = [
   },
 ];
 
-// Initial courses
+// Initial courses including Hoff Circle courses
 const initialCourses: Course[] = [
+  // === HOFF CIRCLE COURSES ===
+  // Trilha 1 - Pilar 1 (Always available)
+  {
+    id: 'hc-trilha-1',
+    title: 'Trilha 1 - Fundamentos',
+    subtitle: 'PILAR 1 DO MÉTODO',
+    description: 'O primeiro pilar do método Hoff Circle. Aprenda os fundamentos essenciais para construir uma base sólida.',
+    thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-1',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-trilhas',
+    level: 'Iniciante',
+    status: 'published',
+    locked: false,
+    totalDuration: '4:00:00',
+    createdAt: '2026-01-01',
+    modules: [
+      {
+        id: 'hc-t1-mod1',
+        title: 'Introdução aos Fundamentos',
+        description: 'Conceitos básicos do método',
+        order: 1,
+        lessonIds: ['hc-t1-l1', 'hc-t1-l2'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: true,
+      position: 1,
+      isPillar: true,
+      requiresPrevious: false,
+      prerequisiteCourseId: null,
+      unlocksAfter: null,
+    },
+    roadmapConfig: {
+      showInRoadmap: true,
+      roadmapPosition: { x: 1, y: 1 },
+      roadmapIcon: 'Flag',
+      roadmapLabel: 'Pilar 1',
+    },
+  },
+  // Trilha 2 - Pilar 2 (Requires T1)
+  {
+    id: 'hc-trilha-2',
+    title: 'Trilha 2 - Estruturação',
+    subtitle: 'PILAR 2 DO MÉTODO',
+    description: 'O segundo pilar do método. Estruture seu negócio para crescimento sustentável.',
+    thumbnail: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-1',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-trilhas',
+    level: 'Intermediário',
+    status: 'published',
+    locked: false,
+    totalDuration: '5:00:00',
+    createdAt: '2026-01-02',
+    modules: [
+      {
+        id: 'hc-t2-mod1',
+        title: 'Estruturando o Negócio',
+        description: 'Como estruturar para escalar',
+        order: 1,
+        lessonIds: ['hc-t2-l1', 'hc-t2-l2'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: true,
+      position: 2,
+      isPillar: true,
+      requiresPrevious: true,
+      prerequisiteCourseId: 'hc-trilha-1',
+      unlocksAfter: 'hc-trilha-1',
+    },
+    roadmapConfig: {
+      showInRoadmap: true,
+      roadmapPosition: { x: 2, y: 1 },
+      roadmapIcon: 'Flag',
+      roadmapLabel: 'Pilar 2',
+    },
+  },
+  // Trilha 3 - Pilar 3 (Requires T2)
+  {
+    id: 'hc-trilha-3',
+    title: 'Trilha 3 - Escala',
+    subtitle: 'PILAR 3 DO MÉTODO',
+    description: 'O terceiro e último pilar fundamental. Escale seu negócio com estratégias comprovadas.',
+    thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-1',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-trilhas',
+    level: 'Avançado',
+    status: 'published',
+    locked: false,
+    totalDuration: '6:00:00',
+    createdAt: '2026-01-03',
+    modules: [
+      {
+        id: 'hc-t3-mod1',
+        title: 'Estratégias de Escala',
+        description: 'Escale com previsibilidade',
+        order: 1,
+        lessonIds: ['hc-t3-l1', 'hc-t3-l2'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: true,
+      position: 3,
+      isPillar: true,
+      requiresPrevious: true,
+      prerequisiteCourseId: 'hc-trilha-2',
+      unlocksAfter: 'hc-trilha-2',
+    },
+    roadmapConfig: {
+      showInRoadmap: true,
+      roadmapPosition: { x: 3, y: 1 },
+      roadmapIcon: 'Flag',
+      roadmapLabel: 'Pilar 3',
+    },
+  },
+  // Trilhas Complementares (4-7) - Require T3
+  {
+    id: 'hc-trilha-4',
+    title: 'Trilha 4 - Automação',
+    subtitle: 'TRILHA COMPLEMENTAR',
+    description: 'Automatize processos e ganhe eficiência em todas as áreas do negócio.',
+    thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-2',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-trilhas',
+    level: 'Intermediário',
+    status: 'published',
+    locked: false,
+    totalDuration: '3:30:00',
+    createdAt: '2026-01-04',
+    modules: [
+      {
+        id: 'hc-t4-mod1',
+        title: 'Automação Inteligente',
+        description: 'Ferramentas e estratégias',
+        order: 1,
+        lessonIds: ['hc-t4-l1'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: false,
+      position: 4,
+      isPillar: false,
+      requiresPrevious: true,
+      prerequisiteCourseId: 'hc-trilha-3',
+      unlocksAfter: 'hc-trilha-3',
+    },
+    roadmapConfig: {
+      showInRoadmap: true,
+      roadmapPosition: { x: 1, y: 2 },
+      roadmapIcon: 'Star',
+      roadmapLabel: 'Complementar',
+    },
+  },
+  {
+    id: 'hc-trilha-5',
+    title: 'Trilha 5 - Tráfego',
+    subtitle: 'TRILHA COMPLEMENTAR',
+    description: 'Domine as estratégias de tráfego pago e orgânico para atrair clientes.',
+    thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-2',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-trilhas',
+    level: 'Intermediário',
+    status: 'published',
+    locked: false,
+    totalDuration: '4:00:00',
+    createdAt: '2026-01-05',
+    modules: [
+      {
+        id: 'hc-t5-mod1',
+        title: 'Estratégias de Tráfego',
+        description: 'Pago e orgânico',
+        order: 1,
+        lessonIds: ['hc-t5-l1'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: false,
+      position: 5,
+      isPillar: false,
+      requiresPrevious: true,
+      prerequisiteCourseId: 'hc-trilha-3',
+      unlocksAfter: 'hc-trilha-3',
+    },
+    roadmapConfig: {
+      showInRoadmap: true,
+      roadmapPosition: { x: 2, y: 2 },
+      roadmapIcon: 'Star',
+      roadmapLabel: 'Complementar',
+    },
+  },
+  {
+    id: 'hc-trilha-6',
+    title: 'Trilha 6 - Conversão',
+    subtitle: 'TRILHA COMPLEMENTAR',
+    description: 'Otimize seu funil de vendas e aumente suas taxas de conversão.',
+    thumbnail: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-1',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-trilhas',
+    level: 'Avançado',
+    status: 'published',
+    locked: false,
+    totalDuration: '3:45:00',
+    createdAt: '2026-01-06',
+    modules: [
+      {
+        id: 'hc-t6-mod1',
+        title: 'Otimização de Conversão',
+        description: 'CRO na prática',
+        order: 1,
+        lessonIds: ['hc-t6-l1'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: false,
+      position: 6,
+      isPillar: false,
+      requiresPrevious: true,
+      prerequisiteCourseId: 'hc-trilha-3',
+      unlocksAfter: 'hc-trilha-3',
+    },
+    roadmapConfig: {
+      showInRoadmap: true,
+      roadmapPosition: { x: 3, y: 2 },
+      roadmapIcon: 'Star',
+      roadmapLabel: 'Complementar',
+    },
+  },
+  {
+    id: 'hc-trilha-7',
+    title: 'Trilha 7 - Retenção',
+    subtitle: 'TRILHA COMPLEMENTAR',
+    description: 'Estratégias avançadas de retenção e fidelização de clientes.',
+    thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-1',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-trilhas',
+    level: 'Avançado',
+    status: 'published',
+    locked: false,
+    totalDuration: '3:15:00',
+    createdAt: '2026-01-07',
+    modules: [
+      {
+        id: 'hc-t7-mod1',
+        title: 'Retenção e Fidelização',
+        description: 'Clientes para sempre',
+        order: 1,
+        lessonIds: ['hc-t7-l1'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: false,
+      position: 7,
+      isPillar: false,
+      requiresPrevious: true,
+      prerequisiteCourseId: 'hc-trilha-3',
+      unlocksAfter: 'hc-trilha-3',
+    },
+    roadmapConfig: {
+      showInRoadmap: true,
+      roadmapPosition: { x: 4, y: 2 },
+      roadmapIcon: 'Star',
+      roadmapLabel: 'Complementar',
+    },
+  },
+  // Desafios (Always available)
+  {
+    id: 'hc-desafio-1',
+    title: 'Desafio 1 - 7 Dias de Copy',
+    subtitle: 'DESAFIO OPCIONAL',
+    description: 'Desafio intensivo de 7 dias para dominar copywriting.',
+    thumbnail: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-1',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-desafios',
+    level: 'Iniciante',
+    status: 'published',
+    locked: false,
+    totalDuration: '2:00:00',
+    createdAt: '2026-01-08',
+    modules: [
+      {
+        id: 'hc-d1-mod1',
+        title: 'Desafio Copywriting',
+        description: '7 dias de prática intensiva',
+        order: 1,
+        lessonIds: ['hc-d1-l1'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: false,
+      position: 1,
+      isPillar: false,
+      requiresPrevious: false,
+      prerequisiteCourseId: null,
+      unlocksAfter: null,
+    },
+    roadmapConfig: {
+      showInRoadmap: false,
+      roadmapPosition: null,
+      roadmapIcon: 'Trophy',
+      roadmapLabel: 'Desafio',
+    },
+  },
+  {
+    id: 'hc-desafio-2',
+    title: 'Desafio 2 - Produtividade',
+    subtitle: 'DESAFIO OPCIONAL',
+    description: 'Desafio de 21 dias para transformar sua produtividade.',
+    thumbnail: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-2',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-desafios',
+    level: 'Iniciante',
+    status: 'published',
+    locked: false,
+    totalDuration: '3:00:00',
+    createdAt: '2026-01-09',
+    modules: [
+      {
+        id: 'hc-d2-mod1',
+        title: 'Desafio Produtividade',
+        description: '21 dias de transformação',
+        order: 1,
+        lessonIds: ['hc-d2-l1'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: false,
+      position: 2,
+      isPillar: false,
+      requiresPrevious: false,
+      prerequisiteCourseId: null,
+      unlocksAfter: null,
+    },
+    roadmapConfig: {
+      showInRoadmap: false,
+      roadmapPosition: null,
+      roadmapIcon: 'Trophy',
+      roadmapLabel: 'Desafio',
+    },
+  },
+  {
+    id: 'hc-desafio-3',
+    title: 'Desafio 3 - Vendas Express',
+    subtitle: 'DESAFIO OPCIONAL',
+    description: 'Desafio de 14 dias para fechar mais vendas.',
+    thumbnail: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-1',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-desafios',
+    level: 'Intermediário',
+    status: 'published',
+    locked: false,
+    totalDuration: '2:30:00',
+    createdAt: '2026-01-10',
+    modules: [
+      {
+        id: 'hc-d3-mod1',
+        title: 'Desafio Vendas',
+        description: '14 dias intensivos',
+        order: 1,
+        lessonIds: ['hc-d3-l1'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: false,
+      position: 3,
+      isPillar: false,
+      requiresPrevious: false,
+      prerequisiteCourseId: null,
+      unlocksAfter: null,
+    },
+    roadmapConfig: {
+      showInRoadmap: false,
+      roadmapPosition: null,
+      roadmapIcon: 'Trophy',
+      roadmapLabel: 'Desafio',
+    },
+  },
+  // Material Extra (Always available)
+  {
+    id: 'hc-material',
+    title: 'Material Extra',
+    subtitle: 'RECURSOS COMPLEMENTARES',
+    description: 'Acesse templates, planilhas e materiais exclusivos do programa.',
+    thumbnail: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-1',
+    category: 'Hoff Circle',
+    categoryIds: ['cat-hoff-circle'],
+    subcategoryId: 'subcat-material',
+    level: 'Iniciante',
+    status: 'published',
+    locked: false,
+    totalDuration: '1:00:00',
+    createdAt: '2026-01-11',
+    modules: [
+      {
+        id: 'hc-mat-mod1',
+        title: 'Materiais e Templates',
+        description: 'Recursos para download',
+        order: 1,
+        lessonIds: ['hc-mat-l1'],
+      },
+    ],
+    sequenceConfig: {
+      isSequential: false,
+      position: 1,
+      isPillar: false,
+      requiresPrevious: false,
+      prerequisiteCourseId: null,
+      unlocksAfter: null,
+    },
+    roadmapConfig: {
+      showInRoadmap: false,
+      roadmapPosition: null,
+      roadmapIcon: 'FileText',
+      roadmapLabel: 'Material',
+    },
+  },
+  // === EXISTING COURSES ===
   {
     id: 'course-1',
     title: 'Link{Mi}®',
@@ -302,9 +783,24 @@ const initialCourses: Course[] = [
   },
 ];
 
-// Initial lessons
+// Initial lessons including Hoff Circle lessons
 const initialLessons: Lesson[] = [
-  // Course 1 - Link{Mi}
+  // Hoff Circle Lessons
+  { id: 'hc-t1-l1', courseId: 'hc-trilha-1', moduleId: 'hc-t1-mod1', title: 'Introdução ao Método', description: 'Bem-vindo à Trilha 1', vimeoId: '76979871', duration: '15:00', order: 1, locked: false, resources: [] },
+  { id: 'hc-t1-l2', courseId: 'hc-trilha-1', moduleId: 'hc-t1-mod1', title: 'Fundamentos Essenciais', description: 'Os pilares do método', vimeoId: '76979871', duration: '20:00', order: 2, locked: false, resources: [] },
+  { id: 'hc-t2-l1', courseId: 'hc-trilha-2', moduleId: 'hc-t2-mod1', title: 'Estrutura de Negócio', description: 'Como estruturar para crescer', vimeoId: '76979871', duration: '25:00', order: 1, locked: false, resources: [] },
+  { id: 'hc-t2-l2', courseId: 'hc-trilha-2', moduleId: 'hc-t2-mod1', title: 'Processos e Sistemas', description: 'Criando processos eficientes', vimeoId: '76979871', duration: '30:00', order: 2, locked: false, resources: [] },
+  { id: 'hc-t3-l1', courseId: 'hc-trilha-3', moduleId: 'hc-t3-mod1', title: 'Escalando o Negócio', description: 'Estratégias de escala', vimeoId: '76979871', duration: '35:00', order: 1, locked: false, resources: [] },
+  { id: 'hc-t3-l2', courseId: 'hc-trilha-3', moduleId: 'hc-t3-mod1', title: 'Crescimento Sustentável', description: 'Crescer com solidez', vimeoId: '76979871', duration: '40:00', order: 2, locked: false, resources: [] },
+  { id: 'hc-t4-l1', courseId: 'hc-trilha-4', moduleId: 'hc-t4-mod1', title: 'Automação Avançada', description: 'Ferramentas de automação', vimeoId: '76979871', duration: '25:00', order: 1, locked: false, resources: [] },
+  { id: 'hc-t5-l1', courseId: 'hc-trilha-5', moduleId: 'hc-t5-mod1', title: 'Tráfego Pago e Orgânico', description: 'Estratégias de tráfego', vimeoId: '76979871', duration: '30:00', order: 1, locked: false, resources: [] },
+  { id: 'hc-t6-l1', courseId: 'hc-trilha-6', moduleId: 'hc-t6-mod1', title: 'CRO na Prática', description: 'Otimização de conversão', vimeoId: '76979871', duration: '28:00', order: 1, locked: false, resources: [] },
+  { id: 'hc-t7-l1', courseId: 'hc-trilha-7', moduleId: 'hc-t7-mod1', title: 'Fidelizando Clientes', description: 'Estratégias de retenção', vimeoId: '76979871', duration: '25:00', order: 1, locked: false, resources: [] },
+  { id: 'hc-d1-l1', courseId: 'hc-desafio-1', moduleId: 'hc-d1-mod1', title: 'Dia 1 - Copywriting', description: 'Início do desafio', vimeoId: '76979871', duration: '20:00', order: 1, locked: false, resources: [] },
+  { id: 'hc-d2-l1', courseId: 'hc-desafio-2', moduleId: 'hc-d2-mod1', title: 'Dia 1 - Produtividade', description: 'Início do desafio', vimeoId: '76979871', duration: '15:00', order: 1, locked: false, resources: [] },
+  { id: 'hc-d3-l1', courseId: 'hc-desafio-3', moduleId: 'hc-d3-mod1', title: 'Dia 1 - Vendas', description: 'Início do desafio', vimeoId: '76979871', duration: '18:00', order: 1, locked: false, resources: [] },
+  { id: 'hc-mat-l1', courseId: 'hc-material', moduleId: 'hc-mat-mod1', title: 'Acesso aos Materiais', description: 'Downloads disponíveis', vimeoId: '76979871', duration: '10:00', order: 1, locked: false, resources: [{ type: 'pdf', name: 'Templates', url: '#' }] },
+  // Existing lessons
   {
     id: 'lesson-1-1',
     courseId: 'course-1',
@@ -370,7 +866,6 @@ const initialLessons: Lesson[] = [
     locked: false,
     resources: [],
   },
-  // Course 2 - Ative{Mi}
   {
     id: 'lesson-2-1',
     courseId: 'course-2',
@@ -419,7 +914,6 @@ const initialLessons: Lesson[] = [
     locked: false,
     resources: [],
   },
-  // Course 3 - Scale{Mi}
   {
     id: 'lesson-3-1',
     courseId: 'course-3',
@@ -444,7 +938,6 @@ const initialLessons: Lesson[] = [
     locked: false,
     resources: [],
   },
-  // Course 4 - Auto{Mi}
   {
     id: 'lesson-4-1',
     courseId: 'course-4',
@@ -457,7 +950,6 @@ const initialLessons: Lesson[] = [
     locked: false,
     resources: [],
   },
-  // Course 5 - Growth{Mi}
   {
     id: 'lesson-5-1',
     courseId: 'course-5',
@@ -482,7 +974,6 @@ const initialLessons: Lesson[] = [
     locked: false,
     resources: [],
   },
-  // Course 6 - Lead{Mi}
   {
     id: 'lesson-6-1',
     courseId: 'course-6',
@@ -497,7 +988,7 @@ const initialLessons: Lesson[] = [
   },
 ];
 
-// Initial progress
+// Initial progress with Hoff Circle progress
 const initialProgress: Progress[] = [
   {
     userId: 'user-1',
@@ -519,6 +1010,32 @@ const initialProgress: Progress[] = [
     startedAt: '2026-01-21',
     lastAccessAt: '2026-01-23',
     progress: 25,
+    liked: [],
+    disliked: [],
+    favorites: [],
+  },
+  // Hoff Circle Progress - Trilha 1 complete
+  {
+    userId: 'user-1',
+    courseId: 'hc-trilha-1',
+    completedLessons: ['hc-t1-l1', 'hc-t1-l2'],
+    currentLesson: 'hc-t1-l2',
+    startedAt: '2026-01-15',
+    lastAccessAt: '2026-01-20',
+    progress: 100,
+    liked: ['hc-t1-l1'],
+    disliked: [],
+    favorites: [],
+  },
+  // Hoff Circle Progress - Trilha 2 in progress
+  {
+    userId: 'user-1',
+    courseId: 'hc-trilha-2',
+    completedLessons: ['hc-t2-l1'],
+    currentLesson: 'hc-t2-l2',
+    startedAt: '2026-01-20',
+    lastAccessAt: '2026-01-23',
+    progress: 50,
     liked: [],
     disliked: [],
     favorites: [],

@@ -43,6 +43,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
   const navLinks = [
     { href: '/', label: 'Início', icon: LayoutDashboard },
     { href: '/my-courses', label: 'Meus Cursos', icon: BookOpen },
+    { href: '/hoff-circle', label: 'Hoff Circle', icon: BookOpen },
     { href: '/swipe-file', label: 'Swipe File', icon: FileText },
   ];
 

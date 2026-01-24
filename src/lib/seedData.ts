@@ -1062,6 +1062,56 @@ const initialComments: Comment[] = [
   },
 ];
 
+// Helper function to check and seed HOF CIRCLE data
+function ensureHofCircleData(): void {
+  const existingCategories = getFromStorage<Category[]>(STORAGE_KEYS.CATEGORIES, []);
+  const existingCourses = getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []);
+  const existingLessons = getFromStorage<Lesson[]>(STORAGE_KEYS.LESSONS, []);
+  const existingProgress = getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []);
+  
+  // Check if HOF CIRCLE category exists
+  const hofCircleCategory = existingCategories.find(c => c.id === 'cat-hoff-circle');
+  
+  if (!hofCircleCategory || !hofCircleCategory.hasDedicatedPage) {
+    console.log('🔄 HOF CIRCLE categoria não encontrada. Adicionando...');
+    
+    // Find the HOF CIRCLE category from initial data
+    const hofCircleFromInitial = initialCategories.find(c => c.id === 'cat-hoff-circle');
+    if (hofCircleFromInitial) {
+      // Remove old hoff-circle category if exists and add the new one
+      const filteredCategories = existingCategories.filter(c => c.id !== 'cat-hoff-circle');
+      setToStorage(STORAGE_KEYS.CATEGORIES, [...filteredCategories, hofCircleFromInitial]);
+    }
+  }
+  
+  // Check if HOF CIRCLE courses exist
+  const hofCircleCourses = existingCourses.filter(c => c.categoryIds?.includes('cat-hoff-circle'));
+  
+  if (hofCircleCourses.length < 11) {
+    console.log(`🔄 HOF CIRCLE cursos incompletos (${hofCircleCourses.length}/11). Adicionando...`);
+    
+    // Get HOF CIRCLE courses from initial data
+    const hofCircleCoursesFromInitial = initialCourses.filter(c => c.categoryIds?.includes('cat-hoff-circle'));
+    
+    // Remove any existing HOF CIRCLE courses and add all from initial
+    const filteredCourses = existingCourses.filter(c => !c.categoryIds?.includes('cat-hoff-circle'));
+    setToStorage(STORAGE_KEYS.COURSES, [...filteredCourses, ...hofCircleCoursesFromInitial]);
+    
+    // Also ensure lessons exist
+    const hofCircleLessons = initialLessons.filter(l => l.courseId.startsWith('hc-'));
+    const filteredLessons = existingLessons.filter(l => !l.courseId.startsWith('hc-'));
+    setToStorage(STORAGE_KEYS.LESSONS, [...filteredLessons, ...hofCircleLessons]);
+    
+    // Also ensure progress for demo user
+    const hofCircleProgress = initialProgress.filter(p => p.courseId.startsWith('hc-'));
+    const filteredProgress = existingProgress.filter(p => !p.courseId.startsWith('hc-'));
+    setToStorage(STORAGE_KEYS.PROGRESS, [...filteredProgress, ...hofCircleProgress]);
+    
+    console.log('✅ HOF CIRCLE populado com sucesso!');
+    console.log(`📊 ${hofCircleCoursesFromInitial.length} cursos criados`);
+  }
+}
+
 // Seed function
 export function seedData(): void {
   // Only seed if data doesn't exist
@@ -1088,6 +1138,9 @@ export function seedData(): void {
   if (existingCategories.length === 0) {
     setToStorage(STORAGE_KEYS.CATEGORIES, initialCategories);
   }
+  
+  // Always ensure HOF CIRCLE data is complete
+  ensureHofCircleData();
 }
 
 // Reset data function (for development)

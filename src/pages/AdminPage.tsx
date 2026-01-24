@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFromStorage, setToStorage, STORAGE_KEYS, Course, Lesson, User, Progress, Banner, Category, generateId } from '@/lib/storage';
+import { resetData } from '@/lib/seedData';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -34,6 +35,7 @@ import {
   Target,
   Briefcase,
   GripVertical,
+  RefreshCw,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -360,6 +362,27 @@ const AdminPage: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">{categories.length} total</p>
+              </div>
+            </div>
+
+            {/* Maintenance Actions */}
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h3 className="font-semibold text-foreground mb-4">Manutenção</h3>
+              <div className="flex flex-wrap gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    resetData();
+                    window.location.reload();
+                  }}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  Resetar Todos os Dados
+                </Button>
+                <p className="text-sm text-muted-foreground w-full mt-2">
+                  ⚠️ Isso irá restaurar todos os dados para o estado inicial, incluindo HOF CIRCLE.
+                </p>
               </div>
             </div>
 

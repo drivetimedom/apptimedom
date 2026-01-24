@@ -181,8 +181,8 @@ const ProgressRoadmap: React.FC<ProgressRoadmapProps> = ({ courses, categoryId }
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Flag className="w-5 h-5 text-primary" />
-            <h3 className="text-xl font-semibold text-foreground">Seu Progresso no Hoff Circle</h3>
+          <Flag className="w-5 h-5 text-primary" />
+          <h3 className="text-xl font-semibold text-foreground">Seu Progresso no HOF CIRCLE</h3>
           </div>
           <span className="text-sm text-muted-foreground">
             {progressPercentage}% ({completedCourses}/{totalCourses})

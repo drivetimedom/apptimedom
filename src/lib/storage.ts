@@ -36,6 +36,24 @@ export interface Module {
   lessonIds: string[];
 }
 
+// Sequence configuration for courses
+export interface SequenceConfig {
+  isSequential: boolean;
+  position: number;
+  isPillar: boolean;
+  requiresPrevious: boolean;
+  prerequisiteCourseId: string | null;
+  unlocksAfter: string | null;
+}
+
+// Roadmap configuration for courses
+export interface RoadmapConfig {
+  showInRoadmap: boolean;
+  roadmapPosition: { x: number; y: number } | null;
+  roadmapIcon: string;
+  roadmapLabel: string;
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -45,6 +63,7 @@ export interface Course {
   instructorId: string;
   category: string;
   categoryIds?: string[];
+  subcategoryId?: string;
   level: 'Iniciante' | 'Intermediário' | 'Avançado';
   status: 'draft' | 'published' | 'private';
   locked: boolean;
@@ -52,6 +71,8 @@ export interface Course {
   createdAt: string;
   modules: Module[];
   isNew?: boolean;
+  sequenceConfig?: SequenceConfig;
+  roadmapConfig?: RoadmapConfig;
 }
 
 export interface Banner {
@@ -66,6 +87,25 @@ export interface Banner {
   order: number;
 }
 
+// Subcategory for dedicated pages
+export interface Subcategory {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  order: number;
+  showRoadmap: boolean;
+}
+
+// Page configuration for dedicated category pages
+export interface PageConfig {
+  bannerTitle: string;
+  bannerSubtitle?: string;
+  bannerImageUrl?: string;
+  bannerCtaText?: string;
+  aboutText?: string;
+}
+
 export interface Category {
   id: string;
   name: string;
@@ -74,6 +114,11 @@ export interface Category {
   slug: string;
   order: number;
   active: boolean;
+  // Dedicated page configuration
+  hasDedicatedPage?: boolean;
+  showInMainMenu?: boolean;
+  pageConfig?: PageConfig;
+  subcategories?: Subcategory[];
 }
 
 export interface Lesson {
@@ -93,6 +138,23 @@ export interface Lesson {
   }[];
 }
 
+// Category progress tracking
+export interface CategoryCourseProgress {
+  completed: boolean;
+  completedAt?: string;
+  progress: number;
+  currentLesson?: string;
+}
+
+export interface CategoryProgress {
+  totalCourses: number;
+  completedCourses: number;
+  percentage: number;
+  currentCourse?: string;
+  unlockedCourses: string[];
+  courseProgress: Record<string, CategoryCourseProgress>;
+}
+
 export interface Progress {
   userId: string;
   courseId: string;
@@ -104,6 +166,7 @@ export interface Progress {
   liked: string[];
   disliked: string[];
   favorites: string[];
+  categoryProgress?: Record<string, CategoryProgress>;
 }
 
 export interface Comment {
@@ -172,4 +235,53 @@ export function getCurrentUser(): User | null {
 // Generate unique ID
 export function generateId(): string {
   return Math.random().toString(36).substring(2) + Date.now().toString(36);
+}
+
+// Course access checking utilities
+export function checkCourseAccess(courseId: string, userId: string): boolean {
+  const courses = getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []);
+  const progressList = getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []);
+  
+  const course = courses.find(c => c.id === courseId);
+  if (!course) return false;
+  
+  // If no sequence config or doesn't require previous, allow access
+  if (!course.sequenceConfig?.requiresPrevious) {
+    return true;
+  }
+  
+  // Check if prerequisite is completed
+  const prerequisiteId = course.sequenceConfig.prerequisiteCourseId;
+  if (!prerequisiteId) return true;
+  
+  const prerequisiteCourse = courses.find(c => c.id === prerequisiteId);
+  if (!prerequisiteCourse) return true;
+  
+  // Find user progress for prerequisite
+  const userProgress = progressList.find(p => p.userId === userId && p.courseId === prerequisiteId);
+  
+  // Check if prerequisite is 100% complete
+  if (!userProgress) return false;
+  
+  return userProgress.progress >= 100;
+}
+
+export function getCourseStatus(courseId: string, userId: string): 'locked' | 'available' | 'in_progress' | 'completed' {
+  const courses = getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []);
+  const progressList = getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []);
+  
+  const course = courses.find(c => c.id === courseId);
+  if (!course) return 'locked';
+  
+  // Check access first
+  if (!checkCourseAccess(courseId, userId)) {
+    return 'locked';
+  }
+  
+  // Check user progress
+  const userProgress = progressList.find(p => p.userId === userId && p.courseId === courseId);
+  
+  if (!userProgress) return 'available';
+  if (userProgress.progress >= 100) return 'completed';
+  return 'in_progress';
 }

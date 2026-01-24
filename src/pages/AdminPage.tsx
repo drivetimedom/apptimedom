@@ -1,15 +1,24 @@
 import React, { useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFromStorage, setToStorage, STORAGE_KEYS, Course, Lesson, User, Progress, Comment, generateId } from '@/lib/storage';
+import { getFromStorage, setToStorage, STORAGE_KEYS, Course, Lesson, User, Progress, Banner, Category, generateId } from '@/lib/storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   Users,
   BookOpen,
   PlayCircle,
-  Clock,
   TrendingUp,
   Eye,
   Edit,
@@ -19,6 +28,12 @@ import {
   Plus,
   CheckCircle,
   XCircle,
+  Image,
+  FolderOpen,
+  Megaphone,
+  Target,
+  Briefcase,
+  GripVertical,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -43,9 +58,32 @@ const AdminPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const [users, setUsers] = useState(() => getFromStorage<User[]>(STORAGE_KEYS.USERS, []));
+  const [banners, setBanners] = useState(() => getFromStorage<Banner[]>(STORAGE_KEYS.BANNERS, []));
+  const [categories, setCategories] = useState(() => getFromStorage<Category[]>(STORAGE_KEYS.CATEGORIES, []));
   const courses = useMemo(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []), []);
   const lessons = useMemo(() => getFromStorage<Lesson[]>(STORAGE_KEYS.LESSONS, []), []);
   const progress = useMemo(() => getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []), []);
+
+  // Banner form state
+  const [bannerDialogOpen, setBannerDialogOpen] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+  const [bannerForm, setBannerForm] = useState({
+    title: '',
+    subtitle: '',
+    imageUrl: '',
+    linkType: 'page' as 'course' | 'external' | 'page',
+    linkTo: '',
+    ctaText: '',
+  });
+
+  // Category form state
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [categoryForm, setCategoryForm] = useState({
+    name: '',
+    icon: 'FolderOpen',
+    description: '',
+  });
 
   if (!isAdmin) {
     return (
@@ -81,6 +119,143 @@ const AdminPage: React.FC = () => {
     toast({ title: 'Usuário excluído' });
   };
 
+  // Banner functions
+  const openBannerDialog = (banner?: Banner) => {
+    if (banner) {
+      setEditingBanner(banner);
+      setBannerForm({
+        title: banner.title,
+        subtitle: banner.subtitle || '',
+        imageUrl: banner.imageUrl,
+        linkType: banner.linkType,
+        linkTo: banner.linkTo,
+        ctaText: banner.ctaText || '',
+      });
+    } else {
+      setEditingBanner(null);
+      setBannerForm({
+        title: '',
+        subtitle: '',
+        imageUrl: '',
+        linkType: 'page',
+        linkTo: '',
+        ctaText: '',
+      });
+    }
+    setBannerDialogOpen(true);
+  };
+
+  const saveBanner = () => {
+    if (!bannerForm.title || !bannerForm.imageUrl) {
+      toast({ title: 'Preencha os campos obrigatórios', variant: 'destructive' });
+      return;
+    }
+
+    let updatedBanners: Banner[];
+    if (editingBanner) {
+      updatedBanners = banners.map(b => 
+        b.id === editingBanner.id 
+          ? { ...b, ...bannerForm }
+          : b
+      );
+    } else {
+      const newBanner: Banner = {
+        id: generateId(),
+        ...bannerForm,
+        active: true,
+        order: banners.length + 1,
+      };
+      updatedBanners = [...banners, newBanner];
+    }
+
+    setBanners(updatedBanners);
+    setToStorage(STORAGE_KEYS.BANNERS, updatedBanners);
+    setBannerDialogOpen(false);
+    toast({ title: editingBanner ? 'Banner atualizado' : 'Banner criado' });
+  };
+
+  const toggleBannerStatus = (bannerId: string) => {
+    const updatedBanners = banners.map(b => 
+      b.id === bannerId ? { ...b, active: !b.active } : b
+    );
+    setBanners(updatedBanners);
+    setToStorage(STORAGE_KEYS.BANNERS, updatedBanners);
+    toast({ title: 'Status do banner atualizado' });
+  };
+
+  const deleteBanner = (bannerId: string) => {
+    const updatedBanners = banners.filter(b => b.id !== bannerId);
+    setBanners(updatedBanners);
+    setToStorage(STORAGE_KEYS.BANNERS, updatedBanners);
+    toast({ title: 'Banner excluído' });
+  };
+
+  // Category functions
+  const openCategoryDialog = (category?: Category) => {
+    if (category) {
+      setEditingCategory(category);
+      setCategoryForm({
+        name: category.name,
+        icon: category.icon,
+        description: category.description || '',
+      });
+    } else {
+      setEditingCategory(null);
+      setCategoryForm({
+        name: '',
+        icon: 'FolderOpen',
+        description: '',
+      });
+    }
+    setCategoryDialogOpen(true);
+  };
+
+  const saveCategory = () => {
+    if (!categoryForm.name) {
+      toast({ title: 'Nome da categoria é obrigatório', variant: 'destructive' });
+      return;
+    }
+
+    let updatedCategories: Category[];
+    if (editingCategory) {
+      updatedCategories = categories.map(c => 
+        c.id === editingCategory.id 
+          ? { ...c, ...categoryForm, slug: categoryForm.name.toLowerCase().replace(/\s+/g, '-') }
+          : c
+      );
+    } else {
+      const newCategory: Category = {
+        id: generateId(),
+        ...categoryForm,
+        slug: categoryForm.name.toLowerCase().replace(/\s+/g, '-'),
+        active: true,
+        order: categories.length + 1,
+      };
+      updatedCategories = [...categories, newCategory];
+    }
+
+    setCategories(updatedCategories);
+    setToStorage(STORAGE_KEYS.CATEGORIES, updatedCategories);
+    setCategoryDialogOpen(false);
+    toast({ title: editingCategory ? 'Categoria atualizada' : 'Categoria criada' });
+  };
+
+  const toggleCategoryStatus = (categoryId: string) => {
+    const updatedCategories = categories.map(c => 
+      c.id === categoryId ? { ...c, active: !c.active } : c
+    );
+    setCategories(updatedCategories);
+    setToStorage(STORAGE_KEYS.CATEGORIES, updatedCategories);
+    toast({ title: 'Status da categoria atualizado' });
+  };
+
+  const deleteCategory = (categoryId: string) => {
+    const updatedCategories = categories.filter(c => c.id !== categoryId);
+    setCategories(updatedCategories);
+    setToStorage(STORAGE_KEYS.CATEGORIES, updatedCategories);
+    toast({ title: 'Categoria excluída' });
+  };
+
   const filteredUsers = users.filter(u =>
     u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     u.email.toLowerCase().includes(searchQuery.toLowerCase())
@@ -90,19 +265,28 @@ const AdminPage: React.FC = () => {
     c.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const iconOptions = [
+    { value: 'FolderOpen', label: 'Pasta' },
+    { value: 'Megaphone', label: 'Marketing' },
+    { value: 'TrendingUp', label: 'Vendas' },
+    { value: 'Target', label: 'Estratégias' },
+    { value: 'Briefcase', label: 'Gestão' },
+    { value: 'BookOpen', label: 'Educação' },
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b border-border bg-card/50">
         <div className="container py-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Painel Administrativo</h1>
-          <p className="text-muted-foreground">Gerencie usuários, cursos e conteúdos</p>
+          <p className="text-muted-foreground">Gerencie usuários, cursos, banners e categorias</p>
         </div>
       </div>
 
       <div className="container py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-card border border-border mb-8">
+          <TabsList className="bg-card border border-border mb-8 flex-wrap h-auto p-1">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-accent">
               Dashboard
             </TabsTrigger>
@@ -111,6 +295,12 @@ const AdminPage: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger value="courses" className="data-[state=active]:bg-accent">
               Cursos
+            </TabsTrigger>
+            <TabsTrigger value="banners" className="data-[state=active]:bg-accent">
+              Banners
+            </TabsTrigger>
+            <TabsTrigger value="categories" className="data-[state=active]:bg-accent">
+              Categorias
             </TabsTrigger>
           </TabsList>
 
@@ -128,9 +318,7 @@ const AdminPage: React.FC = () => {
                     <Users className="w-6 h-6 text-info" />
                   </div>
                 </div>
-                <p className="text-xs text-success mt-4">
-                  {activeUsers} ativos
-                </p>
+                <p className="text-xs text-success mt-4">{activeUsers} ativos</p>
               </div>
 
               <div className="bg-card rounded-xl border border-border p-6">
@@ -151,33 +339,27 @@ const AdminPage: React.FC = () => {
               <div className="bg-card rounded-xl border border-border p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total de Aulas</p>
-                    <p className="text-3xl font-bold text-foreground mt-2">{totalLessons}</p>
+                    <p className="text-sm text-muted-foreground">Banners Ativos</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{banners.filter(b => b.active).length}</p>
                   </div>
                   <div className="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center">
-                    <PlayCircle className="w-6 h-6 text-warning" />
+                    <Image className="w-6 h-6 text-warning" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-4">
-                  Em {totalCourses} cursos
-                </p>
+                <p className="text-xs text-muted-foreground mt-4">{banners.length} total</p>
               </div>
 
               <div className="bg-card rounded-xl border border-border p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Aulas Assistidas</p>
-                    <p className="text-3xl font-bold text-foreground mt-2">
-                      {progress.reduce((acc, p) => acc + p.completedLessons.length, 0)}
-                    </p>
+                    <p className="text-sm text-muted-foreground">Categorias</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{categories.filter(c => c.active).length}</p>
                   </div>
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-primary" />
+                    <FolderOpen className="w-6 h-6 text-primary" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-4">
-                  Por todos os usuários
-                </p>
+                <p className="text-xs text-muted-foreground mt-4">{categories.length} total</p>
               </div>
             </div>
 
@@ -412,6 +594,327 @@ const AdminPage: React.FC = () => {
                                 Editar
                               </DropdownMenuItem>
                               <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Excluir
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+
+          {/* Banners Tab */}
+          <TabsContent value="banners" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">Gerenciar Banners Hero</h2>
+                <p className="text-sm text-muted-foreground">Gerencie os banners do carrossel da home (máx. 3 recomendado)</p>
+              </div>
+              <Dialog open={bannerDialogOpen} onOpenChange={setBannerDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => openBannerDialog()}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Novo Banner
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-card border-border max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>{editingBanner ? 'Editar Banner' : 'Novo Banner'}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div>
+                      <Label>Título *</Label>
+                      <Input
+                        value={bannerForm.title}
+                        onChange={(e) => setBannerForm({ ...bannerForm, title: e.target.value })}
+                        placeholder="Título do banner"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label>Subtítulo</Label>
+                      <Input
+                        value={bannerForm.subtitle}
+                        onChange={(e) => setBannerForm({ ...bannerForm, subtitle: e.target.value })}
+                        placeholder="Subtítulo (opcional)"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label>URL da Imagem *</Label>
+                      <Input
+                        value={bannerForm.imageUrl}
+                        onChange={(e) => setBannerForm({ ...bannerForm, imageUrl: e.target.value })}
+                        placeholder="https://..."
+                        className="mt-1"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">Recomendado: 1920x600px</p>
+                    </div>
+                    <div>
+                      <Label>Tipo de Link</Label>
+                      <Select
+                        value={bannerForm.linkType}
+                        onValueChange={(value) => setBannerForm({ ...bannerForm, linkType: value as any })}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="course">Curso</SelectItem>
+                          <SelectItem value="external">Link Externo</SelectItem>
+                          <SelectItem value="page">Página Interna</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>
+                        {bannerForm.linkType === 'course' ? 'Selecione o Curso' : 
+                         bannerForm.linkType === 'external' ? 'URL Externa' : 'Página/Âncora'}
+                      </Label>
+                      {bannerForm.linkType === 'course' ? (
+                        <Select
+                          value={bannerForm.linkTo}
+                          onValueChange={(value) => setBannerForm({ ...bannerForm, linkTo: value })}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue placeholder="Selecione um curso" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {courses.map(course => (
+                              <SelectItem key={course.id} value={course.id}>
+                                {course.title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          value={bannerForm.linkTo}
+                          onChange={(e) => setBannerForm({ ...bannerForm, linkTo: e.target.value })}
+                          placeholder={bannerForm.linkType === 'external' ? 'https://...' : '#courses'}
+                          className="mt-1"
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <Label>Texto do Botão</Label>
+                      <Input
+                        value={bannerForm.ctaText}
+                        onChange={(e) => setBannerForm({ ...bannerForm, ctaText: e.target.value })}
+                        placeholder="Ex: Começar Agora"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4">
+                      <Button variant="outline" onClick={() => setBannerDialogOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={saveBanner}>
+                        {editingBanner ? 'Salvar' : 'Criar Banner'}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground w-12"></TableHead>
+                    <TableHead className="text-muted-foreground">Preview</TableHead>
+                    <TableHead className="text-muted-foreground">Título</TableHead>
+                    <TableHead className="text-muted-foreground">Link</TableHead>
+                    <TableHead className="text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-muted-foreground text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {banners.sort((a, b) => a.order - b.order).map(banner => (
+                    <TableRow key={banner.id} className="border-border">
+                      <TableCell>
+                        <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
+                      </TableCell>
+                      <TableCell>
+                        <img 
+                          src={banner.imageUrl} 
+                          alt={banner.title}
+                          className="w-24 h-12 rounded object-cover"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium text-foreground">{banner.title}</p>
+                          <p className="text-xs text-muted-foreground">{banner.subtitle}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {banner.linkType === 'course' ? `Curso: ${courses.find(c => c.id === banner.linkTo)?.title || banner.linkTo}` :
+                         banner.linkType === 'external' ? 'Link externo' : banner.linkTo}
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={banner.active}
+                          onCheckedChange={() => toggleBannerStatus(banner.id)}
+                        />
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-popover border-border">
+                            <DropdownMenuItem className="cursor-pointer" onClick={() => openBannerDialog(banner)}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="cursor-pointer text-destructive focus:text-destructive"
+                              onClick={() => deleteBanner(banner.id)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </TabsContent>
+
+          {/* Categories Tab */}
+          <TabsContent value="categories" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">Gerenciar Categorias</h2>
+                <p className="text-sm text-muted-foreground">Organize os cursos por categorias</p>
+              </div>
+              <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => openCategoryDialog()}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nova Categoria
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-card border-border max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>{editingCategory ? 'Editar Categoria' : 'Nova Categoria'}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div>
+                      <Label>Nome da Categoria *</Label>
+                      <Input
+                        value={categoryForm.name}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+                        placeholder="Ex: Marketing Digital"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label>Ícone</Label>
+                      <Select
+                        value={categoryForm.icon}
+                        onValueChange={(value) => setCategoryForm({ ...categoryForm, icon: value })}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {iconOptions.map(opt => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Descrição</Label>
+                      <Input
+                        value={categoryForm.description}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })}
+                        placeholder="Descrição opcional"
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4">
+                      <Button variant="outline" onClick={() => setCategoryDialogOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button onClick={saveCategory}>
+                        {editingCategory ? 'Salvar' : 'Criar Categoria'}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="bg-card rounded-xl border border-border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="text-muted-foreground w-12"></TableHead>
+                    <TableHead className="text-muted-foreground">Nome</TableHead>
+                    <TableHead className="text-muted-foreground">Slug</TableHead>
+                    <TableHead className="text-muted-foreground">Cursos</TableHead>
+                    <TableHead className="text-muted-foreground">Status</TableHead>
+                    <TableHead className="text-muted-foreground text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {categories.sort((a, b) => a.order - b.order).map(category => {
+                    const courseCount = courses.filter(c => c.categoryIds?.includes(category.id)).length;
+                    
+                    return (
+                      <TableRow key={category.id} className="border-border">
+                        <TableCell>
+                          <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-foreground">{category.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-sm">
+                          {category.slug}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {courseCount} cursos
+                        </TableCell>
+                        <TableCell>
+                          <Switch
+                            checked={category.active}
+                            onCheckedChange={() => toggleCategoryStatus(category.id)}
+                          />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-popover border-border">
+                              <DropdownMenuItem className="cursor-pointer" onClick={() => openCategoryDialog(category)}>
+                                <Edit className="w-4 h-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                                onClick={() => deleteCategory(category.id)}
+                              >
                                 <Trash2 className="w-4 h-4 mr-2" />
                                 Excluir
                               </DropdownMenuItem>

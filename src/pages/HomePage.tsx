@@ -1,12 +1,22 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFromStorage, STORAGE_KEYS, Course, User, Progress } from '@/lib/storage';
-import CourseCard from '@/components/courses/CourseCard';
-import { Gift, BookOpen, TrendingUp, Sparkles } from 'lucide-react';
+import { getFromStorage, STORAGE_KEYS, Course, User, Progress, Banner, Category } from '@/lib/storage';
+import HeroBannerCarousel from '@/components/home/HeroBannerCarousel';
+import CategoryCarousel from '@/components/home/CategoryCarousel';
+import VerticalCourseCard from '@/components/courses/VerticalCourseCard';
+import { Gift, BookOpen } from 'lucide-react';
+import { seedData } from '@/lib/seedData';
 
 const HomePage: React.FC = () => {
   const { user } = useAuth();
 
+  // Ensure seed data exists
+  useEffect(() => {
+    seedData();
+  }, []);
+
+  const banners = useMemo(() => getFromStorage<Banner[]>(STORAGE_KEYS.BANNERS, []), []);
+  const categories = useMemo(() => getFromStorage<Category[]>(STORAGE_KEYS.CATEGORIES, []).filter(c => c.active).sort((a, b) => a.order - b.order), []);
   const courses = useMemo(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []), []);
   const users = useMemo(() => getFromStorage<User[]>(STORAGE_KEYS.USERS, []), []);
   const allProgress = useMemo(() => getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []), []);
@@ -28,6 +38,10 @@ const HomePage: React.FC = () => {
     [publishedCourses, userProgress]
   );
 
+  const getCoursesByCategory = (categoryId: string) => {
+    return publishedCourses.filter(c => c.categoryIds?.includes(categoryId));
+  };
+
   const getInstructor = (instructorId: string) => 
     users.find(u => u.id === instructorId);
 
@@ -41,55 +55,75 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 gradient-hero border-b border-border overflow-hidden">
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        </div>
-        
-        <div className="container relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-accent/50 border border-border mb-6">
-              <Sparkles className="w-4 h-4 text-foreground" />
-              <span className="text-sm text-foreground">Bem-vindo de volta, {user?.name?.split(' ')[0]}</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Frameworks & Estratégias
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Desbloqueie todo o potencial que um HUB de membros pode te oferecer. 
-              Acesse frameworks exclusivos e transforme sua jornada.
-            </p>
-            <a 
-              href="#courses" 
-              className="inline-flex items-center space-x-2 px-8 py-4 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all duration-200 shadow-elegant"
-            >
-              <span>Comece agora</span>
-              <TrendingUp className="w-5 h-5" />
-            </a>
-          </div>
-        </div>
-      </section>
+    <div className="min-h-screen bg-background">
+      {/* Hero Banner Carousel */}
+      <HeroBannerCarousel banners={banners} />
 
       {/* In Progress Courses */}
       {inProgressCourses.length > 0 && (
-        <section className="py-16 px-4">
-          <div className="container">
-            <div className="flex items-center space-x-3 mb-8">
+        <section className="py-10 border-b border-border">
+          <div className="container mb-6">
+            <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-info" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Seus Cursos em Andamento</h2>
+                <h2 className="text-xl md:text-2xl font-semibold text-foreground">Seus Cursos em Andamento</h2>
                 <p className="text-sm text-muted-foreground">Continue de onde parou</p>
               </div>
             </div>
+          </div>
+          
+          <div className="flex gap-5 overflow-x-auto scrollbar-hide px-4 md:px-8 lg:px-12 pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {inProgressCourses.map(course => (
+              <VerticalCourseCard
+                key={course.id}
+                course={course}
+                instructor={getInstructor(course.instructorId)}
+                progress={getProgress(course.id)}
+                isLocked={!isCourseUnlocked(course)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Categories with Carousels */}
+      <div id="courses" className="py-8 space-y-8">
+        {categories.map(category => {
+          const categoryCourses = getCoursesByCategory(category.id);
+          if (categoryCourses.length === 0) return null;
+          
+          return (
+            <CategoryCarousel
+              key={category.id}
+              category={category}
+              courses={categoryCourses}
+              users={users}
+              userProgress={userProgress}
+              isCourseUnlocked={isCourseUnlocked}
+            />
+          );
+        })}
+      </div>
+
+      {/* All Courses Section (if no categories have courses) */}
+      {categories.every(cat => getCoursesByCategory(cat.id).length === 0) && (
+        <section className="py-16 px-4">
+          <div className="container">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
+                <Gift className="w-5 h-5 text-success" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-foreground">Todos os Cursos</h2>
+                <p className="text-sm text-muted-foreground">Frameworks disponíveis para você</p>
+              </div>
+            </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {inProgressCourses.slice(0, 3).map(course => (
-                <CourseCard
+            <div className="flex gap-5 overflow-x-auto scrollbar-hide pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {publishedCourses.map(course => (
+                <VerticalCourseCard
                   key={course.id}
                   course={course}
                   instructor={getInstructor(course.instructorId)}
@@ -101,33 +135,6 @@ const HomePage: React.FC = () => {
           </div>
         </section>
       )}
-
-      {/* Featured Courses */}
-      <section id="courses" className="py-16 px-4 border-t border-border">
-        <div className="container">
-          <div className="flex items-center space-x-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-success/10 flex items-center justify-center">
-              <Gift className="w-5 h-5 text-success" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">Ação, comece aqui</h2>
-              <p className="text-sm text-muted-foreground">Frameworks disponíveis para você</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {publishedCourses.map(course => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                instructor={getInstructor(course.instructorId)}
-                progress={getProgress(course.id)}
-                isLocked={!isCourseUnlocked(course)}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Stats Section */}
       <section className="py-16 px-4 border-t border-border bg-card/30">

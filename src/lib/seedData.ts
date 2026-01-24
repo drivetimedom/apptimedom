@@ -5,6 +5,8 @@ import {
   Lesson, 
   Progress,
   Comment,
+  Banner,
+  Category,
   getFromStorage, 
   setToStorage 
 } from './storage';
@@ -55,7 +57,84 @@ const initialUsers: User[] = [
     avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcabd36?w=150&h=150&fit=crop&crop=face',
     active: true,
     createdAt: '2026-01-15',
-    unlockedCourses: ['course-1', 'course-2', 'course-3'],
+    unlockedCourses: ['course-1', 'course-2', 'course-3', 'course-5', 'course-6'],
+  },
+];
+
+// Initial banners
+const initialBanners: Banner[] = [
+  {
+    id: 'banner-1',
+    title: 'Bem-vindo à Área de Membros',
+    subtitle: 'Acesse frameworks exclusivos e transforme sua jornada',
+    imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1920&h=600&fit=crop',
+    linkType: 'page',
+    linkTo: '#courses',
+    ctaText: 'Explorar Cursos',
+    active: true,
+    order: 1,
+  },
+  {
+    id: 'banner-2',
+    title: 'Novo Curso: Marketing Digital Avançado',
+    subtitle: 'Aprenda estratégias que realmente funcionam',
+    imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1920&h=600&fit=crop',
+    linkType: 'course',
+    linkTo: 'course-1',
+    ctaText: 'Começar Agora',
+    active: true,
+    order: 2,
+  },
+  {
+    id: 'banner-3',
+    title: 'Promoção Especial',
+    subtitle: 'Desbloqueie todos os cursos com desconto exclusivo',
+    imageUrl: 'https://images.unsplash.com/photo-1553484771-047a44eee27b?w=1920&h=600&fit=crop',
+    linkType: 'external',
+    linkTo: '#',
+    ctaText: 'Saiba Mais',
+    active: true,
+    order: 3,
+  },
+];
+
+// Initial categories
+const initialCategories: Category[] = [
+  {
+    id: 'cat-1',
+    name: 'Marketing Digital',
+    icon: 'Megaphone',
+    description: 'Cursos de marketing e publicidade digital',
+    slug: 'marketing-digital',
+    order: 1,
+    active: true,
+  },
+  {
+    id: 'cat-2',
+    name: 'Vendas',
+    icon: 'TrendingUp',
+    description: 'Estratégias de vendas e conversão',
+    slug: 'vendas',
+    order: 2,
+    active: true,
+  },
+  {
+    id: 'cat-3',
+    name: 'Estratégias',
+    icon: 'Target',
+    description: 'Frameworks estratégicos para seu negócio',
+    slug: 'estrategias',
+    order: 3,
+    active: true,
+  },
+  {
+    id: 'cat-4',
+    name: 'Gestão',
+    icon: 'Briefcase',
+    description: 'Cursos de gestão e liderança',
+    slug: 'gestao',
+    order: 4,
+    active: true,
   },
 ];
 
@@ -66,14 +145,16 @@ const initialCourses: Course[] = [
     title: 'Link{Mi}®',
     subtitle: 'ENTREGA EM UM CLIQUE',
     description: 'Aprenda a criar sistemas de entrega automatizados que convertem visitantes em clientes fiéis. Este framework completo vai te ensinar passo a passo como estruturar funis de alta conversão.',
-    thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=1200&fit=crop',
     instructorId: 'instructor-1',
     category: 'Estratégias',
+    categoryIds: ['cat-1', 'cat-3'],
     level: 'Intermediário',
     status: 'published',
     locked: false,
     totalDuration: '5:30:00',
     createdAt: '2026-01-10',
+    isNew: true,
     modules: [
       {
         id: 'mod-1-1',
@@ -96,9 +177,10 @@ const initialCourses: Course[] = [
     title: 'Ative{Mi}®',
     subtitle: 'ATIVAÇÃO DE AUDIÊNCIA',
     description: 'Transforme seguidores passivos em uma comunidade engajada. Descubra as técnicas avançadas de ativação que grandes marcas utilizam para criar conexões autênticas.',
-    thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=600&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=1200&fit=crop',
     instructorId: 'instructor-1',
     category: 'Engajamento',
+    categoryIds: ['cat-1', 'cat-2'],
     level: 'Avançado',
     status: 'published',
     locked: false,
@@ -126,9 +208,10 @@ const initialCourses: Course[] = [
     title: 'Scale{Mi}®',
     subtitle: 'ESCALE SEU NEGÓCIO',
     description: 'O framework definitivo para escalar seu negócio de forma sustentável. Aprenda os pilares da escalabilidade e como implementá-los na sua empresa.',
-    thumbnail: 'https://images.unsplash.com/photo-1553484771-047a44eee27b?w=800&h=600&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1553484771-047a44eee27b?w=800&h=1200&fit=crop',
     instructorId: 'instructor-2',
     category: 'Negócios',
+    categoryIds: ['cat-2', 'cat-4'],
     level: 'Avançado',
     status: 'published',
     locked: false,
@@ -149,9 +232,10 @@ const initialCourses: Course[] = [
     title: 'Auto{Mi}®',
     subtitle: 'AUTOMAÇÃO INTELIGENTE',
     description: 'Automatize processos e libere seu tempo para o que realmente importa. Ferramentas e estratégias de automação para empreendedores.',
-    thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=600&fit=crop',
+    thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=1200&fit=crop',
     instructorId: 'instructor-2',
     category: 'Automação',
+    categoryIds: ['cat-3', 'cat-4'],
     level: 'Iniciante',
     status: 'published',
     locked: true,
@@ -164,6 +248,55 @@ const initialCourses: Course[] = [
         description: 'Por onde começar sua jornada de automação',
         order: 1,
         lessonIds: ['lesson-4-1'],
+      },
+    ],
+  },
+  {
+    id: 'course-5',
+    title: 'Growth{Mi}®',
+    subtitle: 'CRESCIMENTO EXPONENCIAL',
+    description: 'Estratégias de growth hacking para acelerar o crescimento do seu negócio digital.',
+    thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-1',
+    category: 'Marketing',
+    categoryIds: ['cat-1', 'cat-2'],
+    level: 'Intermediário',
+    status: 'published',
+    locked: false,
+    totalDuration: '4:00:00',
+    createdAt: '2026-01-18',
+    isNew: true,
+    modules: [
+      {
+        id: 'mod-5-1',
+        title: 'Fundamentos do Growth',
+        description: 'Conceitos essenciais de growth hacking',
+        order: 1,
+        lessonIds: ['lesson-5-1', 'lesson-5-2'],
+      },
+    ],
+  },
+  {
+    id: 'course-6',
+    title: 'Lead{Mi}®',
+    subtitle: 'GERAÇÃO DE LEADS',
+    description: 'Aprenda a gerar leads qualificados de forma consistente e previsível.',
+    thumbnail: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=1200&fit=crop',
+    instructorId: 'instructor-2',
+    category: 'Vendas',
+    categoryIds: ['cat-2'],
+    level: 'Iniciante',
+    status: 'published',
+    locked: false,
+    totalDuration: '3:45:00',
+    createdAt: '2026-01-20',
+    modules: [
+      {
+        id: 'mod-6-1',
+        title: 'Estratégias de Captação',
+        description: 'Como atrair leads qualificados',
+        order: 1,
+        lessonIds: ['lesson-6-1'],
       },
     ],
   },
@@ -324,6 +457,44 @@ const initialLessons: Lesson[] = [
     locked: false,
     resources: [],
   },
+  // Course 5 - Growth{Mi}
+  {
+    id: 'lesson-5-1',
+    courseId: 'course-5',
+    moduleId: 'mod-5-1',
+    title: 'O que é Growth Hacking',
+    description: 'Introdução aos conceitos e mentalidade do growth.',
+    vimeoId: '76979871',
+    duration: '18:00',
+    order: 1,
+    locked: false,
+    resources: [],
+  },
+  {
+    id: 'lesson-5-2',
+    courseId: 'course-5',
+    moduleId: 'mod-5-1',
+    title: 'Experimentos de Crescimento',
+    description: 'Como estruturar e executar experimentos de growth.',
+    vimeoId: '76979871',
+    duration: '24:00',
+    order: 2,
+    locked: false,
+    resources: [],
+  },
+  // Course 6 - Lead{Mi}
+  {
+    id: 'lesson-6-1',
+    courseId: 'course-6',
+    moduleId: 'mod-6-1',
+    title: 'Fundamentos da Geração de Leads',
+    description: 'Conceitos básicos para gerar leads de qualidade.',
+    vimeoId: '76979871',
+    duration: '20:00',
+    order: 1,
+    locked: false,
+    resources: [],
+  },
 ];
 
 // Initial progress
@@ -339,6 +510,18 @@ const initialProgress: Progress[] = [
     liked: ['lesson-1-1'],
     disliked: [],
     favorites: ['lesson-1-2'],
+  },
+  {
+    userId: 'user-1',
+    courseId: 'course-2',
+    completedLessons: ['lesson-2-1'],
+    currentLesson: 'lesson-2-2',
+    startedAt: '2026-01-21',
+    lastAccessAt: '2026-01-23',
+    progress: 25,
+    liked: [],
+    disliked: [],
+    favorites: [],
   },
 ];
 
@@ -373,7 +556,20 @@ export function seedData(): void {
     setToStorage(STORAGE_KEYS.LESSONS, initialLessons);
     setToStorage(STORAGE_KEYS.PROGRESS, initialProgress);
     setToStorage(STORAGE_KEYS.COMMENTS, initialComments);
+    setToStorage(STORAGE_KEYS.BANNERS, initialBanners);
+    setToStorage(STORAGE_KEYS.CATEGORIES, initialCategories);
     console.log('✅ Dados iniciais carregados com sucesso!');
+  }
+  
+  // Always ensure banners and categories exist
+  const existingBanners = getFromStorage<Banner[]>(STORAGE_KEYS.BANNERS, []);
+  const existingCategories = getFromStorage<Category[]>(STORAGE_KEYS.CATEGORIES, []);
+  
+  if (existingBanners.length === 0) {
+    setToStorage(STORAGE_KEYS.BANNERS, initialBanners);
+  }
+  if (existingCategories.length === 0) {
+    setToStorage(STORAGE_KEYS.CATEGORIES, initialCategories);
   }
 }
 
@@ -384,5 +580,7 @@ export function resetData(): void {
   setToStorage(STORAGE_KEYS.LESSONS, initialLessons);
   setToStorage(STORAGE_KEYS.PROGRESS, initialProgress);
   setToStorage(STORAGE_KEYS.COMMENTS, initialComments);
+  setToStorage(STORAGE_KEYS.BANNERS, initialBanners);
+  setToStorage(STORAGE_KEYS.CATEGORIES, initialCategories);
   console.log('🔄 Dados resetados com sucesso!');
 }

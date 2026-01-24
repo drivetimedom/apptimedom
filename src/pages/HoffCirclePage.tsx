@@ -30,10 +30,10 @@ const HoffCirclePage: React.FC = () => {
   if (!hoffCircle) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-2">Hoff Circle</h1>
-          <p className="text-muted-foreground mb-4">Categoria não encontrada.</p>
+      <div className="text-center">
+        <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-foreground mb-2">HOF CIRCLE</h1>
+        <p className="text-muted-foreground mb-4">Categoria não encontrada.</p>
           <Button onClick={() => navigate('/')}>Voltar ao Início</Button>
         </div>
       </div>

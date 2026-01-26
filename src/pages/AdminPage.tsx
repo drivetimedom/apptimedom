@@ -57,6 +57,8 @@ import {
   FileText,
   GripVertical,
   Key,
+  Palette,
+  Settings,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -77,6 +79,8 @@ import { useToast } from '@/hooks/use-toast';
 import UserFormModal from '@/components/admin/UserFormModal';
 import CourseFormModal from '@/components/admin/CourseFormModal';
 import CategoryFormModal from '@/components/admin/CategoryFormModal';
+import ImportExportUsers from '@/components/admin/ImportExportUsers';
+import CustomizationSettings from '@/components/admin/CustomizationSettings';
 
 const AdminPage: React.FC = () => {
   const { user: currentUser, isAdmin } = useAuth();
@@ -502,6 +506,10 @@ const AdminPage: React.FC = () => {
             <TabsTrigger value="categories" className="data-[state=active]:bg-accent">
               Categorias
             </TabsTrigger>
+            <TabsTrigger value="customization" className="data-[state=active]:bg-accent gap-2">
+              <Palette className="w-4 h-4" />
+              Personalização
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -668,10 +676,13 @@ const AdminPage: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={() => openUserModal()} className="gap-2">
-                <Plus className="w-4 h-4" />
-                Novo Usuário
-              </Button>
+              <div className="flex items-center gap-3">
+                <ImportExportUsers users={users} onUsersChange={setUsers} />
+                <Button onClick={() => openUserModal()} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Novo Usuário
+                </Button>
+              </div>
             </div>
 
             <p className="text-sm text-muted-foreground">
@@ -1089,6 +1100,11 @@ const AdminPage: React.FC = () => {
                 </TableBody>
               </Table>
             </div>
+          </TabsContent>
+
+          {/* Customization Tab */}
+          <TabsContent value="customization" className="space-y-6">
+            <CustomizationSettings />
           </TabsContent>
         </Tabs>
       </div>

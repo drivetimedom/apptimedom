@@ -322,11 +322,11 @@ const AdminPage: React.FC = () => {
     const course = courses.find(c => c.id === courseId);
     if (!course) return;
     
-    const newStatus = course.status === 'published' ? 'draft' : 'published';
+    const newStatus: 'draft' | 'published' = course.status === 'published' ? 'draft' : 'published';
     const updatedCourses = courses.map(c => 
       c.id === courseId ? { ...c, status: newStatus } : c
     );
-    setCourses(updatedCourses);
+    setCourses(updatedCourses as Course[]);
     setToStorage(STORAGE_KEYS.COURSES, updatedCourses);
     toast({ title: newStatus === 'published' ? 'Curso publicado!' : 'Curso despublicado' });
   };

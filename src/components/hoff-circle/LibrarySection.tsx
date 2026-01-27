@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Category, 
   Course, 
+  Lesson,
   STORAGE_KEYS, 
   getFromStorage 
 } from '@/lib/storage';
@@ -17,9 +18,11 @@ import {
   Wrench, 
   Users, 
   Brain,
-  Library
+  Library,
+  FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import SwipeFileModal from './SwipeFileModal';
 
 interface Track {
   id: string;
@@ -46,6 +49,7 @@ interface LibrarySectionProps {
 const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
   const navigate = useNavigate();
   const [selectedTrack, setSelectedTrack] = React.useState<string | null>(null);
+  const [swipeFileOpen, setSwipeFileOpen] = useState(false);
 
   const allCourses = getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []);
   
@@ -66,6 +70,21 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
     (a, b) => (a.sequenceConfig?.position || 0) - (b.sequenceConfig?.position || 0)
   );
 
+  // Handle course click - challenges go directly to first lesson
+  const handleCourseClick = (course: Course) => {
+    if (course.courseType === 'desafio') {
+      const lessons = getFromStorage<Lesson[]>(STORAGE_KEYS.LESSONS, []);
+      const firstModule = course.modules[0];
+      
+      if (firstModule && firstModule.lessonIds.length > 0) {
+        const firstLessonId = firstModule.lessonIds[0];
+        navigate(`/course/${course.id}/lesson/${firstLessonId}`);
+        return;
+      }
+    }
+    navigate(`/course/${course.id}`);
+  };
+
   return (
     <section className="mt-12">
       <Card className="bg-card border-border">
@@ -79,7 +98,7 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
         </CardHeader>
         <CardContent>
           {/* Track tabs */}
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-8">
             <button
               onClick={() => setSelectedTrack(null)}
               className={cn(
@@ -112,17 +131,31 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
                 </button>
               );
             })}
+            
+            {/* Swipe File Button */}
+            <button
+              onClick={() => setSwipeFileOpen(true)}
+              className="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 bg-muted text-muted-foreground hover:bg-muted/80"
+            >
+              <FileText className="w-4 h-4" />
+              💾 Swipe File
+            </button>
           </div>
 
-          {/* Courses grid */}
+          {/* Courses grid - Fixed spacing with gap-6 */}
           {sortedCourses.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
               {sortedCourses.map((course) => (
-                <VerticalCourseCard 
+                <div 
                   key={course.id} 
-                  course={course}
-                  badgeType={course.sequenceConfig?.isPillar ? `T${course.sequenceConfig.position}` : undefined}
-                />
+                  onClick={() => handleCourseClick(course)}
+                  className="cursor-pointer"
+                >
+                  <VerticalCourseCard 
+                    course={course}
+                    badgeType={course.sequenceConfig?.isPillar ? `T${course.sequenceConfig.position}` : undefined}
+                  />
+                </div>
               ))}
             </div>
           ) : (
@@ -137,6 +170,12 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
           )}
         </CardContent>
       </Card>
+
+      {/* Swipe File Modal */}
+      <SwipeFileModal 
+        isOpen={swipeFileOpen}
+        onClose={() => setSwipeFileOpen(false)}
+      />
     </section>
   );
 };

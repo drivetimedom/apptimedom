@@ -1,40 +1,56 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { User, STORAGE_KEYS, getFromStorage, UserStatus } from '@/lib/storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { User, Star, TrendingUp } from 'lucide-react';
+import { User as UserIcon, Star, TrendingUp, Zap, Crown, Flame } from 'lucide-react';
 
-type UserLevel = 'iniciante' | 'intermediario' | 'avancado' | 'expert';
-
-const levelConfig: Record<UserLevel, { label: string; color: string; icon: React.ReactNode }> = {
-  iniciante: { 
+const levelConfig: Record<UserStatus, { label: string; color: string; icon: React.ReactNode }> = {
+  'iniciante': { 
     label: 'INICIANTE', 
     color: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     icon: <Star className="w-4 h-4" />
   },
-  intermediario: { 
+  'primeiras-vendas': { 
+    label: 'PRIMEIRAS VENDAS', 
+    color: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+    icon: <Flame className="w-4 h-4" />
+  },
+  'intermediario': { 
     label: 'INTERMEDIÁRIO', 
     color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     icon: <TrendingUp className="w-4 h-4" />
   },
-  avancado: { 
+  'avancado': { 
     label: 'AVANÇADO', 
     color: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-    icon: <TrendingUp className="w-4 h-4" />
+    icon: <Zap className="w-4 h-4" />
   },
-  expert: { 
-    label: 'EXPERT', 
+  'elite': { 
+    label: 'ELITE', 
     color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-    icon: <Star className="w-4 h-4" />
+    icon: <Crown className="w-4 h-4" />
   },
+};
+
+const mapLabels: Record<string, string> = {
+  'mapa-10k': '🗺️ MAPA 10K',
+  'mapa-30k': '🗺️ MAPA 30K',
+  'mapa-50k': '🗺️ MAPA 50K',
+  'mapa-100k': '🗺️ MAPA 100K',
 };
 
 const IndividualPanel: React.FC = () => {
   const { user } = useAuth();
   
-  // TODO: Get actual user level from progress/storage
-  const userLevel: UserLevel = 'intermediario';
-  const config = levelConfig[userLevel];
+  // Get full user data from storage to get prescription fields
+  const users = getFromStorage<User[]>(STORAGE_KEYS.USERS, []);
+  const fullUser = users.find(u => u.id === user?.id);
+  
+  // Get status from user data (set by admin) or default
+  const userStatus: UserStatus = fullUser?.status || 'iniciante';
+  const prescribedMap = fullUser?.prescribedMap || '';
+  const config = levelConfig[userStatus];
   
   const firstName = user?.name?.split(' ')[0] || 'Aluno';
 
@@ -43,7 +59,7 @@ const IndividualPanel: React.FC = () => {
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
           <div className="p-2 rounded-lg bg-primary/10">
-            <User className="w-5 h-5 text-primary" />
+            <UserIcon className="w-5 h-5 text-primary" />
           </div>
           Painel Individual
         </CardTitle>
@@ -68,13 +84,23 @@ const IndividualPanel: React.FC = () => {
           </div>
 
           {/* Status badge */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm text-muted-foreground">Status:</span>
             <Badge className={`${config.color} border flex items-center gap-1`}>
               {config.icon}
               {config.label}
             </Badge>
           </div>
+
+          {/* Prescribed Map */}
+          {prescribedMap && (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Mapa:</span>
+              <Badge variant="outline" className="border-accent/30 text-accent">
+                {mapLabels[prescribedMap] || prescribedMap}
+              </Badge>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

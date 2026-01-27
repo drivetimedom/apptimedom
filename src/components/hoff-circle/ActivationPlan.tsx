@@ -1,30 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { User, STORAGE_KEYS, getFromStorage, ActivationTask } from '@/lib/storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CheckSquare, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface ChecklistItem {
-  id: string;
-  label: string;
-  category: string;
-}
-
-const defaultChecklist: ChecklistItem[] = [
-  { id: 'item-1', label: 'Criar conta Business Manager', category: 'setup' },
-  { id: 'item-2', label: 'Conectar Instagram', category: 'setup' },
-  { id: 'item-3', label: 'Conectar WhatsApp Business', category: 'setup' },
-  { id: 'item-4', label: 'Rodar 1ª campanha', category: 'acao' },
-  { id: 'item-5', label: 'Investir R$ 500 em tráfego', category: 'acao' },
-  { id: 'item-6', label: 'Gerar 30 leads', category: 'resultado' },
-  { id: 'item-7', label: 'Fazer 5 vendas', category: 'resultado' },
-  { id: 'item-8', label: 'Atingir R$ 2.000 de faturamento', category: 'resultado' },
+// Default checklist for users without custom activation plan
+const defaultChecklist: ActivationTask[] = [
+  { id: 'item-1', text: 'Criar conta Business Manager', done: false },
+  { id: 'item-2', text: 'Conectar Instagram', done: false },
+  { id: 'item-3', text: 'Conectar WhatsApp Business', done: false },
+  { id: 'item-4', text: 'Rodar 1ª campanha', done: false },
+  { id: 'item-5', text: 'Investir R$ 500 em tráfego', done: false },
+  { id: 'item-6', text: 'Gerar 30 leads', done: false },
+  { id: 'item-7', text: 'Fazer 5 vendas', done: false },
+  { id: 'item-8', text: 'Atingir R$ 2.000 de faturamento', done: false },
 ];
 
 const ActivationPlan: React.FC = () => {
   const { user } = useAuth();
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
+
+  // Get full user data from storage
+  const users = getFromStorage<User[]>(STORAGE_KEYS.USERS, []);
+  const fullUser = users.find(u => u.id === user?.id);
+  
+  // Use custom activation plan if set by admin, otherwise use default
+  const activationPlan: ActivationTask[] = (fullUser?.activationPlan && fullUser.activationPlan.length > 0)
+    ? fullUser.activationPlan
+    : defaultChecklist;
 
   // Load checked items from storage
   useEffect(() => {
@@ -51,18 +56,22 @@ const ActivationPlan: React.FC = () => {
     }
   };
 
-  const completedCount = Object.values(checkedItems).filter(Boolean).length;
-  const totalCount = defaultChecklist.length;
-  const progressPercent = Math.round((completedCount / totalCount) * 100);
+  const completedCount = activationPlan.filter(item => checkedItems[item.id]).length;
+  const totalCount = activationPlan.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  if (activationPlan.length === 0) {
+    return null;
+  }
 
   return (
     <Card className="bg-card border-border">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-accent/10">
-            <CheckSquare className="w-5 h-5 text-accent" />
-          </div>
+            <div className="p-2 rounded-lg bg-accent/10">
+              <CheckSquare className="w-5 h-5 text-accent" />
+            </div>
             Plano de Ativação
           </CardTitle>
           <span className="text-sm text-muted-foreground">
@@ -82,7 +91,7 @@ const ActivationPlan: React.FC = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {defaultChecklist.map((item) => {
+          {activationPlan.map((item) => {
             const isChecked = checkedItems[item.id] || false;
             
             return (
@@ -105,7 +114,7 @@ const ActivationPlan: React.FC = () => {
                     ? "text-muted-foreground line-through" 
                     : "text-foreground"
                 )}>
-                  {item.label}
+                  {item.text}
                 </span>
                 {isChecked && (
                   <Sparkles className="w-3 h-3 text-accent ml-auto" />
@@ -116,7 +125,7 @@ const ActivationPlan: React.FC = () => {
         </div>
 
         <p className="text-xs text-muted-foreground mt-4 italic">
-          Os checklists se somam conforme sua prescrição no programa.
+          Os checklists são personalizados pelo seu mentor.
         </p>
       </CardContent>
     </Card>

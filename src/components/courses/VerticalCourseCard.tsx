@@ -1,10 +1,11 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Course, 
   User, 
   Progress, 
+  Lesson,
   STORAGE_KEYS, 
   getFromStorage,
   getCourseStatus,
@@ -34,6 +35,7 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
   badgeType 
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Use prop if provided, otherwise check access
   const hasAccess = user ? checkCourseAccess(course.id, user.id) : false;
@@ -185,13 +187,30 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
     );
   }
 
+  // Handle click - challenges go directly to first lesson
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
+    if (course.courseType === 'desafio') {
+      const lessons = getFromStorage<Lesson[]>(STORAGE_KEYS.LESSONS, []);
+      const firstModule = course.modules[0];
+      
+      if (firstModule && firstModule.lessonIds.length > 0) {
+        const firstLessonId = firstModule.lessonIds[0];
+        navigate(`/course/${course.id}/lesson/${firstLessonId}`);
+        return;
+      }
+    }
+    navigate(`/course/${course.id}`);
+  };
+
   return (
-    <Link
-      to={`/course/${course.id}`}
-      className="group block flex-shrink-0"
+    <div
+      onClick={handleClick}
+      className="group block flex-shrink-0 cursor-pointer"
     >
       {cardContent}
-    </Link>
+    </div>
   );
 };
 

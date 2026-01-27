@@ -14,9 +14,14 @@ import {
   Home,
   ArrowDown
 } from 'lucide-react';
-import ProgressRoadmap from '@/components/hoff-circle/ProgressRoadmap';
-import SubcategorySection from '@/components/hoff-circle/SubcategorySection';
+
+// Components
+import IndividualPanel from '@/components/hoff-circle/IndividualPanel';
+import ActionPlan from '@/components/hoff-circle/ActionPlan';
+import ActivationPlan from '@/components/hoff-circle/ActivationPlan';
 import CommercialTrackingTable from '@/components/hoff-circle/CommercialTrackingTable';
+import MonthlyMetrics from '@/components/hoff-circle/MonthlyMetrics';
+import LibrarySection from '@/components/hoff-circle/LibrarySection';
 
 const HoffCirclePage: React.FC = () => {
   const navigate = useNavigate();
@@ -31,10 +36,10 @@ const HoffCirclePage: React.FC = () => {
   if (!hoffCircle) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="text-center">
-        <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-foreground mb-2">HOF CIRCLE</h1>
-        <p className="text-muted-foreground mb-4">Categoria não encontrada.</p>
+        <div className="text-center">
+          <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">HOF CIRCLE</h1>
+          <p className="text-muted-foreground mb-4">Categoria não encontrada.</p>
           <Button onClick={() => navigate('/')}>Voltar ao Início</Button>
         </div>
       </div>
@@ -46,32 +51,17 @@ const HoffCirclePage: React.FC = () => {
     course => course.categoryIds?.includes(hoffCircle.id) && course.status === 'published'
   );
 
-  // Group courses by subcategory
-  const subcategories = hoffCircle.subcategories || [];
-  const coursesBySubcategory = subcategories.map(sub => ({
-    subcategory: sub,
-    courses: categoryCourses
-      .filter(c => c.subcategoryId === sub.id)
-      .sort((a, b) => (a.sequenceConfig?.position || 0) - (b.sequenceConfig?.position || 0))
-  }));
-
-  // Find the subcategory that shows roadmap (trilhas)
-  const roadmapSubcategory = subcategories.find(s => s.showRoadmap);
-  const roadmapCourses = roadmapSubcategory 
-    ? categoryCourses.filter(c => c.subcategoryId === roadmapSubcategory.id)
-    : [];
-
   const pageConfig = hoffCircle.pageConfig;
 
   const scrollToContent = () => {
-    document.getElementById('roadmap-section')?.scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Banner */}
       <section 
-        className="relative h-[400px] md:h-[500px] w-full bg-cover bg-center"
+        className="relative h-[350px] md:h-[400px] w-full bg-cover bg-center"
         style={{
           backgroundImage: pageConfig?.bannerImageUrl 
             ? `url(${pageConfig.bannerImageUrl})`
@@ -99,7 +89,7 @@ const HoffCirclePage: React.FC = () => {
               <Target className="w-10 h-10 text-primary" />
             </div>
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
                 {pageConfig?.bannerTitle || hoffCircle.name}
               </h1>
             </div>
@@ -107,7 +97,7 @@ const HoffCirclePage: React.FC = () => {
 
           {/* Subtitle */}
           {pageConfig?.bannerSubtitle && (
-            <p className="text-xl text-muted-foreground max-w-2xl mb-8">
+            <p className="text-lg text-muted-foreground max-w-2xl mb-6">
               {pageConfig.bannerSubtitle}
             </p>
           )}
@@ -130,44 +120,43 @@ const HoffCirclePage: React.FC = () => {
       </section>
 
       {/* Main Content - Two Column Layout */}
-      <div className="container py-12" id="roadmap-section">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Side - Existing Content */}
-          <div className="space-y-8">
-            {/* Roadmap Section */}
-            {roadmapSubcategory && roadmapCourses.length > 0 && (
-              <ProgressRoadmap 
-                courses={roadmapCourses} 
-                categoryId={hoffCircle.id} 
-              />
-            )}
+      <div className="container py-8" id="main-content">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          
+          {/* LEFT SIDE - Individual Panel, Action Plan, Activation Plan */}
+          <div className="space-y-6">
+            {/* Individual Panel */}
+            <IndividualPanel />
 
-            {/* Subcategory Sections */}
-            {coursesBySubcategory.map(({ subcategory, courses }) => (
-              <SubcategorySection
-                key={subcategory.id}
-                subcategory={subcategory}
-                courses={courses}
-                showRoadmap={subcategory.showRoadmap}
-              />
-            ))}
+            {/* Action Plan (MAPA 10K) */}
+            <ActionPlan />
 
-            {/* About Section */}
-            {pageConfig?.aboutText && (
-              <section className="bg-card border border-border rounded-xl p-8">
-                <h2 className="text-2xl font-bold text-foreground mb-4">Sobre o Programa</h2>
-                <p className="text-muted-foreground whitespace-pre-line">
-                  {pageConfig.aboutText}
-                </p>
-              </section>
-            )}
+            {/* Activation Plan (Checklist) */}
+            <ActivationPlan />
           </div>
 
-          {/* Right Side - Commercial Tracking */}
-          <div className="lg:sticky lg:top-8 lg:self-start">
+          {/* RIGHT SIDE - Commercial Tracking & Metrics */}
+          <div className="space-y-6 lg:sticky lg:top-8 lg:self-start">
+            {/* Commercial Tracking Table */}
             <CommercialTrackingTable />
+
+            {/* Monthly Metrics */}
+            <MonthlyMetrics />
           </div>
         </div>
+
+        {/* LIBRARY SECTION - Full Width */}
+        <LibrarySection categoryId={hoffCircle.id} />
+
+        {/* About Section */}
+        {pageConfig?.aboutText && (
+          <section className="mt-8 bg-card border border-border rounded-xl p-8">
+            <h2 className="text-2xl font-bold text-foreground mb-4">Sobre o Programa</h2>
+            <p className="text-muted-foreground whitespace-pre-line">
+              {pageConfig.aboutText}
+            </p>
+          </section>
+        )}
       </div>
     </div>
   );

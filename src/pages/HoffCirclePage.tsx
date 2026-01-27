@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import ProgressRoadmap from '@/components/hoff-circle/ProgressRoadmap';
 import SubcategorySection from '@/components/hoff-circle/SubcategorySection';
+import CommercialTrackingTable from '@/components/hoff-circle/CommercialTrackingTable';
 
 const HoffCirclePage: React.FC = () => {
   const navigate = useNavigate();
@@ -128,35 +129,45 @@ const HoffCirclePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Main Content */}
+      {/* Main Content - Two Column Layout */}
       <div className="container py-12" id="roadmap-section">
-        {/* Roadmap Section */}
-        {roadmapSubcategory && roadmapCourses.length > 0 && (
-          <ProgressRoadmap 
-            courses={roadmapCourses} 
-            categoryId={hoffCircle.id} 
-          />
-        )}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Side - Existing Content */}
+          <div className="space-y-8">
+            {/* Roadmap Section */}
+            {roadmapSubcategory && roadmapCourses.length > 0 && (
+              <ProgressRoadmap 
+                courses={roadmapCourses} 
+                categoryId={hoffCircle.id} 
+              />
+            )}
 
-        {/* Subcategory Sections */}
-        {coursesBySubcategory.map(({ subcategory, courses }) => (
-          <SubcategorySection
-            key={subcategory.id}
-            subcategory={subcategory}
-            courses={courses}
-            showRoadmap={subcategory.showRoadmap}
-          />
-        ))}
+            {/* Subcategory Sections */}
+            {coursesBySubcategory.map(({ subcategory, courses }) => (
+              <SubcategorySection
+                key={subcategory.id}
+                subcategory={subcategory}
+                courses={courses}
+                showRoadmap={subcategory.showRoadmap}
+              />
+            ))}
 
-        {/* About Section */}
-        {pageConfig?.aboutText && (
-          <section className="mt-16 bg-card border border-border rounded-xl p-8">
-            <h2 className="text-2xl font-bold text-foreground mb-4">Sobre o Programa</h2>
-            <p className="text-muted-foreground whitespace-pre-line">
-              {pageConfig.aboutText}
-            </p>
-          </section>
-        )}
+            {/* About Section */}
+            {pageConfig?.aboutText && (
+              <section className="bg-card border border-border rounded-xl p-8">
+                <h2 className="text-2xl font-bold text-foreground mb-4">Sobre o Programa</h2>
+                <p className="text-muted-foreground whitespace-pre-line">
+                  {pageConfig.aboutText}
+                </p>
+              </section>
+            )}
+          </div>
+
+          {/* Right Side - Commercial Tracking */}
+          <div className="lg:sticky lg:top-8 lg:self-start">
+            <CommercialTrackingTable />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -81,6 +81,7 @@ import CourseFormModal from '@/components/admin/CourseFormModal';
 import CategoryFormModal from '@/components/admin/CategoryFormModal';
 import ImportExportUsers from '@/components/admin/ImportExportUsers';
 import CustomizationSettings from '@/components/admin/CustomizationSettings';
+import AdminCommercialTracking from '@/components/admin/AdminCommercialTracking';
 
 const AdminPage: React.FC = () => {
   const { user: currentUser, isAdmin } = useAuth();
@@ -509,6 +510,10 @@ const AdminPage: React.FC = () => {
             <TabsTrigger value="customization" className="data-[state=active]:bg-accent gap-2">
               <Palette className="w-4 h-4" />
               Personalização
+            </TabsTrigger>
+            <TabsTrigger value="commercial" className="data-[state=active]:bg-accent gap-2">
+              <TrendingUp className="w-4 h-4" />
+              Acompanhamento
             </TabsTrigger>
           </TabsList>
 
@@ -1105,6 +1110,11 @@ const AdminPage: React.FC = () => {
           {/* Customization Tab */}
           <TabsContent value="customization" className="space-y-6">
             <CustomizationSettings />
+          </TabsContent>
+
+          {/* Commercial Tracking Tab */}
+          <TabsContent value="commercial" className="space-y-6">
+            <AdminCommercialTracking />
           </TabsContent>
         </Tabs>
       </div>

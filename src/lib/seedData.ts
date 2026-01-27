@@ -11,6 +11,205 @@ import {
   setToStorage 
 } from './storage';
 
+// Types for Maps and Challenges (matching the admin components)
+interface MapVideo {
+  id: string;
+  title: string;
+  vimeoId: string;
+  duration: number;
+  order: number;
+}
+
+interface HofMap {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  videos: MapVideo[];
+  totalDuration: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface HofChallenge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  videos: MapVideo[];
+  totalDuration: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Initial Maps
+const initialMaps: HofMap[] = [
+  {
+    id: 'map-10k',
+    name: 'MAPA 10K - Jornada Completa',
+    description: 'Jornada de implementação para alcançar os primeiros R$ 10 mil por mês',
+    icon: '🗺️',
+    videos: [
+      { id: 'map10k-v1', title: 'Introdução ao Método HOF', vimeoId: '123456789', duration: 15, order: 0 },
+      { id: 'map10k-v2', title: 'Definindo seu Posicionamento', vimeoId: '123456790', duration: 25, order: 1 },
+      { id: 'map10k-v3', title: 'Criando seu Avatar Ideal', vimeoId: '123456791', duration: 20, order: 2 },
+      { id: 'map10k-v4', title: 'Gerando os Primeiros Leads', vimeoId: '123456792', duration: 30, order: 3 },
+      { id: 'map10k-v5', title: 'Setup do Business Manager', vimeoId: '123456793', duration: 40, order: 4 },
+      { id: 'map10k-v6', title: 'Criando sua Primeira Campanha', vimeoId: '123456794', duration: 25, order: 5 },
+      { id: 'map10k-v7', title: 'Analisando Resultados', vimeoId: '123456795', duration: 20, order: 6 },
+      { id: 'map10k-v8', title: 'Escalando para R$ 10K', vimeoId: '123456796', duration: 35, order: 7 },
+    ],
+    totalDuration: 210,
+    createdAt: '2026-01-01T10:00:00Z',
+    updatedAt: '2026-01-01T10:00:00Z',
+  },
+  {
+    id: 'map-30k',
+    name: 'MAPA 30K - Aceleração',
+    description: 'Para quem já fatura R$ 10k e quer chegar a R$ 30k por mês',
+    icon: '🚀',
+    videos: [
+      { id: 'map30k-v1', title: 'Revisão de Estratégia', vimeoId: '223456789', duration: 20, order: 0 },
+      { id: 'map30k-v2', title: 'Estruturando o Kanban', vimeoId: '223456790', duration: 25, order: 1 },
+      { id: 'map30k-v3', title: 'Otimizando Criativos', vimeoId: '223456791', duration: 30, order: 2 },
+      { id: 'map30k-v4', title: 'Follow-up Estruturado', vimeoId: '223456792', duration: 25, order: 3 },
+      { id: 'map30k-v5', title: 'Aumentando Ticket Médio', vimeoId: '223456793', duration: 30, order: 4 },
+      { id: 'map30k-v6', title: 'Contratando Primeiro SDR', vimeoId: '223456794', duration: 35, order: 5 },
+      { id: 'map30k-v7', title: 'Processos Documentados', vimeoId: '223456795', duration: 25, order: 6 },
+      { id: 'map30k-v8', title: 'Escala R$ 1.000/dia', vimeoId: '223456796', duration: 40, order: 7 },
+      { id: 'map30k-v9', title: 'Métricas e Dashboards', vimeoId: '223456797', duration: 20, order: 8 },
+      { id: 'map30k-v10', title: 'Consolidando R$ 30K', vimeoId: '223456798', duration: 30, order: 9 },
+    ],
+    totalDuration: 280,
+    createdAt: '2026-01-02T10:00:00Z',
+    updatedAt: '2026-01-02T10:00:00Z',
+  },
+  {
+    id: 'map-50k',
+    name: 'MAPA 50K - Escala',
+    description: 'Estratégias avançadas para escalar de R$ 30k para R$ 50k mensais',
+    icon: '💎',
+    videos: [
+      { id: 'map50k-v1', title: 'Diagnóstico Avançado', vimeoId: '323456789', duration: 25, order: 0 },
+      { id: 'map50k-v2', title: 'Múltiplas Ofertas', vimeoId: '323456790', duration: 35, order: 1 },
+      { id: 'map50k-v3', title: 'Equipe Comercial', vimeoId: '323456791', duration: 40, order: 2 },
+      { id: 'map50k-v4', title: 'Automações Avançadas', vimeoId: '323456792', duration: 30, order: 3 },
+      { id: 'map50k-v5', title: 'Upsell e Cross-sell', vimeoId: '323456793', duration: 25, order: 4 },
+      { id: 'map50k-v6', title: 'Retenção de Clientes', vimeoId: '323456794', duration: 30, order: 5 },
+    ],
+    totalDuration: 185,
+    createdAt: '2026-01-03T10:00:00Z',
+    updatedAt: '2026-01-03T10:00:00Z',
+  },
+  {
+    id: 'map-100k',
+    name: 'MAPA 100K - Alta Performance',
+    description: 'O caminho para faturar R$ 100k+ por mês de forma consistente',
+    icon: '🏆',
+    videos: [
+      { id: 'map100k-v1', title: 'Mentalidade Elite', vimeoId: '423456789', duration: 30, order: 0 },
+      { id: 'map100k-v2', title: 'Estrutura Organizacional', vimeoId: '423456790', duration: 45, order: 1 },
+      { id: 'map100k-v3', title: 'Gestão de Time', vimeoId: '423456791', duration: 40, order: 2 },
+      { id: 'map100k-v4', title: 'Múltiplos Canais', vimeoId: '423456792', duration: 35, order: 3 },
+      { id: 'map100k-v5', title: 'Previsibilidade', vimeoId: '423456793', duration: 30, order: 4 },
+    ],
+    totalDuration: 180,
+    createdAt: '2026-01-04T10:00:00Z',
+    updatedAt: '2026-01-04T10:00:00Z',
+  },
+];
+
+// Initial Challenges
+const initialChallenges: HofChallenge[] = [
+  {
+    id: 'challenge-1',
+    name: 'Desafio 1 - Primeiros 30 Leads',
+    description: 'Gere seus primeiros 30 leads qualificados em 7 dias',
+    icon: '🏆',
+    videos: [
+      { id: 'ch1-v1', title: 'Aula 77 - Posicionamento Magnético', vimeoId: '111111111', duration: 20, order: 0 },
+      { id: 'ch1-v2', title: 'Aula 73 - Criando Anúncio do Zero', vimeoId: '111111112', duration: 25, order: 1 },
+      { id: 'ch1-v3', title: 'Setup Business Manager Completo', vimeoId: '111111113', duration: 15, order: 2 },
+    ],
+    totalDuration: 60,
+    createdAt: '2026-01-05T10:00:00Z',
+    updatedAt: '2026-01-05T10:00:00Z',
+  },
+  {
+    id: 'challenge-2',
+    name: 'Desafio 2 - Setup Business Manager',
+    description: 'Configure seu gerenciador de anúncios profissionalmente',
+    icon: '⚡',
+    videos: [
+      { id: 'ch2-v1', title: 'Criando sua Conta Business', vimeoId: '222222221', duration: 15, order: 0 },
+      { id: 'ch2-v2', title: 'Configurando Pixel e Eventos', vimeoId: '222222222', duration: 20, order: 1 },
+      { id: 'ch2-v3', title: 'Estrutura de Campanhas', vimeoId: '222222223', duration: 25, order: 2 },
+      { id: 'ch2-v4', title: 'Públicos e Segmentação', vimeoId: '222222224', duration: 20, order: 3 },
+    ],
+    totalDuration: 80,
+    createdAt: '2026-01-06T10:00:00Z',
+    updatedAt: '2026-01-06T10:00:00Z',
+  },
+  {
+    id: 'challenge-3',
+    name: 'Desafio 3 - Estruturar Kanban',
+    description: 'Organize seu funil de vendas com Kanban profissional',
+    icon: '📋',
+    videos: [
+      { id: 'ch3-v1', title: 'Introdução ao Kanban de Vendas', vimeoId: '333333331', duration: 15, order: 0 },
+      { id: 'ch3-v2', title: 'Configurando as Etapas', vimeoId: '333333332', duration: 20, order: 1 },
+      { id: 'ch3-v3', title: 'Automatizando o Fluxo', vimeoId: '333333333', duration: 25, order: 2 },
+    ],
+    totalDuration: 60,
+    createdAt: '2026-01-07T10:00:00Z',
+    updatedAt: '2026-01-07T10:00:00Z',
+  },
+  {
+    id: 'challenge-4',
+    name: 'Desafio 4 - Primeira Campanha',
+    description: 'Lance sua primeira campanha de tráfego pago',
+    icon: '🎯',
+    videos: [
+      { id: 'ch4-v1', title: 'Definindo Objetivo', vimeoId: '444444441', duration: 15, order: 0 },
+      { id: 'ch4-v2', title: 'Criando os Criativos', vimeoId: '444444442', duration: 30, order: 1 },
+      { id: 'ch4-v3', title: 'Configurando a Campanha', vimeoId: '444444443', duration: 25, order: 2 },
+      { id: 'ch4-v4', title: 'Analisando os Resultados', vimeoId: '444444444', duration: 20, order: 3 },
+    ],
+    totalDuration: 90,
+    createdAt: '2026-01-08T10:00:00Z',
+    updatedAt: '2026-01-08T10:00:00Z',
+  },
+  {
+    id: 'challenge-5',
+    name: 'Desafio 5 - Escala R$ 1.000/dia',
+    description: 'Alcance investimento diário de R$ 1.000 em anúncios',
+    icon: '🚀',
+    videos: [
+      { id: 'ch5-v1', title: 'Preparando para Escalar', vimeoId: '555555551', duration: 20, order: 0 },
+      { id: 'ch5-v2', title: 'Multiplicando Criativos', vimeoId: '555555552', duration: 25, order: 1 },
+      { id: 'ch5-v3', title: 'Gestão de Budget', vimeoId: '555555553', duration: 20, order: 2 },
+    ],
+    totalDuration: 65,
+    createdAt: '2026-01-09T10:00:00Z',
+    updatedAt: '2026-01-09T10:00:00Z',
+  },
+  {
+    id: 'challenge-6',
+    name: 'Desafio 6 - Meta 10K',
+    description: 'Atinja R$ 10.000 de faturamento mensal',
+    icon: '💰',
+    videos: [
+      { id: 'ch6-v1', title: 'Revisão do Funil', vimeoId: '666666661', duration: 20, order: 0 },
+      { id: 'ch6-v2', title: 'Otimizando Conversão', vimeoId: '666666662', duration: 25, order: 1 },
+      { id: 'ch6-v3', title: 'Fechando os Gaps', vimeoId: '666666663', duration: 20, order: 2 },
+      { id: 'ch6-v4', title: 'Celebrando a Meta', vimeoId: '666666664', duration: 10, order: 3 },
+    ],
+    totalDuration: 75,
+    createdAt: '2026-01-10T10:00:00Z',
+    updatedAt: '2026-01-10T10:00:00Z',
+  },
+];
+
 // Initial users
 const initialUsers: User[] = [
   {
@@ -58,6 +257,17 @@ const initialUsers: User[] = [
     active: true,
     createdAt: '2026-01-15',
     unlockedCourses: ['course-1', 'course-2', 'course-3', 'course-5', 'course-6', 'hc-trilha-1', 'hc-trilha-2', 'hc-desafio-1', 'hc-desafio-2', 'hc-desafio-3', 'hc-material'],
+    // Prescription for demo user
+    status: 'intermediario',
+    prescribedMap: 'map-10k', // MAPA 10K prescribed
+    visibleChallenges: ['challenge-1', 'challenge-2', 'challenge-3'], // First 3 challenges visible
+    activationPlan: [
+      { id: 'demo-task-1', text: 'Criar conta Business Manager', done: true, fromTemplate: 'Demo Setup', order: 0 },
+      { id: 'demo-task-2', text: 'Conectar Instagram', done: true, fromTemplate: 'Demo Setup', order: 1 },
+      { id: 'demo-task-3', text: 'Rodar primeira campanha', done: false, fromTemplate: 'Demo Setup', order: 2 },
+      { id: 'demo-task-4', text: 'Investir R$ 500 em tráfego', done: false, fromTemplate: null, order: 3 },
+      { id: 'demo-task-5', text: 'Gerar 30 leads qualificados', done: false, fromTemplate: null, order: 4 },
+    ],
   },
 ];
 
@@ -1125,18 +1335,31 @@ export function seedData(): void {
     setToStorage(STORAGE_KEYS.COMMENTS, initialComments);
     setToStorage(STORAGE_KEYS.BANNERS, initialBanners);
     setToStorage(STORAGE_KEYS.CATEGORIES, initialCategories);
+    setToStorage(STORAGE_KEYS.HOF_MAPS, initialMaps);
+    setToStorage(STORAGE_KEYS.HOF_CHALLENGES, initialChallenges);
     console.log('✅ Dados iniciais carregados com sucesso!');
   }
   
   // Always ensure banners and categories exist
   const existingBanners = getFromStorage<Banner[]>(STORAGE_KEYS.BANNERS, []);
   const existingCategories = getFromStorage<Category[]>(STORAGE_KEYS.CATEGORIES, []);
+  const existingMaps = getFromStorage<HofMap[]>(STORAGE_KEYS.HOF_MAPS, []);
+  const existingChallenges = getFromStorage<HofChallenge[]>(STORAGE_KEYS.HOF_CHALLENGES, []);
   
   if (existingBanners.length === 0) {
     setToStorage(STORAGE_KEYS.BANNERS, initialBanners);
   }
   if (existingCategories.length === 0) {
     setToStorage(STORAGE_KEYS.CATEGORIES, initialCategories);
+  }
+  // Ensure maps and challenges exist
+  if (existingMaps.length === 0) {
+    setToStorage(STORAGE_KEYS.HOF_MAPS, initialMaps);
+    console.log('✅ Mapas de exemplo carregados!');
+  }
+  if (existingChallenges.length === 0) {
+    setToStorage(STORAGE_KEYS.HOF_CHALLENGES, initialChallenges);
+    console.log('✅ Desafios de exemplo carregados!');
   }
   
   // Always ensure HOF CIRCLE data is complete
@@ -1152,5 +1375,7 @@ export function resetData(): void {
   setToStorage(STORAGE_KEYS.COMMENTS, initialComments);
   setToStorage(STORAGE_KEYS.BANNERS, initialBanners);
   setToStorage(STORAGE_KEYS.CATEGORIES, initialCategories);
+  setToStorage(STORAGE_KEYS.HOF_MAPS, initialMaps);
+  setToStorage(STORAGE_KEYS.HOF_CHALLENGES, initialChallenges);
   console.log('🔄 Dados resetados com sucesso!');
 }

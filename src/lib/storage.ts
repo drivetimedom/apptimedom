@@ -18,8 +18,8 @@ export const STORAGE_KEYS = {
 // User status levels
 export type UserStatus = 'iniciante' | 'primeiras-vendas' | 'intermediario' | 'avancado' | 'elite';
 
-// User map prescriptions
-export type PrescribedMap = 'mapa-10k' | 'mapa-30k' | 'mapa-50k' | 'mapa-100k' | '';
+// User map prescriptions (now accepts any map ID or empty string)
+export type PrescribedMap = string;
 
 // Activation plan task (enhanced with template tracking)
 export interface ActivationTask {

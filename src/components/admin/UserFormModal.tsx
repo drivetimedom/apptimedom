@@ -105,6 +105,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     prescribedMap: 'none' as string, // Now stores map ID or 'none'
     visibleChallenges: [] as string[],
     activationPlan: [] as ActivationTask[],
+    assignedTemplateId: '' as string, // New: assigned activation plan template
   });
 
   // Separate courses by type
@@ -129,6 +130,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
         prescribedMap: user.prescribedMap || 'none',
         visibleChallenges: user.visibleChallenges || [],
         activationPlan: user.activationPlan || [],
+        assignedTemplateId: (user as any).assignedTemplateId || '',
       });
     } else {
       setFormData({
@@ -145,6 +147,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
         prescribedMap: 'none',
         visibleChallenges: [],
         activationPlan: [],
+        assignedTemplateId: '',
       });
     }
     setActiveTab('basic');
@@ -191,7 +194,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
       }
     }
 
-    const userData: Partial<User> & { password?: string } = {
+    const userData: Partial<User> & { password?: string; assignedTemplateId?: string } = {
       name: formData.name.trim(),
       email: formData.email.trim().toLowerCase(),
       type: formData.type,
@@ -204,7 +207,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
       prescribedMap: formData.prescribedMap === 'none' ? '' : formData.prescribedMap as any,
       visibleChallenges: formData.visibleChallenges,
       activationPlan: formData.activationPlan,
-    };
+      assignedTemplateId: formData.assignedTemplateId || undefined,
+    } as any;
 
     // Include password only for new users or if changed
     if (!user && formData.password) {
@@ -639,13 +643,66 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   <div>
                     <Label className="text-base font-semibold">📋 Plano de Ativação</Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Aplique templates pré-prontos e/ou adicione tarefas individuais
+                      Selecione o plano principal ou adicione tarefas individuais
                     </p>
                   </div>
 
-                  {/* Apply Template */}
+                  {/* Assigned Activation Plan Template */}
+                  <div className="space-y-2">
+                    <Label>Plano de Ativação Atribuído:</Label>
+                    <Select 
+                      value={formData.assignedTemplateId || 'none'} 
+                      onValueChange={(value) => {
+                        setFormData({ ...formData, assignedTemplateId: value === 'none' ? '' : value });
+                        // Auto-apply the template if selected
+                        if (value !== 'none') {
+                          const template = templates.find(t => t.id === value);
+                          if (template) {
+                            const newTasks: ActivationTask[] = template.tasks.map((taskText, index) => ({
+                              id: generateId(),
+                              text: taskText,
+                              done: false,
+                              fromTemplate: template.name,
+                              order: index,
+                            }));
+                            setFormData(prev => ({
+                              ...prev,
+                              assignedTemplateId: value,
+                              activationPlan: newTasks, // Replace with template tasks
+                            }));
+                            toast({ title: `Plano "${template.name}" atribuído! (${newTasks.length} tarefas)` });
+                          }
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="bg-input border-border">
+                        <SelectValue placeholder="Selecione um plano de ativação..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover border-border">
+                        <SelectItem value="none">Nenhum plano atribuído</SelectItem>
+                        {templates.map(template => (
+                          <SelectItem key={template.id} value={template.id}>
+                            📋 {template.name} ({template.tasks.length} tarefas)
+                            {template.category && ` • ${template.category}`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {templates.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Nenhum template cadastrado. Crie templates na aba "Planos de Ativação" do painel admin.
+                      </p>
+                    )}
+                    {formData.assignedTemplateId && (
+                      <p className="text-xs text-accent">
+                        ✅ Plano atribuído: {templates.find(t => t.id === formData.assignedTemplateId)?.name}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Apply Additional Template */}
                   <div className="p-4 bg-muted/20 rounded-lg border border-border space-y-3">
-                    <Label className="text-sm">Aplicar Template Pré-Pronto:</Label>
+                    <Label className="text-sm">Adicionar Tarefas de Outro Template:</Label>
                     <div className="flex gap-2">
                       <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
                         <SelectTrigger className="flex-1 bg-input border-border">
@@ -667,11 +724,11 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                         className="gap-2"
                       >
                         <FileDown className="w-4 h-4" />
-                        Aplicar
+                        Adicionar
                       </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      ⚠️ Ao aplicar, as tarefas do template serão ADICIONADAS às tarefas existentes
+                      ⚠️ Ao adicionar, as tarefas serão SOMADAS às tarefas existentes
                     </p>
                   </div>
 

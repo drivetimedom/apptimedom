@@ -83,7 +83,9 @@ import ImportExportUsers from '@/components/admin/ImportExportUsers';
 import CustomizationSettings from '@/components/admin/CustomizationSettings';
 import AdminCommercialTracking from '@/components/admin/AdminCommercialTracking';
 import ActivationPlanTemplates from '@/components/admin/ActivationPlanTemplates';
-import { ClipboardList } from 'lucide-react';
+import AdminMapsManager from '@/components/admin/AdminMapsManager';
+import AdminChallengesManager from '@/components/admin/AdminChallengesManager';
+import { ClipboardList, Map, Trophy } from 'lucide-react';
 
 const AdminPage: React.FC = () => {
   const { user: currentUser, isAdmin } = useAuth();
@@ -508,6 +510,14 @@ const AdminPage: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger value="categories" className="data-[state=active]:bg-accent">
               Categorias
+            </TabsTrigger>
+            <TabsTrigger value="maps" className="data-[state=active]:bg-accent gap-2">
+              <Map className="w-4 h-4" />
+              Mapas
+            </TabsTrigger>
+            <TabsTrigger value="challenges" className="data-[state=active]:bg-accent gap-2">
+              <Trophy className="w-4 h-4" />
+              Desafios
             </TabsTrigger>
             <TabsTrigger value="activation-templates" className="data-[state=active]:bg-accent gap-2">
               <ClipboardList className="w-4 h-4" />
@@ -1111,6 +1121,16 @@ const AdminPage: React.FC = () => {
                 </TableBody>
               </Table>
             </div>
+          </TabsContent>
+
+          {/* Maps Tab */}
+          <TabsContent value="maps" className="space-y-6">
+            <AdminMapsManager />
+          </TabsContent>
+
+          {/* Challenges Tab */}
+          <TabsContent value="challenges" className="space-y-6">
+            <AdminChallengesManager />
           </TabsContent>
 
           {/* Activation Plan Templates Tab */}

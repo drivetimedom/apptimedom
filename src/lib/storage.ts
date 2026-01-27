@@ -11,6 +11,8 @@ export const STORAGE_KEYS = {
   SWIPEFILE_PROCESSES: 'swipefile-processes',
   SWIPEFILE_CATEGORIES: 'swipefile-categories',
   ACTIVATION_TEMPLATES: 'activation-plan-templates',
+  HOF_MAPS: 'hof-circle-maps',
+  HOF_CHALLENGES: 'hof-circle-challenges',
 } as const;
 
 // User status levels

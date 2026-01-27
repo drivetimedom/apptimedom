@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Course, getFromStorage, STORAGE_KEYS, UserStatus, PrescribedMap, ActivationTask, generateId } from '@/lib/storage';
+import { User, Course, getFromStorage, setToStorage, STORAGE_KEYS, UserStatus, PrescribedMap, ActivationTask, ActivationPlanTemplate, generateId } from '@/lib/storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,9 +24,19 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Trash2, Target, BookOpen, Settings } from 'lucide-react';
+import { Plus, Trash2, Target, BookOpen, Settings, FileDown } from 'lucide-react';
 
 interface UserFormModalProps {
   isOpen: boolean;
@@ -70,7 +80,11 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 }) => {
   const { toast } = useToast();
   const [courses] = useState(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []));
+  const [templates] = useState(() => getFromStorage<ActivationPlanTemplate[]>(STORAGE_KEYS.ACTIVATION_TEMPLATES, []));
   const [activeTab, setActiveTab] = useState('basic');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('none');
+  const [customTaskInput, setCustomTaskInput] = useState('');
+  const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -130,6 +144,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
       });
     }
     setActiveTab('basic');
+    setSelectedTemplateId('none');
+    setCustomTaskInput('');
   }, [user, isOpen]);
 
   const handleSubmit = () => {
@@ -255,6 +271,64 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     }));
   };
 
+  const applyTemplate = () => {
+    if (selectedTemplateId === 'none') {
+      toast({ title: 'Selecione um template', variant: 'destructive' });
+      return;
+    }
+
+    const template = templates.find(t => t.id === selectedTemplateId);
+    if (!template) return;
+
+    const newTasks: ActivationTask[] = template.tasks.map((taskText, index) => ({
+      id: generateId(),
+      text: taskText,
+      done: false,
+      fromTemplate: template.name,
+      order: formData.activationPlan.length + index,
+    }));
+
+    setFormData(prev => ({
+      ...prev,
+      activationPlan: [...prev.activationPlan, ...newTasks],
+    }));
+
+    setSelectedTemplateId('none');
+    toast({ title: `Template "${template.name}" aplicado! (${newTasks.length} tarefas)` });
+  };
+
+  const addCustomTask = () => {
+    if (!customTaskInput.trim()) {
+      toast({ title: 'Digite o texto da tarefa', variant: 'destructive' });
+      return;
+    }
+
+    const newTask: ActivationTask = {
+      id: generateId(),
+      text: customTaskInput.trim(),
+      done: false,
+      fromTemplate: null,
+      order: formData.activationPlan.length,
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      activationPlan: [...prev.activationPlan, newTask],
+    }));
+
+    setCustomTaskInput('');
+    toast({ title: 'Tarefa adicionada!' });
+  };
+
+  const clearAllTasks = () => {
+    setFormData(prev => ({
+      ...prev,
+      activationPlan: [],
+    }));
+    setClearConfirmOpen(false);
+    toast({ title: 'Plano de Ativação limpo' });
+  };
+
   const renderCourseCheckboxes = (courseList: Course[], title: string, icon: string) => {
     if (courseList.length === 0) return null;
     
@@ -290,6 +364,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-card border-border max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
@@ -537,46 +612,123 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   </div>
                 </div>
 
-                {/* Custom Activation Plan */}
-                <div className="space-y-3">
+                {/* Activation Plan Section */}
+                <div className="space-y-4 border-t border-border pt-6">
                   <div>
-                    <Label>Plano de Ativação (Checklist)</Label>
+                    <Label className="text-base font-semibold">📋 Plano de Ativação</Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Adicione tarefas personalizadas para este aluno
+                      Aplique templates pré-prontos e/ou adicione tarefas individuais
                     </p>
                   </div>
-                  
+
+                  {/* Apply Template */}
+                  <div className="p-4 bg-muted/20 rounded-lg border border-border space-y-3">
+                    <Label className="text-sm">Aplicar Template Pré-Pronto:</Label>
+                    <div className="flex gap-2">
+                      <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                        <SelectTrigger className="flex-1 bg-input border-border">
+                          <SelectValue placeholder="Selecione um template..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-popover border-border">
+                          <SelectItem value="none">Nenhum</SelectItem>
+                          {templates.map(template => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name} ({template.tasks.length} tarefas)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        onClick={applyTemplate}
+                        disabled={selectedTemplateId === 'none'}
+                        className="gap-2"
+                      >
+                        <FileDown className="w-4 h-4" />
+                        Aplicar
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      ⚠️ Ao aplicar, as tarefas do template serão ADICIONADAS às tarefas existentes
+                    </p>
+                  </div>
+
+                  {/* Current Tasks */}
                   <div className="space-y-2">
-                    {formData.activationPlan.map((task, index) => (
-                      <div key={task.id} className="flex items-center gap-3 bg-muted/30 p-3 rounded-lg">
-                        <Input
-                          value={task.text}
-                          onChange={(e) => updateActivationTask(index, e.target.value)}
-                          className="flex-1 bg-background border-border"
-                          placeholder="Ex: Criar conta Business Manager"
-                        />
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Tarefas do Aluno ({formData.activationPlan.length})</Label>
+                      {formData.activationPlan.length > 0 && (
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon"
-                          onClick={() => removeActivationTask(index)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          size="sm"
+                          onClick={() => setClearConfirmOpen(true)}
+                          className="text-destructive hover:text-destructive text-xs"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-3 h-3 mr-1" />
+                          Limpar Todas
                         </Button>
+                      )}
+                    </div>
+                    
+                    {formData.activationPlan.length === 0 ? (
+                      <p className="text-sm text-muted-foreground italic p-4 bg-muted/10 rounded-lg text-center">
+                        Nenhuma tarefa adicionada ainda
+                      </p>
+                    ) : (
+                      <div className="space-y-2 max-h-64 overflow-y-auto">
+                        {formData.activationPlan.map((task, index) => (
+                          <div key={task.id} className="flex items-center gap-3 bg-muted/30 p-3 rounded-lg group">
+                            <div className="flex-1">
+                              <Input
+                                value={task.text}
+                                onChange={(e) => updateActivationTask(index, e.target.value)}
+                                className="bg-background border-border"
+                                placeholder="Descrição da tarefa"
+                              />
+                              {task.fromTemplate && (
+                                <span className="text-xs text-accent mt-1 block">
+                                  Do template: {task.fromTemplate}
+                                </span>
+                              )}
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeActivationTask(index)}
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addActivationTask}
-                    className="gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Adicionar Tarefa
-                  </Button>
+
+                  {/* Add Individual Task */}
+                  <div className="space-y-2 p-4 bg-muted/10 rounded-lg border border-dashed border-border">
+                    <Label className="text-sm">Adicionar Tarefa Individual:</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={customTaskInput}
+                        onChange={(e) => setCustomTaskInput(e.target.value)}
+                        placeholder="Digite a tarefa customizada..."
+                        className="flex-1 bg-input border-border"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addCustomTask();
+                          }
+                        }}
+                      />
+                      <Button type="button" onClick={addCustomTask} className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Adicionar
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </TabsContent>
@@ -593,6 +745,28 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Clear All Tasks Confirmation */}
+    <AlertDialog open={clearConfirmOpen} onOpenChange={setClearConfirmOpen}>
+      <AlertDialogContent className="bg-card border-border">
+        <AlertDialogHeader>
+          <AlertDialogTitle>Limpar Plano de Ativação?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Tem certeza que deseja remover TODAS as tarefas do Plano de Ativação? Esta ação não pode ser desfeita.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={clearAllTasks}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Limpar Todas
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   );
 };
 

@@ -10,6 +10,7 @@ export const STORAGE_KEYS = {
   CATEGORIES: 'members-categories',
   SWIPEFILE_PROCESSES: 'swipefile-processes',
   SWIPEFILE_CATEGORIES: 'swipefile-categories',
+  ACTIVATION_TEMPLATES: 'activation-plan-templates',
 } as const;
 
 // User status levels
@@ -18,11 +19,26 @@ export type UserStatus = 'iniciante' | 'primeiras-vendas' | 'intermediario' | 'a
 // User map prescriptions
 export type PrescribedMap = 'mapa-10k' | 'mapa-30k' | 'mapa-50k' | 'mapa-100k' | '';
 
-// Activation plan task
+// Activation plan task (enhanced with template tracking)
 export interface ActivationTask {
   id: string;
   text: string;
   done: boolean;
+  fromTemplate?: string | null; // Template name or null for individual tasks
+  order?: number;
+}
+
+// Activation Plan Template
+export type TemplateCategory = 'setup' | 'trafego' | 'vendas' | 'operacional' | 'financeiro' | 'geral';
+
+export interface ActivationPlanTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  category?: TemplateCategory;
+  tasks: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Types

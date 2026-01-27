@@ -44,8 +44,8 @@ const statusOptions: { value: UserStatus; label: string; icon: string }[] = [
   { value: 'elite', label: 'Elite (R$50k+/mês)', icon: '🏆' },
 ];
 
-const mapOptions: { value: PrescribedMap; label: string }[] = [
-  { value: '', label: 'Nenhum mapa prescrito' },
+const mapOptions: { value: PrescribedMap | 'none'; label: string }[] = [
+  { value: 'none', label: 'Nenhum mapa prescrito' },
   { value: 'mapa-10k', label: '🗺️ MAPA 10K' },
   { value: 'mapa-30k', label: '🗺️ MAPA 30K' },
   { value: 'mapa-50k', label: '🗺️ MAPA 50K' },
@@ -84,7 +84,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     allCoursesAccess: false,
     // Prescription fields
     status: 'iniciante' as UserStatus,
-    prescribedMap: '' as PrescribedMap,
+    prescribedMap: 'none' as PrescribedMap | 'none',
     visibleChallenges: [] as string[],
     activationPlan: [] as ActivationTask[],
   });
@@ -108,7 +108,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
         unlockedCourses: user.unlockedCourses || [],
         allCoursesAccess: !user.unlockedCourses || user.unlockedCourses.length === 0,
         status: user.status || 'iniciante',
-        prescribedMap: user.prescribedMap || '',
+        prescribedMap: user.prescribedMap || 'none',
         visibleChallenges: user.visibleChallenges || [],
         activationPlan: user.activationPlan || [],
       });
@@ -124,7 +124,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
         unlockedCourses: [],
         allCoursesAccess: false,
         status: 'iniciante',
-        prescribedMap: '',
+        prescribedMap: 'none',
         visibleChallenges: [],
         activationPlan: [],
       });
@@ -180,7 +180,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
       unlockedCourses: formData.allCoursesAccess ? [] : formData.unlockedCourses,
       // Prescription fields
       status: formData.status,
-      prescribedMap: formData.prescribedMap,
+      prescribedMap: formData.prescribedMap === 'none' ? '' : formData.prescribedMap as PrescribedMap,
       visibleChallenges: formData.visibleChallenges,
       activationPlan: formData.activationPlan,
     };
@@ -498,7 +498,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   <Label>Mapa Prescrito</Label>
                   <Select
                     value={formData.prescribedMap}
-                    onValueChange={(value) => setFormData({ ...formData, prescribedMap: value as PrescribedMap })}
+                    onValueChange={(value) => setFormData({ ...formData, prescribedMap: value as PrescribedMap | 'none' })}
                   >
                     <SelectTrigger className="bg-input border-border">
                       <SelectValue placeholder="Selecione um mapa" />

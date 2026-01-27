@@ -38,6 +38,25 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Trash2, Target, BookOpen, Settings, FileDown } from 'lucide-react';
 
+// Types for Maps and Challenges
+interface HofMap {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  videos: any[];
+  totalDuration: number;
+}
+
+interface HofChallenge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  videos: any[];
+  totalDuration: number;
+}
+
 interface UserFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -54,23 +73,6 @@ const statusOptions: { value: UserStatus; label: string; icon: string }[] = [
   { value: 'elite', label: 'Elite (R$50k+/mês)', icon: '🏆' },
 ];
 
-const mapOptions: { value: PrescribedMap | 'none'; label: string }[] = [
-  { value: 'none', label: 'Nenhum mapa prescrito' },
-  { value: 'mapa-10k', label: '🗺️ MAPA 10K' },
-  { value: 'mapa-30k', label: '🗺️ MAPA 30K' },
-  { value: 'mapa-50k', label: '🗺️ MAPA 50K' },
-  { value: 'mapa-100k', label: '🗺️ MAPA 100K' },
-];
-
-const defaultChallenges = [
-  { id: 'desafio-1', title: 'Desafio 1 - Primeiros 30 Leads' },
-  { id: 'desafio-2', title: 'Desafio 2 - Setup Business Manager' },
-  { id: 'desafio-3', title: 'Desafio 3 - Estruturar Kanban' },
-  { id: 'desafio-4', title: 'Desafio 4 - Primeira Campanha' },
-  { id: 'desafio-5', title: 'Desafio 5 - Escala R$ 1.000/dia' },
-  { id: 'desafio-6', title: 'Desafio 6 - Meta 10K' },
-];
-
 const UserFormModal: React.FC<UserFormModalProps> = ({
   isOpen,
   onClose,
@@ -81,6 +83,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
   const { toast } = useToast();
   const [courses] = useState(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []));
   const [templates] = useState(() => getFromStorage<ActivationPlanTemplate[]>(STORAGE_KEYS.ACTIVATION_TEMPLATES, []));
+  const [hofMaps] = useState(() => getFromStorage<HofMap[]>(STORAGE_KEYS.HOF_MAPS, []));
+  const [hofChallenges] = useState(() => getFromStorage<HofChallenge[]>(STORAGE_KEYS.HOF_CHALLENGES, []));
   const [activeTab, setActiveTab] = useState('basic');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('none');
   const [customTaskInput, setCustomTaskInput] = useState('');
@@ -98,7 +102,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     allCoursesAccess: false,
     // Prescription fields
     status: 'iniciante' as UserStatus,
-    prescribedMap: 'none' as PrescribedMap | 'none',
+    prescribedMap: 'none' as string, // Now stores map ID or 'none'
     visibleChallenges: [] as string[],
     activationPlan: [] as ActivationTask[],
   });
@@ -196,7 +200,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
       unlockedCourses: formData.allCoursesAccess ? [] : formData.unlockedCourses,
       // Prescription fields
       status: formData.status,
-      prescribedMap: formData.prescribedMap === 'none' ? '' : formData.prescribedMap as PrescribedMap,
+      // Store map ID directly (or empty string if 'none')
+      prescribedMap: formData.prescribedMap === 'none' ? '' : formData.prescribedMap as any,
       visibleChallenges: formData.visibleChallenges,
       activationPlan: formData.activationPlan,
     };
@@ -570,46 +575,63 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
 
                 {/* Prescribed Map */}
                 <div className="space-y-2">
-                  <Label>Mapa Prescrito</Label>
+                  <Label>🗺️ Mapa Prescrito</Label>
                   <Select
                     value={formData.prescribedMap}
-                    onValueChange={(value) => setFormData({ ...formData, prescribedMap: value as PrescribedMap | 'none' })}
+                    onValueChange={(value) => setFormData({ ...formData, prescribedMap: value as string })}
                   >
                     <SelectTrigger className="bg-input border-border">
                       <SelectValue placeholder="Selecione um mapa" />
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border">
-                      {mapOptions.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
+                      <SelectItem value="none">Nenhum mapa prescrito</SelectItem>
+                      {hofMaps.map(map => (
+                        <SelectItem key={map.id} value={map.id}>
+                          {map.icon} {map.name} ({map.videos.length} vídeos)
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  {hofMaps.length === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      Nenhum mapa cadastrado. Crie mapas na aba "Mapas" do painel admin.
+                    </p>
+                  )}
                 </div>
 
                 {/* Visible Challenges */}
                 <div className="space-y-3">
                   <div>
-                    <Label>Desafios Visíveis no Plano de Ação</Label>
+                    <Label>🏆 Desafios Visíveis no Plano de Ação</Label>
                     <p className="text-xs text-muted-foreground mt-1">
                       Selecione quais desafios aparecerão no "Plano de Ação" do aluno
                     </p>
                   </div>
-                  <div className="space-y-2">
-                    {defaultChallenges.map(challenge => (
-                      <label 
-                        key={challenge.id} 
-                        className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
-                      >
-                        <Checkbox
-                          checked={formData.visibleChallenges.includes(challenge.id)}
-                          onCheckedChange={() => toggleVisibleChallenge(challenge.id)}
-                        />
-                        <span className="text-foreground">{challenge.title}</span>
-                      </label>
-                    ))}
-                  </div>
+                  {hofChallenges.length === 0 ? (
+                    <p className="text-sm text-muted-foreground italic p-4 bg-muted/10 rounded-lg text-center">
+                      Nenhum desafio cadastrado. Crie desafios na aba "Desafios" do painel admin.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {hofChallenges.map(challenge => (
+                        <label 
+                          key={challenge.id} 
+                          className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                        >
+                          <Checkbox
+                            checked={formData.visibleChallenges.includes(challenge.id)}
+                            onCheckedChange={() => toggleVisibleChallenge(challenge.id)}
+                          />
+                          <span className="text-foreground flex items-center gap-2">
+                            {challenge.icon} {challenge.name}
+                            <span className="text-xs text-muted-foreground">
+                              ({challenge.videos.length} vídeos)
+                            </span>
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Activation Plan Section */}

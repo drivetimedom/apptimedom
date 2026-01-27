@@ -82,6 +82,8 @@ import CategoryFormModal from '@/components/admin/CategoryFormModal';
 import ImportExportUsers from '@/components/admin/ImportExportUsers';
 import CustomizationSettings from '@/components/admin/CustomizationSettings';
 import AdminCommercialTracking from '@/components/admin/AdminCommercialTracking';
+import ActivationPlanTemplates from '@/components/admin/ActivationPlanTemplates';
+import { ClipboardList } from 'lucide-react';
 
 const AdminPage: React.FC = () => {
   const { user: currentUser, isAdmin } = useAuth();
@@ -506,6 +508,10 @@ const AdminPage: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger value="categories" className="data-[state=active]:bg-accent">
               Categorias
+            </TabsTrigger>
+            <TabsTrigger value="activation-templates" className="data-[state=active]:bg-accent gap-2">
+              <ClipboardList className="w-4 h-4" />
+              Planos de Ativação
             </TabsTrigger>
             <TabsTrigger value="customization" className="data-[state=active]:bg-accent gap-2">
               <Palette className="w-4 h-4" />
@@ -1105,6 +1111,11 @@ const AdminPage: React.FC = () => {
                 </TableBody>
               </Table>
             </div>
+          </TabsContent>
+
+          {/* Activation Plan Templates Tab */}
+          <TabsContent value="activation-templates" className="space-y-6">
+            <ActivationPlanTemplates />
           </TabsContent>
 
           {/* Customization Tab */}

@@ -70,7 +70,7 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
 
   const cardContent = (
     <div className={cn(
-      "relative w-[200px] md:w-[220px] lg:w-[240px] overflow-hidden rounded-xl border border-border bg-card transition-all duration-300",
+      "relative w-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-300",
       !isLocked && "hover:border-border-hover hover:-translate-y-2 hover:shadow-elegant",
       isLocked && "opacity-75"
     )}>

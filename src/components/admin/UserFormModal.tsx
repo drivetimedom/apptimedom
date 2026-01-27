@@ -375,15 +375,15 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
+      <DialogContent className="bg-card border-border max-w-3xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="text-foreground">
             {user ? 'Editar Usuário' : 'Novo Usuário'}
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+          <TabsList className="grid w-full grid-cols-3 mb-4 flex-shrink-0">
             <TabsTrigger value="basic" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               Informações
@@ -398,7 +398,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
             </TabsTrigger>
           </TabsList>
 
-          <ScrollArea className="flex-1 pr-4">
+          <div className="flex-1 overflow-y-auto pr-2" style={{ maxHeight: 'calc(85vh - 200px)' }}>
             {/* TAB 1: Basic Info */}
             <TabsContent value="basic" className="space-y-6 mt-0">
               {/* Basic Info */}
@@ -811,7 +811,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                 </div>
               </div>
             </TabsContent>
-          </ScrollArea>
+          </div>
         </Tabs>
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border">

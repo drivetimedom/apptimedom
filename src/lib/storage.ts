@@ -12,6 +12,19 @@ export const STORAGE_KEYS = {
   SWIPEFILE_CATEGORIES: 'swipefile-categories',
 } as const;
 
+// User status levels
+export type UserStatus = 'iniciante' | 'primeiras-vendas' | 'intermediario' | 'avancado' | 'elite';
+
+// User map prescriptions
+export type PrescribedMap = 'mapa-10k' | 'mapa-30k' | 'mapa-50k' | 'mapa-100k' | '';
+
+// Activation plan task
+export interface ActivationTask {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
 // Types
 export interface User {
   id: string;
@@ -26,6 +39,11 @@ export interface User {
   createdAt: string;
   lastLogin?: string;
   unlockedCourses?: string[];
+  // HOF Circle prescription fields
+  status?: UserStatus;
+  prescribedMap?: PrescribedMap;
+  visibleChallenges?: string[];
+  activationPlan?: ActivationTask[];
 }
 
 export interface Module {
@@ -54,6 +72,9 @@ export interface RoadmapConfig {
   roadmapLabel: string;
 }
 
+// Course type
+export type CourseType = 'trilha' | 'desafio' | 'material';
+
 export interface Course {
   id: string;
   title: string;
@@ -73,6 +94,8 @@ export interface Course {
   isNew?: boolean;
   sequenceConfig?: SequenceConfig;
   roadmapConfig?: RoadmapConfig;
+  // Course type for direct navigation
+  courseType?: CourseType;
 }
 
 export interface Banner {

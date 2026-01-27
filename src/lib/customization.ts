@@ -61,7 +61,7 @@ export const defaultCustomization: Customization = {
     welcomeMessage: 'Bem-vindo!',
     loginTitle: 'Faça seu login',
     loginSubtitle: 'Acesse sua conta para continuar',
-    footerText: '© 2026 Todos os direitos reservados',
+    footerText: 'Copyright © 2026 - Time Dom. Todos os direitos reservados.',
   },
   courseCovers: {},
   theme: 'dark',

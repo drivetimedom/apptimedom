@@ -3,9 +3,11 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from './Header';
 import { Loader2 } from 'lucide-react';
+import { getCustomization } from '@/lib/customization';
 
 const MainLayout: React.FC = () => {
   const { user, isLoading } = useAuth();
+  const customization = getCustomization();
 
   if (isLoading) {
     return (
@@ -20,11 +22,18 @@ const MainLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main>
+      <main className="flex-1">
         <Outlet />
       </main>
+      <footer className="py-6 border-t border-border">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            {customization.texts.footerText}
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };

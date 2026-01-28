@@ -25,6 +25,7 @@ interface VerticalCourseCardProps {
   progress?: Progress;
   isLocked?: boolean;
   badgeType?: string;
+  fixedWidth?: boolean; // Use fixed width for carousels, false for grids
 }
 
 const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({ 
@@ -32,7 +33,8 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
   instructor, 
   progress,
   isLocked: isLockedProp,
-  badgeType 
+  badgeType,
+  fixedWidth = true // Default to fixed width for backward compatibility
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -68,9 +70,15 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
     return 'bg-muted text-muted-foreground';
   };
 
+  // Card width classes - fixed for carousels, full for grids
+  const widthClasses = fixedWidth 
+    ? "w-[160px] sm:w-[180px] md:w-[200px] lg:w-[220px]" 
+    : "w-full";
+
   const cardContent = (
     <div className={cn(
-      "relative w-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-300",
+      "relative overflow-hidden rounded-xl border border-border bg-card transition-all duration-300",
+      widthClasses,
       !isLocked && "hover:border-border-hover hover:-translate-y-2 hover:shadow-elegant",
       isLocked && "opacity-75"
     )}>

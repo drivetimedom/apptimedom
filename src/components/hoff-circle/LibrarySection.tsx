@@ -149,10 +149,11 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
                 <div 
                   key={course.id} 
                   onClick={() => handleCourseClick(course)}
-                  className="cursor-pointer min-w-0"
+                  className="cursor-pointer"
                 >
                   <VerticalCourseCard 
                     course={course}
+                    fixedWidth={false}
                     badgeType={course.sequenceConfig?.isPillar ? `T${course.sequenceConfig.position}` : undefined}
                   />
                 </div>

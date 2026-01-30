@@ -1,12 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
-import { 
-  getFromStorage, 
-  setToStorage,
-  STORAGE_KEYS, 
-  generateId,
-  SwipeFileType,
-  SwipeFileCategory
-} from '@/lib/storage';
+import React, { useMemo, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,7 +8,8 @@ import {
   Filter, 
   Grid3X3, 
   List, 
-  FileText
+  FileText,
+  Loader2
 } from 'lucide-react';
 import {
   Select,
@@ -29,16 +22,17 @@ import { useToast } from '@/hooks/use-toast';
 import SwipeTable from '@/components/swipefile/SwipeTable';
 import SwipeProcessModal, { SwipeProcess } from '@/components/swipefile/SwipeProcessModal';
 import SwipeDeleteConfirmation from '@/components/swipefile/SwipeDeleteConfirmation';
-
-const defaultCategories = [
-  'Marketing',
-  'Vendas',
-  'Copywriting',
-  'Design',
-  'Automação',
-  'Estratégia',
-  'Outros'
-];
+import {
+  useSwipeFileMaterials,
+  useSwipeFileCategories,
+  useSwipeFileTypes,
+  useSwipeFileFavorites,
+  useCreateSwipeFileMaterial,
+  useUpdateSwipeFileMaterial,
+  useDeleteSwipeFileMaterial,
+  useToggleSwipeFileFavorite,
+  SwipeFileMaterial,
+} from '@/hooks/useSwipeFile';
 
 const SwipeFilePage: React.FC = () => {
   const { toast } = useToast();
@@ -53,123 +47,42 @@ const SwipeFilePage: React.FC = () => {
   const [isCreateMode, setIsCreateMode] = useState(false);
   const [deleteProcess, setDeleteProcess] = useState<SwipeProcess | null>(null);
 
-  // Favorites (user-specific, stored locally)
-  const [favorites, setFavorites] = useState<string[]>(() => 
-    getFromStorage<string[]>('swipefile-favorites', [])
-  );
+  // Fetch data from Supabase
+  const { data: materials = [], isLoading: materialsLoading } = useSwipeFileMaterials();
+  const { data: categoriesData = [] } = useSwipeFileCategories();
+  const { data: typesData = [] } = useSwipeFileTypes();
+  const { data: favorites = [] } = useSwipeFileFavorites();
 
-  // Types and Categories from admin
-  const [types, setTypes] = useState<SwipeFileType[]>(() =>
-    getFromStorage<SwipeFileType[]>(STORAGE_KEYS.SWIPEFILE_TYPES, [])
-  );
-  const [categoriesFromAdmin, setCategoriesFromAdmin] = useState<SwipeFileCategory[]>(() =>
-    getFromStorage<SwipeFileCategory[]>(STORAGE_KEYS.SWIPEFILE_CATEGORIES, [])
-  );
+  // Mutations
+  const createMaterial = useCreateSwipeFileMaterial();
+  const updateMaterial = useUpdateSwipeFileMaterial();
+  const deleteMaterial = useDeleteSwipeFileMaterial();
+  const toggleFavorite = useToggleSwipeFileFavorite();
 
-  // Sync state when localStorage changes from another tab/window
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.SWIPEFILE_PROCESSES) {
-        const newProcesses = e.newValue ? JSON.parse(e.newValue) : [];
-        setProcesses(newProcesses);
-      }
-      if (e.key === 'swipefile-favorites') {
-        const newFavorites = e.newValue ? JSON.parse(e.newValue) : [];
-        setFavorites(newFavorites);
-      }
-      if (e.key === STORAGE_KEYS.SWIPEFILE_TYPES) {
-        const newTypes = e.newValue ? JSON.parse(e.newValue) : [];
-        setTypes(newTypes);
-      }
-      if (e.key === STORAGE_KEYS.SWIPEFILE_CATEGORIES) {
-        const newCategories = e.newValue ? JSON.parse(e.newValue) : [];
-        setCategoriesFromAdmin(newCategories);
-      }
-    };
+  // Transform materials to SwipeProcess format for compatibility
+  const processes: SwipeProcess[] = useMemo(() => {
+    return materials.map(m => ({
+      id: m.id,
+      title: m.title,
+      description: m.description || '',
+      category: m.category?.name || 'Sem categoria',
+      type: m.type?.name || 'Processo',
+      tags: m.tags || [],
+      content: m.content || '',
+      links: m.links || [],
+      pdfs: m.pdfs || [],
+      createdAt: m.created_at,
+      updatedAt: m.updated_at,
+      // Store IDs for updates
+      typeId: m.type_id,
+      categoryId: m.category_id,
+    }));
+  }, [materials]);
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-
-  const [processes, setProcesses] = useState<SwipeProcess[]>(() => 
-    getFromStorage<SwipeProcess[]>(STORAGE_KEYS.SWIPEFILE_PROCESSES, [
-      {
-        id: '1',
-        title: 'Framework de Lançamento',
-        description: 'Processo completo para lançamentos de produtos digitais',
-        category: 'Marketing',
-        type: 'Processo',
-        tags: ['lançamento', 'infoproduto', 'marketing digital'],
-        content: '## Etapas do Lançamento\n\n1. **Pré-lançamento** - Construção de audiência\n2. **Aquecimento** - Geração de expectativa\n3. **Lançamento** - Abertura de carrinho\n4. **Pós-lançamento** - Nutrição e upsell',
-        links: [
-          { label: 'Template de Timeline', url: 'https://exemplo.com/template' },
-          { label: 'Checklist de Lançamento', url: 'https://exemplo.com/checklist' }
-        ],
-        pdfs: [],
-        createdAt: '2026-01-15',
-        updatedAt: '2026-01-20',
-      },
-      {
-        id: '2',
-        title: 'Script de Vendas High-Ticket',
-        description: 'Roteiro para chamadas de vendas de alto valor',
-        category: 'Vendas',
-        type: 'Script',
-        tags: ['vendas', 'high-ticket', 'script'],
-        content: '## Estrutura da Chamada\n\n1. **Rapport** (5min)\n2. **Diagnóstico** (15min)\n3. **Apresentação** (10min)\n4. **Fechamento** (10min)',
-        links: [],
-        pdfs: [],
-        createdAt: '2026-01-10',
-        updatedAt: '2026-01-18',
-      },
-      {
-        id: '3',
-        title: 'Headline Swipe File',
-        description: 'Coleção de headlines de alta conversão',
-        category: 'Copywriting',
-        type: 'Coleção',
-        tags: ['copy', 'headlines', 'conversão'],
-        content: '## Headlines que Convertem\n\n- "Como [resultado] sem [objeção]"\n- "[Número] maneiras de [benefício]"\n- "O segredo para [desejo] que [autoridade] não quer que você saiba"',
-        links: [],
-        pdfs: [],
-        createdAt: '2026-01-08',
-        updatedAt: '2026-01-08',
-      },
-      {
-        id: '4',
-        title: 'Checklist de Qualificação B2B',
-        description: 'Critérios para qualificar leads B2B',
-        category: 'Vendas',
-        type: 'Checklist',
-        tags: ['b2b', 'qualificação', 'leads'],
-        content: '## Critérios de Qualificação\n\n1. **Budget** - Orçamento disponível\n2. **Authority** - Poder de decisão\n3. **Need** - Necessidade real\n4. **Timeline** - Prazo definido',
-        links: [],
-        pdfs: [],
-        createdAt: '2026-01-05',
-        updatedAt: '2026-01-12',
-      },
-      {
-        id: '5',
-        title: 'Estratégia de Conteúdo',
-        description: 'Guia completo para planejamento de conteúdo',
-        category: 'Marketing',
-        type: 'Guia',
-        tags: ['conteúdo', 'estratégia', 'planejamento'],
-        content: '## Pilares do Conteúdo\n\n- Educativo\n- Inspiracional\n- Promocional\n- Entretenimento',
-        links: [
-          { label: 'Planilha de Calendário', url: 'https://exemplo.com/calendario' }
-        ],
-        pdfs: [],
-        createdAt: '2026-01-02',
-        updatedAt: '2026-01-15',
-      },
-    ])
-  );
-
+  // Get unique categories for filter
   const categories = useMemo(() => {
-    const processCategories = [...new Set(processes.map(p => p.category))];
-    return [...new Set([...defaultCategories, ...processCategories])];
-  }, [processes]);
+    return categoriesData.map(c => c.name);
+  }, [categoriesData]);
 
   const filteredProcesses = useMemo(() => {
     return processes.filter(p => {
@@ -205,41 +118,52 @@ const SwipeFilePage: React.FC = () => {
     setIsModalOpen(true);
   }, []);
 
-  const handleSave = useCallback((updatedProcess: SwipeProcess) => {
-    let newProcesses: SwipeProcess[];
-    
-    if (isCreateMode || !updatedProcess.id) {
-      // Create new
-      const newProcess = { ...updatedProcess, id: generateId() };
-      newProcesses = [...processes, newProcess];
-      toast({ title: 'Processo criado!' });
-    } else {
-      // Update existing
-      newProcesses = processes.map(p => 
-        p.id === updatedProcess.id ? updatedProcess : p
-      );
-      toast({ title: 'Alterações salvas!' });
-    }
-    
-    setProcesses(newProcesses);
-    setToStorage(STORAGE_KEYS.SWIPEFILE_PROCESSES, newProcesses);
-    setSelectedProcess(updatedProcess.id ? updatedProcess : null);
-  }, [processes, isCreateMode, toast]);
+  const handleSave = useCallback(async (updatedProcess: SwipeProcess) => {
+    // Find type and category IDs by name
+    const typeId = typesData.find(t => t.name === updatedProcess.type)?.id || null;
+    const categoryId = categoriesData.find(c => c.name === updatedProcess.category)?.id || null;
 
-  const handleDuplicate = useCallback((process: SwipeProcess) => {
-    const duplicate: SwipeProcess = {
-      ...process,
-      id: generateId(),
-      title: `${process.title} (Cópia)`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    const materialData = {
+      title: updatedProcess.title,
+      description: updatedProcess.description || null,
+      type_id: typeId,
+      category_id: categoryId,
+      tags: updatedProcess.tags,
+      content: updatedProcess.content || null,
+      links: updatedProcess.links,
+      pdfs: updatedProcess.pdfs,
     };
-    
-    const newProcesses = [...processes, duplicate];
-    setProcesses(newProcesses);
-    setToStorage(STORAGE_KEYS.SWIPEFILE_PROCESSES, newProcesses);
-    toast({ title: 'Processo duplicado!' });
-  }, [processes, toast]);
+
+    try {
+      if (isCreateMode || !updatedProcess.id) {
+        await createMaterial.mutateAsync(materialData as any);
+        setIsModalOpen(false);
+      } else {
+        await updateMaterial.mutateAsync({
+          id: updatedProcess.id,
+          ...materialData,
+        } as any);
+      }
+    } catch (error) {
+      // Error is handled by the hook
+    }
+  }, [isCreateMode, typesData, categoriesData, createMaterial, updateMaterial]);
+
+  const handleDuplicate = useCallback(async (process: SwipeProcess) => {
+    const typeId = typesData.find(t => t.name === process.type)?.id || null;
+    const categoryId = categoriesData.find(c => c.name === process.category)?.id || null;
+
+    await createMaterial.mutateAsync({
+      title: `${process.title} (Cópia)`,
+      description: process.description || null,
+      type_id: typeId,
+      category_id: categoryId,
+      tags: process.tags,
+      content: process.content || null,
+      links: process.links,
+      pdfs: process.pdfs,
+    } as any);
+  }, [typesData, categoriesData, createMaterial]);
 
   const handleCopyLink = useCallback((process: SwipeProcess) => {
     const url = `${window.location.origin}/swipefile/${process.id}`;
@@ -248,29 +172,17 @@ const SwipeFilePage: React.FC = () => {
   }, [toast]);
 
   const handleToggleFavorite = useCallback((processId: string) => {
-    const newFavorites = favorites.includes(processId)
-      ? favorites.filter(id => id !== processId)
-      : [...favorites, processId];
-    
-    setFavorites(newFavorites);
-    setToStorage('swipefile-favorites', newFavorites);
-    toast({ 
-      title: favorites.includes(processId) 
-        ? 'Removido dos favoritos' 
-        : 'Adicionado aos favoritos' 
-    });
-  }, [favorites, toast]);
+    const isFavorite = favorites.includes(processId);
+    toggleFavorite.mutate({ materialId: processId, isFavorite });
+  }, [favorites, toggleFavorite]);
 
   const handleDelete = useCallback((process: SwipeProcess) => {
     setDeleteProcess(process);
   }, []);
 
-  const confirmDelete = useCallback(() => {
+  const confirmDelete = useCallback(async () => {
     if (deleteProcess) {
-      const newProcesses = processes.filter(p => p.id !== deleteProcess.id);
-      setProcesses(newProcesses);
-      setToStorage(STORAGE_KEYS.SWIPEFILE_PROCESSES, newProcesses);
-      toast({ title: 'Processo excluído' });
+      await deleteMaterial.mutateAsync(deleteProcess.id);
       setDeleteProcess(null);
       
       // Close modal if viewing deleted process
@@ -279,13 +191,15 @@ const SwipeFilePage: React.FC = () => {
         setSelectedProcess(null);
       }
     }
-  }, [deleteProcess, processes, selectedProcess, toast]);
+  }, [deleteProcess, selectedProcess, deleteMaterial]);
 
   const closeModal = useCallback(() => {
     setIsModalOpen(false);
     setSelectedProcess(null);
     setIsCreateMode(false);
   }, []);
+
+  const isLoading = materialsLoading;
 
   return (
     <div className="min-h-screen bg-background">
@@ -367,7 +281,11 @@ const SwipeFilePage: React.FC = () => {
 
       {/* Content */}
       <div className="container py-8">
-        {filteredProcesses.length > 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : filteredProcesses.length > 0 ? (
           <SwipeTable
             processes={filteredProcesses}
             isAdmin={isAdmin}

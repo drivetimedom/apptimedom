@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { getFromStorage, STORAGE_KEYS, SwipeFileType, SwipeFileCategory } from '@/lib/storage';
+import { useSwipeFileTypes, useSwipeFileCategories } from '@/hooks/useSwipeFile';
 
 export interface SwipeProcess {
   id: string;
@@ -27,6 +27,8 @@ export interface SwipeProcess {
   createdAt: string;
   updatedAt: string;
   createdBy?: string;
+  typeId?: string | null;
+  categoryId?: string | null;
 }
 
 interface SwipeProcessModalProps {
@@ -62,22 +64,18 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(isCreateMode);
   
-  // Load dynamic types and categories from admin config
-  const [adminTypes, setAdminTypes] = useState<SwipeFileType[]>(() =>
-    getFromStorage<SwipeFileType[]>(STORAGE_KEYS.SWIPEFILE_TYPES, [])
-  );
-  const [adminCategories, setAdminCategories] = useState<SwipeFileCategory[]>(() =>
-    getFromStorage<SwipeFileCategory[]>(STORAGE_KEYS.SWIPEFILE_CATEGORIES, [])
-  );
+  // Load dynamic types and categories from Supabase
+  const { data: typesData = [] } = useSwipeFileTypes();
+  const { data: categoriesData = [] } = useSwipeFileCategories();
 
-  // Get available types (from admin or fallback)
-  const availableTypes = adminTypes.length > 0 
-    ? adminTypes.map(t => t.name) 
+  // Get available types (from database or fallback)
+  const availableTypes = typesData.length > 0 
+    ? typesData.map(t => t.name) 
     : fallbackTypes;
 
-  // Get available categories (from admin or prop fallback)
-  const availableCategories = adminCategories.length > 0
-    ? adminCategories.map(c => c.name)
+  // Get available categories (from database or prop fallback)
+  const availableCategories = categoriesData.length > 0
+    ? categoriesData.map(c => c.name)
     : categories;
 
   const [formData, setFormData] = useState({
@@ -90,23 +88,6 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
     links: '',
     pdfs: '',
   });
-
-  // Listen for storage changes from admin panel
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.SWIPEFILE_TYPES) {
-        const newTypes = e.newValue ? JSON.parse(e.newValue) : [];
-        setAdminTypes(newTypes);
-      }
-      if (e.key === STORAGE_KEYS.SWIPEFILE_CATEGORIES) {
-        const newCategories = e.newValue ? JSON.parse(e.newValue) : [];
-        setAdminCategories(newCategories);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
 
   useEffect(() => {
     if (process && !isCreateMode) {

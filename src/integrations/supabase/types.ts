@@ -62,6 +62,143 @@ export type Database = {
         }
         Relationships: []
       }
+      swipe_file_categories: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      swipe_file_favorites: {
+        Row: {
+          created_at: string
+          id: string
+          material_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          material_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          material_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swipe_file_favorites_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "swipe_file_materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swipe_file_materials: {
+        Row: {
+          category_id: string | null
+          content: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          links: Json | null
+          pdfs: Json | null
+          tags: string[] | null
+          title: string
+          type_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          links?: Json | null
+          pdfs?: Json | null
+          tags?: string[] | null
+          title: string
+          type_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          links?: Json | null
+          pdfs?: Json | null
+          tags?: string[] | null
+          title?: string
+          type_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swipe_file_materials_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "swipe_file_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swipe_file_materials_type_id_fkey"
+            columns: ["type_id"]
+            isOneToOne: false
+            referencedRelation: "swipe_file_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swipe_file_types: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

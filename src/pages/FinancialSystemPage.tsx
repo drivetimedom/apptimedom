@@ -1,108 +1,133 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  DollarSign, 
-  Home, 
-  ChevronRight,
-  TrendingUp,
-  PiggyBank,
-  Receipt
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DollarSign, Target, BookOpen, Receipt, Clock, Calculator, TrendingUp } from 'lucide-react';
+import DespesasFixas from '@/components/financial/DespesasFixas';
+import HoraClinica from '@/components/financial/HoraClinica';
+import CalculadoraPrecos from '@/components/financial/CalculadoraPrecos';
+import PontoEquilibrio from '@/components/financial/PontoEquilibrio';
 
 const FinancialSystemPage: React.FC = () => {
-  const navigate = useNavigate();
+  const [mainTab, setMainTab] = useState('precificacao');
+  const [subTab, setSubTab] = useState('despesas');
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Banner */}
-      <section 
-        className="relative h-[300px] md:h-[350px] w-full"
-        style={{
-          background: 'linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)'
-        }}
-      >
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background" />
-        
-        {/* Content */}
-        <div className="relative z-10 container h-full flex flex-col justify-center">
-          {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-            <button onClick={() => navigate('/')} className="hover:text-foreground transition-colors flex items-center gap-1">
-              <Home className="w-4 h-4" />
-              Início
-            </button>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-foreground">Sistema Financeiro</span>
-          </div>
-
-          {/* Title */}
-          <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
-              <DollarSign className="w-10 h-10 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                Sistema Financeiro
-              </h1>
-            </div>
-          </div>
-
-          {/* Subtitle */}
-          <p className="text-lg text-muted-foreground max-w-2xl">
-            Gerencie suas finanças de forma inteligente e organizada.
-          </p>
+    <div className="min-h-screen" style={{ backgroundColor: '#1a1a1a' }}>
+      {/* Header com navegação principal */}
+      <div className="border-b" style={{ borderColor: '#404040', backgroundColor: '#2d2d2d' }}>
+        <div className="container mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold text-white mb-4">Sistema Financeiro HOF Circle</h1>
+          
+          {/* Tabs Principais */}
+          <Tabs value={mainTab} onValueChange={setMainTab}>
+            <TabsList className="bg-[#3a3a3a] border border-[#404040] p-1">
+              <TabsTrigger 
+                value="precificacao" 
+                className="data-[state=active]:bg-[#3b82f6] data-[state=active]:text-white text-[#a0a0a0] px-4 py-2"
+              >
+                <DollarSign className="w-4 h-4 mr-2" />
+                Precificação
+              </TabsTrigger>
+              <TabsTrigger 
+                value="metas" 
+                className="data-[state=active]:bg-[#3b82f6] data-[state=active]:text-white text-[#a0a0a0] px-4 py-2"
+              >
+                <Target className="w-4 h-4 mr-2" />
+                Metas
+              </TabsTrigger>
+              <TabsTrigger 
+                value="guia" 
+                className="data-[state=active]:bg-[#3b82f6] data-[state=active]:text-white text-[#a0a0a0] px-4 py-2"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Guia
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
-      </section>
+      </div>
 
-      {/* Main Content */}
-      <div className="container py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Placeholder Cards */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <TrendingUp className="w-5 h-5 text-green-500" />
-                Receitas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                Em breve...
-              </p>
-            </CardContent>
-          </Card>
+      {/* Conteúdo */}
+      <div className="container mx-auto px-4 py-6">
+        <Tabs value={mainTab} onValueChange={setMainTab}>
+          {/* Tab Precificação */}
+          <TabsContent value="precificacao" className="mt-0">
+            {/* Sub-navegação */}
+            <Tabs value={subTab} onValueChange={setSubTab}>
+              <TabsList className="bg-[#2d2d2d] border border-[#404040] p-1 mb-6 flex-wrap h-auto">
+                <TabsTrigger 
+                  value="despesas" 
+                  className="data-[state=active]:bg-[#3a3a3a] data-[state=active]:text-white text-[#a0a0a0] px-3 py-2"
+                >
+                  <Receipt className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Despesas Fixas</span>
+                  <span className="sm:hidden">Despesas</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="hora" 
+                  className="data-[state=active]:bg-[#3a3a3a] data-[state=active]:text-white text-[#a0a0a0] px-3 py-2"
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Hora Clínica</span>
+                  <span className="sm:hidden">Hora</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="calculadora" 
+                  className="data-[state=active]:bg-[#3a3a3a] data-[state=active]:text-white text-[#a0a0a0] px-3 py-2"
+                >
+                  <Calculator className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Calculadora</span>
+                  <span className="sm:hidden">Calc.</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="equilibrio" 
+                  className="data-[state=active]:bg-[#3a3a3a] data-[state=active]:text-white text-[#a0a0a0] px-3 py-2"
+                >
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Ponto Equilíbrio</span>
+                  <span className="sm:hidden">P.E.</span>
+                </TabsTrigger>
+              </TabsList>
 
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Receipt className="w-5 h-5 text-red-500" />
-                Despesas
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                Em breve...
-              </p>
-            </CardContent>
-          </Card>
+              <TabsContent value="despesas" className="mt-0">
+                <DespesasFixas />
+              </TabsContent>
 
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <PiggyBank className="w-5 h-5 text-primary" />
-                Balanço
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm">
-                Em breve...
+              <TabsContent value="hora" className="mt-0">
+                <HoraClinica />
+              </TabsContent>
+
+              <TabsContent value="calculadora" className="mt-0">
+                <CalculadoraPrecos />
+              </TabsContent>
+
+              <TabsContent value="equilibrio" className="mt-0">
+                <PontoEquilibrio />
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
+
+          {/* Tab Metas - Placeholder */}
+          <TabsContent value="metas" className="mt-0">
+            <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-12 text-center">
+              <Target className="w-16 h-16 text-[#3b82f6] mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-white mb-2">Módulo de Metas</h2>
+              <p className="text-[#a0a0a0]">
+                Em breve: Defina e acompanhe suas metas financeiras mensais
               </p>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </TabsContent>
+
+          {/* Tab Guia - Placeholder */}
+          <TabsContent value="guia" className="mt-0">
+            <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-12 text-center">
+              <BookOpen className="w-16 h-16 text-[#3b82f6] mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-white mb-2">Guia Financeiro</h2>
+              <p className="text-[#a0a0a0]">
+                Em breve: Tutoriais e dicas para gestão financeira do seu negócio
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

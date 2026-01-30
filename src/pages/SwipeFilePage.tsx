@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { 
   getFromStorage, 
   setToStorage,
@@ -55,6 +55,23 @@ const SwipeFilePage: React.FC = () => {
   const [favorites, setFavorites] = useState<string[]>(() => 
     getFromStorage<string[]>('swipefile-favorites', [])
   );
+
+  // Sync state when localStorage changes from another tab/window
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.SWIPEFILE_PROCESSES) {
+        const newProcesses = e.newValue ? JSON.parse(e.newValue) : [];
+        setProcesses(newProcesses);
+      }
+      if (e.key === 'swipefile-favorites') {
+        const newFavorites = e.newValue ? JSON.parse(e.newValue) : [];
+        setFavorites(newFavorites);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const [processes, setProcesses] = useState<SwipeProcess[]>(() => 
     getFromStorage<SwipeProcess[]>(STORAGE_KEYS.SWIPEFILE_PROCESSES, [

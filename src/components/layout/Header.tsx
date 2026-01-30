@@ -21,8 +21,10 @@ import {
   BookOpen,
   FileText,
   Menu,
-  X
+  X,
+  DollarSign
 } from 'lucide-react';
+import { getCustomization } from '@/lib/customization';
 
 interface HeaderProps {
   onSearchChange?: (query: string) => void;
@@ -34,6 +36,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const customization = getCustomization();
 
   const handleLogout = () => {
     logout();
@@ -44,7 +47,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
     { href: '/', label: 'Início', icon: LayoutDashboard },
     { href: '/my-courses', label: 'Meus Cursos', icon: BookOpen },
     { href: '/hoff-circle', label: 'HOF CIRCLE', icon: BookOpen },
-    { href: '/financial-system', label: 'Sistema Financeiro', icon: LayoutDashboard },
+    { href: '/financial-system', label: 'Sistema Financeiro', icon: DollarSign },
     { href: '/swipe-file', label: 'Swipe File', icon: FileText },
   ];
 
@@ -63,12 +66,22 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">M</span>
-          </div>
-          <span className="hidden sm:inline-block font-semibold text-foreground">
-            Membros
-          </span>
+          {customization.branding.logoUrl ? (
+            <img 
+              src={customization.branding.logoUrl} 
+              alt={customization.texts.siteTitle || 'Logo'} 
+              className="h-8 max-w-[160px] object-contain"
+            />
+          ) : (
+            <>
+              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">M</span>
+              </div>
+              <span className="hidden sm:inline-block font-semibold text-foreground">
+                {customization.texts.siteTitle || 'Membros'}
+              </span>
+            </>
+          )}
         </Link>
 
         {/* Desktop Navigation */}

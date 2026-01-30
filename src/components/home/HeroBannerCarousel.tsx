@@ -63,14 +63,14 @@ const HeroBannerCarousel: React.FC<HeroBannerCarouselProps> = ({
             {/* Content */}
             <div className="absolute inset-0 flex items-center">
               <div className="container mx-[69px]">
-                <div className="max-w-2xl space-y-6 px-4 md:px-0">
+                <div className="max-w-2xl space-y-6 md:px-0 mx-0 px-0">
                   <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
                     {banner.title}
                   </h2>
                   {banner.subtitle && <p className="text-lg md:text-xl text-muted-foreground max-w-xl">
                       {banner.subtitle}
                     </p>}
-                  {banner.ctaText && <button onClick={() => handleBannerClick(banner)} className="inline-flex items-center px-8 py-4 bg-foreground text-background font-semibold rounded-lg hover:bg-foreground/90 transition-all duration-200 shadow-elegant">
+                  {banner.ctaText && <button onClick={() => handleBannerClick(banner)} className="inline-flex items-center py-4 bg-foreground text-background font-semibold rounded-lg hover:bg-foreground/90 transition-all duration-200 shadow-elegant px-[20px] text-center">
                       {banner.ctaText}
                     </button>}
                 </div>

@@ -428,7 +428,7 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
               <TabsTrigger value="advanced">Avançado</TabsTrigger>
             </TabsList>
 
-            <ScrollArea className="flex-1 mt-4">
+            <ScrollArea className="flex-1 max-h-[60vh] mt-4">
               {/* Basic Info Tab */}
               <TabsContent value="basic" className="space-y-4 m-0 pr-4">
                 <div className="grid grid-cols-2 gap-4">

@@ -153,11 +153,19 @@ export function getCustomization(): Customization {
 }
 
 // Save customization to storage
-export function saveCustomization(customization: Customization): void {
+export function saveCustomization(customization: Customization): boolean {
   try {
-    localStorage.setItem(CUSTOMIZATION_STORAGE_KEY, JSON.stringify(customization));
+    const data = JSON.stringify(customization);
+    localStorage.setItem(CUSTOMIZATION_STORAGE_KEY, data);
+    return true;
   } catch (error) {
     console.error('Error saving customization:', error);
+    // Check if it's a quota exceeded error
+    if (error instanceof DOMException && 
+        (error.name === 'QuotaExceededError' || error.code === 22)) {
+      throw new Error('STORAGE_FULL');
+    }
+    throw error;
   }
 }
 

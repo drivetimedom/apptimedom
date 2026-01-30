@@ -1217,11 +1217,11 @@ const AdminPage: React.FC = () => {
 
       {/* Banner Dialog */}
       <Dialog open={bannerDialogOpen} onOpenChange={setBannerDialogOpen}>
-        <DialogContent className="bg-card border-border max-w-lg">
-          <DialogHeader>
+        <DialogContent className="bg-card border-border max-w-lg max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>{editingBanner ? 'Editar Banner' : 'Novo Banner'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-4">
+          <div className="flex-1 overflow-y-auto space-y-4 mt-4 pr-2">
             <div>
               <Label>Título *</Label>
               <Input
@@ -1279,7 +1279,7 @@ const AdminPage: React.FC = () => {
                   <SelectTrigger className="mt-1 bg-input border-border">
                     <SelectValue placeholder="Selecione um curso" />
                   </SelectTrigger>
-                  <SelectContent className="bg-popover border-border">
+                  <SelectContent className="bg-popover border-border max-h-[200px]">
                     {courses.map(course => (
                       <SelectItem key={course.id} value={course.id}>
                         {course.title}
@@ -1305,14 +1305,14 @@ const AdminPage: React.FC = () => {
                 className="mt-1 bg-input border-border"
               />
             </div>
-            <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setBannerDialogOpen(false)}>
-                Cancelar
-              </Button>
-              <Button onClick={saveBanner}>
-                {editingBanner ? 'Salvar' : 'Criar Banner'}
-              </Button>
-            </div>
+          </div>
+          <div className="flex-shrink-0 flex justify-end gap-3 pt-4 border-t border-border mt-4">
+            <Button variant="outline" onClick={() => setBannerDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={saveBanner}>
+              {editingBanner ? 'Salvar' : 'Criar Banner'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -834,11 +834,11 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
 
       {/* Edit Lesson Modal */}
       <Dialog open={!!editingLesson} onOpenChange={() => setEditingLesson(null)}>
-        <DialogContent className="bg-card border-border max-w-lg">
-          <DialogHeader>
+        <DialogContent className="bg-card border-border max-w-lg max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>{editingLesson?.lesson ? 'Editar Aula' : 'Nova Aula'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2">
             <div className="space-y-2">
               <Label>Título da Aula *</Label>
               <Input
@@ -917,26 +917,25 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
                 <Plus className="w-4 h-4" /> Adicionar Recurso
               </Button>
             </div>
-
-            <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setEditingLesson(null)}>
-                Cancelar
-              </Button>
-              <Button onClick={saveLesson}>
-                Salvar Aula
-              </Button>
-            </div>
+          </div>
+          <div className="flex-shrink-0 flex justify-end gap-3 pt-4 border-t border-border mt-4">
+            <Button variant="outline" onClick={() => setEditingLesson(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={saveLesson}>
+              Salvar Aula
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Edit Module Modal */}
       <Dialog open={!!editingModule} onOpenChange={() => setEditingModule(null)}>
-        <DialogContent className="bg-card border-border max-w-md">
-          <DialogHeader>
+        <DialogContent className="bg-card border-border max-w-md max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Editar Módulo</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2">
             <div className="space-y-2">
               <Label>Título do Módulo</Label>
               <Input
@@ -955,19 +954,19 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
                 className="bg-input border-border"
               />
             </div>
-            <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setEditingModule(null)}>
-                Cancelar
-              </Button>
-              <Button onClick={() => {
-                if (editingModule) {
-                  updateModule(editingModule.id, moduleForm);
-                  setEditingModule(null);
-                }
-              }}>
-                Salvar
-              </Button>
-            </div>
+          </div>
+          <div className="flex-shrink-0 flex justify-end gap-3 pt-4 border-t border-border mt-4">
+            <Button variant="outline" onClick={() => setEditingModule(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={() => {
+              if (editingModule) {
+                updateModule(editingModule.id, moduleForm);
+                setEditingModule(null);
+              }
+            }}>
+              Salvar
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

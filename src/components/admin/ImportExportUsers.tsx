@@ -396,12 +396,12 @@ const ImportExportUsers: React.FC<ImportExportUsersProps> = ({ users, onUsersCha
 
       {/* Import Modal */}
       <Dialog open={importModalOpen} onOpenChange={setImportModalOpen}>
-        <DialogContent className="bg-card border-border max-w-lg">
-          <DialogHeader>
+        <DialogContent className="bg-card border-border max-w-lg max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-foreground">Importar Alunos</DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-6">
+          <div className="flex-1 overflow-y-auto space-y-6 pr-2">
             <p className="text-muted-foreground text-sm">
               Selecione um arquivo CSV ou Excel com os dados dos alunos.
             </p>
@@ -479,15 +479,15 @@ const ImportExportUsers: React.FC<ImportExportUsersProps> = ({ users, onUsersCha
 
       {/* Results Modal */}
       <Dialog open={resultsModalOpen} onOpenChange={setResultsModalOpen}>
-        <DialogContent className="bg-card border-border max-w-md">
-          <DialogHeader>
+        <DialogContent className="bg-card border-border max-w-md max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-foreground">Importação Concluída</DialogTitle>
           </DialogHeader>
           
           {importResult && (
-            <div className="space-y-4">
+            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
               <div className="flex items-center gap-3 p-4 bg-success/10 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-success" />
+                <CheckCircle className="w-6 h-6 text-success flex-shrink-0" />
                 <div>
                   <p className="font-medium text-foreground">
                     {importResult.imported} aluno(s) importado(s) com sucesso
@@ -497,7 +497,7 @@ const ImportExportUsers: React.FC<ImportExportUsersProps> = ({ users, onUsersCha
               
               {importResult.skipped > 0 && (
                 <div className="flex items-center gap-3 p-4 bg-warning/10 rounded-lg">
-                  <AlertCircle className="w-6 h-6 text-warning" />
+                  <AlertCircle className="w-6 h-6 text-warning flex-shrink-0" />
                   <div>
                     <p className="font-medium text-foreground">
                       {importResult.skipped} linha(s) ignorada(s)

@@ -10,10 +10,29 @@ export const STORAGE_KEYS = {
   CATEGORIES: 'members-categories',
   SWIPEFILE_PROCESSES: 'swipefile-processes',
   SWIPEFILE_CATEGORIES: 'swipefile-categories',
+  SWIPEFILE_TYPES: 'swipefile-types',
   ACTIVATION_TEMPLATES: 'activation-plan-templates',
   HOF_MAPS: 'hof-circle-maps',
   HOF_CHALLENGES: 'hof-circle-challenges',
 } as const;
+
+// Swipe File Types
+export interface SwipeFileType {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  createdAt: string;
+}
+
+// Swipe File Category
+export interface SwipeFileCategory {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  createdAt: string;
+}
 
 // User status levels
 export type UserStatus = 'iniciante' | 'primeiras-vendas' | 'intermediario' | 'avancado' | 'elite';

@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { getFromStorage, STORAGE_KEYS, SwipeFileType, SwipeFileCategory } from '@/lib/storage';
 
 export interface SwipeProcess {
   id: string;
@@ -38,7 +39,8 @@ interface SwipeProcessModalProps {
   isCreateMode?: boolean;
 }
 
-const processTypes = [
+// Fallback types if none are configured
+const fallbackTypes = [
   'Processo',
   'Script',
   'Coleção',
@@ -59,16 +61,52 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
 }) => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(isCreateMode);
+  
+  // Load dynamic types and categories from admin config
+  const [adminTypes, setAdminTypes] = useState<SwipeFileType[]>(() =>
+    getFromStorage<SwipeFileType[]>(STORAGE_KEYS.SWIPEFILE_TYPES, [])
+  );
+  const [adminCategories, setAdminCategories] = useState<SwipeFileCategory[]>(() =>
+    getFromStorage<SwipeFileCategory[]>(STORAGE_KEYS.SWIPEFILE_CATEGORIES, [])
+  );
+
+  // Get available types (from admin or fallback)
+  const availableTypes = adminTypes.length > 0 
+    ? adminTypes.map(t => t.name) 
+    : fallbackTypes;
+
+  // Get available categories (from admin or prop fallback)
+  const availableCategories = adminCategories.length > 0
+    ? adminCategories.map(c => c.name)
+    : categories;
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: '',
-    type: 'Processo',
+    type: availableTypes[0] || 'Processo',
     tags: '',
     content: '',
     links: '',
     pdfs: '',
   });
+
+  // Listen for storage changes from admin panel
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEYS.SWIPEFILE_TYPES) {
+        const newTypes = e.newValue ? JSON.parse(e.newValue) : [];
+        setAdminTypes(newTypes);
+      }
+      if (e.key === STORAGE_KEYS.SWIPEFILE_CATEGORIES) {
+        const newCategories = e.newValue ? JSON.parse(e.newValue) : [];
+        setAdminCategories(newCategories);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   useEffect(() => {
     if (process && !isCreateMode) {
@@ -302,8 +340,8 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                     <SelectTrigger className="bg-card border-border h-11">
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
-                    <SelectContent className="bg-popover border-border">
-                      {categories.map(cat => (
+                    <SelectContent className="bg-popover border-border z-[10000]">
+                      {availableCategories.map(cat => (
                         <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                       ))}
                     </SelectContent>
@@ -318,8 +356,8 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                     <SelectTrigger className="bg-card border-border h-11">
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
-                    <SelectContent className="bg-popover border-border">
-                      {processTypes.map(type => (
+                    <SelectContent className="bg-popover border-border z-[10000]">
+                      {availableTypes.map(type => (
                         <SelectItem key={type} value={type}>{type}</SelectItem>
                       ))}
                     </SelectContent>

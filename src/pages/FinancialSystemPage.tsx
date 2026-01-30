@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DollarSign, Target, BookOpen, Receipt, Clock, Calculator, TrendingUp } from 'lucide-react';
+import { DollarSign, Target, BookOpen, Receipt, Clock, Calculator, TrendingUp, BarChart3, ClipboardList, Lightbulb, HelpCircle, BookMarked } from 'lucide-react';
 import DespesasFixas from '@/components/financial/DespesasFixas';
 import HoraClinica from '@/components/financial/HoraClinica';
 import CalculadoraPrecos from '@/components/financial/CalculadoraPrecos';
 import PontoEquilibrio from '@/components/financial/PontoEquilibrio';
+import MCProcedimentos from '@/components/financial/MCProcedimentos';
+import PlanoMetas from '@/components/financial/PlanoMetas';
+import Conceitos from '@/components/financial/Conceitos';
+import ComoUsar from '@/components/financial/ComoUsar';
+import Glossario from '@/components/financial/Glossario';
 
 const FinancialSystemPage: React.FC = () => {
   const [mainTab, setMainTab] = useState('precificacao');
   const [subTab, setSubTab] = useState('despesas');
+  const [metasSubTab, setMetasSubTab] = useState('mc');
+  const [guiaSubTab, setGuiaSubTab] = useState('conceitos');
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#1a1a1a' }}>
@@ -106,26 +113,80 @@ const FinancialSystemPage: React.FC = () => {
             </Tabs>
           </TabsContent>
 
-          {/* Tab Metas - Placeholder */}
+          {/* Tab Metas */}
           <TabsContent value="metas" className="mt-0">
-            <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-12 text-center">
-              <Target className="w-16 h-16 text-[#3b82f6] mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-white mb-2">Módulo de Metas</h2>
-              <p className="text-[#a0a0a0]">
-                Em breve: Defina e acompanhe suas metas financeiras mensais
-              </p>
-            </div>
+            <Tabs value={metasSubTab} onValueChange={setMetasSubTab}>
+              <TabsList className="bg-[#2d2d2d] border border-[#404040] p-1 mb-6 flex-wrap h-auto">
+                <TabsTrigger 
+                  value="mc" 
+                  className="data-[state=active]:bg-[#3a3a3a] data-[state=active]:text-white text-[#a0a0a0] px-3 py-2"
+                >
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">MC por Procedimento</span>
+                  <span className="sm:hidden">MC</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="plano" 
+                  className="data-[state=active]:bg-[#3a3a3a] data-[state=active]:text-white text-[#a0a0a0] px-3 py-2"
+                >
+                  <ClipboardList className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Plano de Metas</span>
+                  <span className="sm:hidden">Plano</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="mc" className="mt-0">
+                <MCProcedimentos />
+              </TabsContent>
+
+              <TabsContent value="plano" className="mt-0">
+                <PlanoMetas />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
-          {/* Tab Guia - Placeholder */}
+          {/* Tab Guia */}
           <TabsContent value="guia" className="mt-0">
-            <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-12 text-center">
-              <BookOpen className="w-16 h-16 text-[#3b82f6] mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-white mb-2">Guia Financeiro</h2>
-              <p className="text-[#a0a0a0]">
-                Em breve: Tutoriais e dicas para gestão financeira do seu negócio
-              </p>
-            </div>
+            <Tabs value={guiaSubTab} onValueChange={setGuiaSubTab}>
+              <TabsList className="bg-[#2d2d2d] border border-[#404040] p-1 mb-6 flex-wrap h-auto">
+                <TabsTrigger 
+                  value="conceitos" 
+                  className="data-[state=active]:bg-[#3a3a3a] data-[state=active]:text-white text-[#a0a0a0] px-3 py-2"
+                >
+                  <Lightbulb className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Conceitos</span>
+                  <span className="sm:hidden">Conceitos</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="como-usar" 
+                  className="data-[state=active]:bg-[#3a3a3a] data-[state=active]:text-white text-[#a0a0a0] px-3 py-2"
+                >
+                  <HelpCircle className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Como Usar</span>
+                  <span className="sm:hidden">Uso</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="glossario" 
+                  className="data-[state=active]:bg-[#3a3a3a] data-[state=active]:text-white text-[#a0a0a0] px-3 py-2"
+                >
+                  <BookMarked className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Glossário</span>
+                  <span className="sm:hidden">Glossário</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="conceitos" className="mt-0">
+                <Conceitos />
+              </TabsContent>
+
+              <TabsContent value="como-usar" className="mt-0">
+                <ComoUsar />
+              </TabsContent>
+
+              <TabsContent value="glossario" className="mt-0">
+                <Glossario />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </div>

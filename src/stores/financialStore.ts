@@ -65,6 +65,37 @@ export interface DadosPE {
   lucroDesejado: number;
 }
 
+export interface MCProcedimento {
+  id: string;
+  nome: string;
+  preco: number;
+  custoVariavel: number;
+  qtdVendas: number;
+}
+
+export interface PlanoMetas {
+  cenarios: {
+    minima: number;
+    ideal: number;
+    sonho: number;
+  };
+  ticketMedio: number;
+  fontes: {
+    basePacientes: { minima: number; ideal: number; sonho: number };
+    leadsAntigos: { minima: number; ideal: number; sonho: number };
+    trafegoPago: { minima: number; ideal: number; sonho: number };
+    socialSelling: { minima: number; ideal: number; sonho: number };
+    indicacoes: { minima: number; ideal: number; sonho: number };
+    customizadas: Array<{
+      id: string;
+      nome: string;
+      minima: number;
+      ideal: number;
+      sonho: number;
+    }>;
+  };
+}
+
 interface FinancialStore {
   // Data
   despesasFixas: DespesasFixas;
@@ -72,6 +103,8 @@ interface FinancialStore {
   procedimentos: Procedimento[];
   parametros: Parametros;
   dadosPE: DadosPE;
+  mcProcedimentos: MCProcedimento[];
+  planoMetas: PlanoMetas;
 
   // Actions
   setDespesasFixas: (data: Partial<DespesasFixas>) => void;
@@ -94,6 +127,20 @@ interface FinancialStore {
   setParametros: (data: Partial<Parametros>) => void;
   setDadosPE: (data: Partial<DadosPE>) => void;
 
+  // MC Procedimentos
+  addMCProcedimento: (proc: Omit<MCProcedimento, 'id'>) => void;
+  updateMCProcedimento: (id: string, proc: Partial<MCProcedimento>) => void;
+  removeMCProcedimento: (id: string) => void;
+
+  // Plano de Metas
+  setPlanoMetas: (data: Partial<PlanoMetas>) => void;
+  setCenario: (cenario: 'minima' | 'ideal' | 'sonho', value: number) => void;
+  setTicketMedio: (value: number) => void;
+  setFonte: (fonte: keyof PlanoMetas['fontes'], cenario: 'minima' | 'ideal' | 'sonho', value: number) => void;
+  addFonteCustomizada: (nome: string, minima: number, ideal: number, sonho: number) => void;
+  removeFonteCustomizada: (id: string) => void;
+  updateFonteCustomizada: (id: string, nome: string, minima: number, ideal: number, sonho: number) => void;
+
   // Computed
   getTotalDespesasFixas: () => number;
   getTotalHorasMensais: () => number;
@@ -107,6 +154,19 @@ interface FinancialStore {
     lucro: number;
     margemLucro: number;
   };
+  calcularMCProcedimento: (proc: MCProcedimento) => {
+    mcUnitaria: number;
+    mcPercentual: number;
+    mcTotal: number;
+  };
+  getResumoMC: () => {
+    receitaTotal: number;
+    mcTotalGeral: number;
+    indiceMedioMC: number;
+    maisLucrativo: MCProcedimento | null;
+  };
+  getPacientesNecessarios: (cenario: 'minima' | 'ideal' | 'sonho') => number;
+  getTotalCaptacao: (cenario: 'minima' | 'ideal' | 'sonho') => number;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -168,6 +228,30 @@ const defaultDadosPE: DadosPE = {
   lucroDesejado: 10000,
 };
 
+const defaultMCProcedimentos: MCProcedimento[] = [
+  { id: generateId(), nome: 'Botox', preco: 1200, custoVariavel: 467, qtdVendas: 30 },
+  { id: generateId(), nome: 'Preenchimento', preco: 1800, custoVariavel: 250, qtdVendas: 25 },
+  { id: generateId(), nome: 'Bioestimulador', preco: 2200, custoVariavel: 700, qtdVendas: 20 },
+  { id: generateId(), nome: 'Fios Sustentação', preco: 3500, custoVariavel: 1000, qtdVendas: 10 },
+];
+
+const defaultPlanoMetas: PlanoMetas = {
+  cenarios: {
+    minima: 25000,
+    ideal: 40000,
+    sonho: 60000,
+  },
+  ticketMedio: 2000,
+  fontes: {
+    basePacientes: { minima: 5, ideal: 8, sonho: 12 },
+    leadsAntigos: { minima: 2, ideal: 2, sonho: 3 },
+    trafegoPago: { minima: 3, ideal: 7, sonho: 10 },
+    socialSelling: { minima: 2, ideal: 3, sonho: 5 },
+    indicacoes: { minima: 1, ideal: 2, sonho: 3 },
+    customizadas: [],
+  },
+};
+
 export const useFinancialStore = create<FinancialStore>()(
   persist(
     (set, get) => ({
@@ -176,6 +260,8 @@ export const useFinancialStore = create<FinancialStore>()(
       procedimentos: defaultProcedimentos,
       parametros: defaultParametros,
       dadosPE: defaultDadosPE,
+      mcProcedimentos: defaultMCProcedimentos,
+      planoMetas: defaultPlanoMetas,
 
       setDespesasFixas: (data) =>
         set((state) => ({
@@ -288,12 +374,100 @@ export const useFinancialStore = create<FinancialStore>()(
           dadosPE: { ...state.dadosPE, ...data },
         })),
 
+      // MC Procedimentos
+      addMCProcedimento: (proc) =>
+        set((state) => ({
+          mcProcedimentos: [...state.mcProcedimentos, { ...proc, id: generateId() }],
+        })),
+
+      updateMCProcedimento: (id, proc) =>
+        set((state) => ({
+          mcProcedimentos: state.mcProcedimentos.map((p) =>
+            p.id === id ? { ...p, ...proc } : p
+          ),
+        })),
+
+      removeMCProcedimento: (id) =>
+        set((state) => ({
+          mcProcedimentos: state.mcProcedimentos.filter((p) => p.id !== id),
+        })),
+
+      // Plano de Metas
+      setPlanoMetas: (data) =>
+        set((state) => ({
+          planoMetas: { ...state.planoMetas, ...data },
+        })),
+
+      setCenario: (cenario, value) =>
+        set((state) => ({
+          planoMetas: {
+            ...state.planoMetas,
+            cenarios: { ...state.planoMetas.cenarios, [cenario]: value },
+          },
+        })),
+
+      setTicketMedio: (value) =>
+        set((state) => ({
+          planoMetas: { ...state.planoMetas, ticketMedio: value },
+        })),
+
+      setFonte: (fonte, cenario, value) =>
+        set((state) => {
+          if (fonte === 'customizadas') return state;
+          return {
+            planoMetas: {
+              ...state.planoMetas,
+              fontes: {
+                ...state.planoMetas.fontes,
+                [fonte]: { ...state.planoMetas.fontes[fonte], [cenario]: value },
+              },
+            },
+          };
+        }),
+
+      addFonteCustomizada: (nome, minima, ideal, sonho) =>
+        set((state) => ({
+          planoMetas: {
+            ...state.planoMetas,
+            fontes: {
+              ...state.planoMetas.fontes,
+              customizadas: [
+                ...state.planoMetas.fontes.customizadas,
+                { id: generateId(), nome, minima, ideal, sonho },
+              ],
+            },
+          },
+        })),
+
+      removeFonteCustomizada: (id) =>
+        set((state) => ({
+          planoMetas: {
+            ...state.planoMetas,
+            fontes: {
+              ...state.planoMetas.fontes,
+              customizadas: state.planoMetas.fontes.customizadas.filter((f) => f.id !== id),
+            },
+          },
+        })),
+
+      updateFonteCustomizada: (id, nome, minima, ideal, sonho) =>
+        set((state) => ({
+          planoMetas: {
+            ...state.planoMetas,
+            fontes: {
+              ...state.planoMetas.fontes,
+              customizadas: state.planoMetas.fontes.customizadas.map((f) =>
+                f.id === id ? { ...f, nome, minima, ideal, sonho } : f
+              ),
+            },
+          },
+        })),
+
       // Computed values
       getTotalDespesasFixas: () => {
         const df = get().despesasFixas;
         const infra = Object.values(df.infraestrutura).reduce((a, b) => a + b, 0);
         const rh = Object.values(df.recursosHumanos).reduce((a, b) => a + b, 0);
-        // Calculated RH costs
         const fgts = df.recursosHumanos.salarios * 0.08;
         const decimoTerceiro = df.recursosHumanos.salarios / 12;
         const ferias = (df.recursosHumanos.salarios * 1.33) / 12;
@@ -335,6 +509,52 @@ export const useFinancialStore = create<FinancialStore>()(
         const margemLucro = proc.valorCobrado > 0 ? (lucro / proc.valorCobrado) * 100 : 0;
         
         return { custoTempo, imposto, taxaCartao, custoTotal, lucro, margemLucro };
+      },
+
+      calcularMCProcedimento: (proc) => {
+        const mcUnitaria = proc.preco - proc.custoVariavel;
+        const mcPercentual = proc.preco > 0 ? (mcUnitaria / proc.preco) * 100 : 0;
+        const mcTotal = mcUnitaria * proc.qtdVendas;
+        return { mcUnitaria, mcPercentual, mcTotal };
+      },
+
+      getResumoMC: () => {
+        const procs = get().mcProcedimentos;
+        let receitaTotal = 0;
+        let mcTotalGeral = 0;
+        let maisLucrativo: MCProcedimento | null = null;
+        let maiorMC = -Infinity;
+
+        procs.forEach((proc) => {
+          const { mcPercentual, mcTotal } = get().calcularMCProcedimento(proc);
+          receitaTotal += proc.preco * proc.qtdVendas;
+          mcTotalGeral += mcTotal;
+          if (mcPercentual > maiorMC) {
+            maiorMC = mcPercentual;
+            maisLucrativo = proc;
+          }
+        });
+
+        const indiceMedioMC = receitaTotal > 0 ? (mcTotalGeral / receitaTotal) * 100 : 0;
+        return { receitaTotal, mcTotalGeral, indiceMedioMC, maisLucrativo };
+      },
+
+      getPacientesNecessarios: (cenario) => {
+        const { cenarios, ticketMedio } = get().planoMetas;
+        return ticketMedio > 0 ? Math.ceil(cenarios[cenario] / ticketMedio) : 0;
+      },
+
+      getTotalCaptacao: (cenario) => {
+        const { fontes } = get().planoMetas;
+        const fixas = [
+          fontes.basePacientes[cenario],
+          fontes.leadsAntigos[cenario],
+          fontes.trafegoPago[cenario],
+          fontes.socialSelling[cenario],
+          fontes.indicacoes[cenario],
+        ].reduce((a, b) => a + b, 0);
+        const custom = fontes.customizadas.reduce((a, f) => a + f[cenario], 0);
+        return fixas + custom;
       },
     }),
     {

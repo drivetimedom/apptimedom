@@ -59,6 +59,7 @@ import {
   Key,
   Palette,
   Settings,
+  Loader2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -76,6 +77,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
+import { useCreateUser } from '@/hooks/useCreateUser';
 import UserFormModal from '@/components/admin/UserFormModal';
 import CourseFormModal from '@/components/admin/CourseFormModal';
 import CategoryFormModal from '@/components/admin/CategoryFormModal';
@@ -90,6 +92,7 @@ import { ClipboardList, Map, Trophy } from 'lucide-react';
 const AdminPage: React.FC = () => {
   const { user: currentUser, isAdmin } = useAuth();
   const { toast } = useToast();
+  const { createUser, isLoading: isCreatingUser } = useCreateUser();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -183,38 +186,62 @@ const AdminPage: React.FC = () => {
     setUserModalOpen(true);
   };
 
-  const saveUser = (userData: Partial<User> & { password?: string }) => {
-    let updatedUsers: User[];
-    
+  const saveUser = async (userData: Partial<User> & { password?: string }) => {
     if (editingUser) {
-      // Update existing user
-      updatedUsers = users.map(u => 
+      // Update existing user (still uses localStorage for now)
+      const updatedUsers = users.map(u => 
         u.id === editingUser.id 
           ? { ...u, ...userData, password: userData.password || u.password }
           : u
       );
+      setUsers(updatedUsers);
+      setToStorage(STORAGE_KEYS.USERS, updatedUsers);
       toast({ title: 'Usuário atualizado!' });
+      setUserModalOpen(false);
+      setEditingUser(null);
     } else {
-      // Create new user
+      // Create new user via Edge Function (real auth)
+      if (!userData.password) {
+        toast({ title: 'Senha é obrigatória', variant: 'destructive' });
+        return;
+      }
+
+      const result = await createUser({
+        email: userData.email || '',
+        password: userData.password,
+        name: userData.name || '',
+        role: userData.type || 'user',
+      });
+
+      if (!result.success) {
+        toast({ 
+          title: 'Erro ao criar usuário', 
+          description: result.error,
+          variant: 'destructive' 
+        });
+        return;
+      }
+
+      // Also save to localStorage for local display
       const newUser: User = {
-        id: generateId(),
+        id: result.userId || generateId(),
         name: userData.name || '',
         email: userData.email || '',
-        password: userData.password || '',
+        password: '', // Don't store password locally
         type: userData.type || 'user',
         avatar: userData.avatar,
         active: userData.active ?? true,
         unlockedCourses: userData.unlockedCourses || [],
         createdAt: new Date().toISOString(),
       };
-      updatedUsers = [...users, newUser];
-      toast({ title: 'Usuário criado!' });
+      const updatedUsers = [...users, newUser];
+      setUsers(updatedUsers);
+      setToStorage(STORAGE_KEYS.USERS, updatedUsers);
+      
+      toast({ title: 'Usuário criado com sucesso!' });
+      setUserModalOpen(false);
+      setEditingUser(null);
     }
-    
-    setUsers(updatedUsers);
-    setToStorage(STORAGE_KEYS.USERS, updatedUsers);
-    setUserModalOpen(false);
-    setEditingUser(null);
   };
 
   const toggleUserStatus = (userId: string) => {
@@ -1157,6 +1184,7 @@ const AdminPage: React.FC = () => {
         onSave={saveUser}
         user={editingUser}
         existingEmails={existingEmails.filter(e => e !== editingUser?.email.toLowerCase())}
+        isLoading={isCreatingUser}
       />
 
       {/* Course Form Modal */}

@@ -135,12 +135,24 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
       return;
     }
 
-    const slug = generateSlug(formData.name);
+    // Preserve original slug when editing, only generate new slug for new categories or if name changed
+    let slug: string;
+    if (category) {
+      // When editing, only regenerate slug if name actually changed
+      const originalSlug = category.slug;
+      const nameChanged = formData.name.trim() !== category.name;
+      slug = nameChanged ? generateSlug(formData.name) : originalSlug;
+    } else {
+      // New category - generate slug from name
+      slug = generateSlug(formData.name);
+    }
     
-    // Check unique slug (only for new categories or if name changed)
-    if (!category || generateSlug(category.name) !== slug) {
-      if (existingSlugs.includes(slug)) {
-        toast({ title: 'Já existe uma categoria com esse nome', variant: 'destructive' });
+    // Check unique slug (only for new categories or if slug changed)
+    const slugChanged = !category || category.slug !== slug;
+    if (slugChanged) {
+      const otherSlugs = existingSlugs.filter(s => s !== category?.slug);
+      if (otherSlugs.includes(slug)) {
+        toast({ title: 'Já existe uma categoria com esse nome/slug', variant: 'destructive' });
         return;
       }
     }

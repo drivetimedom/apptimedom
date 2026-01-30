@@ -87,6 +87,7 @@ import AdminCommercialTracking from '@/components/admin/AdminCommercialTracking'
 import ActivationPlanTemplates from '@/components/admin/ActivationPlanTemplates';
 import AdminMapsManager from '@/components/admin/AdminMapsManager';
 import AdminChallengesManager from '@/components/admin/AdminChallengesManager';
+import AdminSwipeFileManager from '@/components/admin/AdminSwipeFileManager';
 import { ClipboardList, Map, Trophy } from 'lucide-react';
 
 const AdminPage: React.FC = () => {
@@ -545,6 +546,10 @@ const AdminPage: React.FC = () => {
             <TabsTrigger value="challenges" className="data-[state=active]:bg-accent gap-2">
               <Trophy className="w-4 h-4" />
               Desafios
+            </TabsTrigger>
+            <TabsTrigger value="swipefile" className="data-[state=active]:bg-accent gap-2">
+              <FileText className="w-4 h-4" />
+              Swipe File
             </TabsTrigger>
             <TabsTrigger value="activation-templates" className="data-[state=active]:bg-accent gap-2">
               <ClipboardList className="w-4 h-4" />
@@ -1158,6 +1163,11 @@ const AdminPage: React.FC = () => {
           {/* Challenges Tab */}
           <TabsContent value="challenges" className="space-y-6">
             <AdminChallengesManager />
+          </TabsContent>
+
+          {/* Swipe File Tab */}
+          <TabsContent value="swipefile" className="space-y-6">
+            <AdminSwipeFileManager />
           </TabsContent>
 
           {/* Activation Plan Templates Tab */}

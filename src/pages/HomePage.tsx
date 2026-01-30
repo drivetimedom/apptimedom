@@ -8,7 +8,7 @@ import { Gift, BookOpen } from 'lucide-react';
 import { seedData } from '@/lib/seedData';
 
 const HomePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile, isAdmin, isInstructor } = useAuth();
 
   // Ensure seed data exists
   useEffect(() => {
@@ -49,9 +49,9 @@ const HomePage: React.FC = () => {
     userProgress.find(p => p.courseId === courseId);
 
   const isCourseUnlocked = (course: Course) => {
-    if (user?.type === 'admin' || user?.type === 'instructor') return true;
+    if (isAdmin || isInstructor) return true;
     if (!course.locked) return true;
-    return user?.unlockedCourses?.includes(course.id) || false;
+    return profile?.unlocked_courses?.includes(course.id) || false;
   };
 
   return (

@@ -1,9 +1,10 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, STORAGE_KEYS, getFromStorage, UserStatus } from '@/lib/storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User as UserIcon, Star, TrendingUp, Zap, Crown, Flame } from 'lucide-react';
+
+type UserStatus = 'iniciante' | 'primeiras-vendas' | 'intermediario' | 'avancado' | 'elite';
 
 const levelConfig: Record<UserStatus, { label: string; color: string; icon: React.ReactNode }> = {
   'iniciante': { 
@@ -41,18 +42,14 @@ const mapLabels: Record<string, string> = {
 };
 
 const IndividualPanel: React.FC = () => {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   
-  // Get full user data from storage to get prescription fields
-  const users = getFromStorage<User[]>(STORAGE_KEYS.USERS, []);
-  const fullUser = users.find(u => u.id === user?.id);
-  
-  // Get status from user data (set by admin) or default
-  const userStatus: UserStatus = fullUser?.status || 'iniciante';
-  const prescribedMap = fullUser?.prescribedMap || '';
+  // Get status from profile data (set by admin) or default
+  const userStatus: UserStatus = profile?.status || 'iniciante';
+  const prescribedMap = profile?.prescribed_map || '';
   const config = levelConfig[userStatus];
   
-  const firstName = user?.name?.split(' ')[0] || 'Aluno';
+  const firstName = profile?.name?.split(' ')[0] || 'Aluno';
 
   return (
     <Card className="bg-card border-border">

@@ -31,7 +31,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
-  const { user, logout, isAdmin, isInstructor } = useAuth();
+  const { user, profile, logout, isAdmin, isInstructor } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -150,9 +150,9 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9 border border-border">
-                  <AvatarImage src={user?.avatar} alt={user?.name} />
+                  <AvatarImage src={profile?.avatar || undefined} alt={profile?.name} />
                   <AvatarFallback className="bg-accent text-foreground">
-                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                    {profile?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -160,7 +160,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
             <DropdownMenuContent className="w-56 bg-popover border-border" align="end" forceMount>
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium text-sm text-foreground">{user?.name}</p>
+                  <p className="font-medium text-sm text-foreground">{profile?.name || user?.email}</p>
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
               </div>

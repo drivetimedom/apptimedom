@@ -6,7 +6,7 @@ import { BookOpen, Clock, Trophy, Filter } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const MyCoursesPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile, isAdmin, isInstructor } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
 
   const courses = useMemo(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []), []);
@@ -24,9 +24,9 @@ const MyCoursesPage: React.FC = () => {
   );
 
   const isCourseUnlocked = (course: Course) => {
-    if (user?.type === 'admin' || user?.type === 'instructor') return true;
+    if (isAdmin || isInstructor) return true;
     if (!course.locked) return true;
-    return user?.unlockedCourses?.includes(course.id) || false;
+    return profile?.unlocked_courses?.includes(course.id) || false;
   };
 
   const unlockedCourses = publishedCourses.filter(c => isCourseUnlocked(c));

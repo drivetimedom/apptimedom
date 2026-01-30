@@ -38,7 +38,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const LessonPage: React.FC = () => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -349,8 +349,8 @@ const LessonPage: React.FC = () => {
               {/* New Comment */}
               <div className="flex items-start space-x-3 mb-6">
                 <Avatar className="w-10 h-10">
-                  <AvatarImage src={user?.avatar} />
-                  <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={profile?.avatar || undefined} />
+                  <AvatarFallback>{profile?.name?.charAt(0) || user?.email?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-2">
                   <Textarea

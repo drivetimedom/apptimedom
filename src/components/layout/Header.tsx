@@ -44,6 +44,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
     { href: '/', label: 'Início', icon: LayoutDashboard },
     { href: '/my-courses', label: 'Meus Cursos', icon: BookOpen },
     { href: '/hoff-circle', label: 'HOF CIRCLE', icon: BookOpen },
+    { href: '/financial-system', label: 'Sistema Financeiro', icon: LayoutDashboard },
     { href: '/swipe-file', label: 'Swipe File', icon: FileText },
   ];
 

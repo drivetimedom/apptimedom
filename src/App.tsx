@@ -18,6 +18,7 @@ import LessonPage from "@/pages/LessonPage";
 import SwipeFilePage from "@/pages/SwipeFilePage";
 import AdminPage from "@/pages/AdminPage";
 import HoffCirclePage from "@/pages/HoffCirclePage";
+import FinancialSystemPage from "@/pages/FinancialSystemPage";
 import NotFound from "@/pages/NotFound";
 
 // Initialize seed data
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/course/:courseId/lesson/:lessonId" element={<LessonPage />} />
               <Route path="/swipe-file" element={<SwipeFilePage />} />
               <Route path="/hoff-circle" element={<HoffCirclePage />} />
+              <Route path="/financial-system" element={<FinancialSystemPage />} />
               <Route path="/admin" element={<AdminPage />} />
             </Route>
             

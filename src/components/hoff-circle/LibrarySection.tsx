@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Category, 
   Course, 
   Lesson,
   STORAGE_KEYS, 
@@ -22,7 +21,6 @@ import {
   FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import SwipeFileModal from './SwipeFileModal';
 
 interface Track {
   id: string;
@@ -49,7 +47,6 @@ interface LibrarySectionProps {
 const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
   const navigate = useNavigate();
   const [selectedTrack, setSelectedTrack] = React.useState<string | null>(null);
-  const [swipeFileOpen, setSwipeFileOpen] = useState(false);
 
   const allCourses = getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []);
   
@@ -132,9 +129,9 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
               );
             })}
             
-            {/* Swipe File Button */}
+            {/* Swipe File Button - navigates to same route as Header */}
             <button
-              onClick={() => setSwipeFileOpen(true)}
+              onClick={() => navigate('/swipe-file')}
               className="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 bg-muted text-muted-foreground hover:bg-muted/80"
             >
               <FileText className="w-4 h-4" />
@@ -172,11 +169,6 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
         </CardContent>
       </Card>
 
-      {/* Swipe File Modal */}
-      <SwipeFileModal 
-        isOpen={swipeFileOpen}
-        onClose={() => setSwipeFileOpen(false)}
-      />
     </section>
   );
 };

@@ -3,7 +3,9 @@ import {
   getFromStorage, 
   setToStorage,
   STORAGE_KEYS, 
-  generateId 
+  generateId,
+  SwipeFileType,
+  SwipeFileCategory
 } from '@/lib/storage';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -56,6 +58,14 @@ const SwipeFilePage: React.FC = () => {
     getFromStorage<string[]>('swipefile-favorites', [])
   );
 
+  // Types and Categories from admin
+  const [types, setTypes] = useState<SwipeFileType[]>(() =>
+    getFromStorage<SwipeFileType[]>(STORAGE_KEYS.SWIPEFILE_TYPES, [])
+  );
+  const [categoriesFromAdmin, setCategoriesFromAdmin] = useState<SwipeFileCategory[]>(() =>
+    getFromStorage<SwipeFileCategory[]>(STORAGE_KEYS.SWIPEFILE_CATEGORIES, [])
+  );
+
   // Sync state when localStorage changes from another tab/window
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
@@ -66,6 +76,14 @@ const SwipeFilePage: React.FC = () => {
       if (e.key === 'swipefile-favorites') {
         const newFavorites = e.newValue ? JSON.parse(e.newValue) : [];
         setFavorites(newFavorites);
+      }
+      if (e.key === STORAGE_KEYS.SWIPEFILE_TYPES) {
+        const newTypes = e.newValue ? JSON.parse(e.newValue) : [];
+        setTypes(newTypes);
+      }
+      if (e.key === STORAGE_KEYS.SWIPEFILE_CATEGORIES) {
+        const newCategories = e.newValue ? JSON.parse(e.newValue) : [];
+        setCategoriesFromAdmin(newCategories);
       }
     };
 

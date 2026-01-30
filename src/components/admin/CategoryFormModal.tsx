@@ -452,13 +452,13 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
 
       {/* Subcategory Modal */}
       <Dialog open={!!editingSubcategory} onOpenChange={() => setEditingSubcategory(null)}>
-        <DialogContent className="bg-card border-border max-w-md">
-          <DialogHeader>
+        <DialogContent className="bg-card border-border max-w-md max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>
               {editingSubcategory?.id ? 'Editar Subcategoria' : 'Nova Subcategoria'}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2">
             <div className="space-y-2">
               <Label>Nome *</Label>
               <Input
@@ -487,14 +487,14 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                 Mostrar roadmap nesta subcategoria
               </label>
             </div>
-            <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setEditingSubcategory(null)}>
-                Cancelar
-              </Button>
-              <Button onClick={saveSubcategory}>
-                {editingSubcategory?.id ? 'Salvar' : 'Adicionar'}
-              </Button>
-            </div>
+          </div>
+          <div className="flex-shrink-0 flex justify-end gap-3 pt-4 border-t border-border mt-4">
+            <Button variant="outline" onClick={() => setEditingSubcategory(null)}>
+              Cancelar
+            </Button>
+            <Button onClick={saveSubcategory}>
+              {editingSubcategory?.id ? 'Salvar' : 'Adicionar'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -230,9 +230,9 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
       />
       
       {/* Modal */}
-      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] max-w-[95vw] max-h-[90vh] bg-background border border-border rounded-2xl shadow-lg z-[9999] overflow-hidden animate-scale-in">
+      <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] max-w-[95vw] max-h-[90vh] bg-background border border-border rounded-2xl shadow-lg z-[9999] overflow-hidden animate-scale-in flex flex-col">
         {/* Header */}
-        <div className="bg-card border-b border-border px-6 py-5 flex items-center justify-between sticky top-0 z-10">
+        <div className="bg-card border-b border-border px-6 py-5 flex items-center justify-between flex-shrink-0">
           {isEditing ? (
             <Input
               value={formData.title}
@@ -307,7 +307,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-8 overflow-y-auto max-h-[calc(90vh-80px)] space-y-8">
+        <div className="p-8 flex-1 overflow-y-auto space-y-8">
           {isEditing ? (
             /* Edit Mode */
             <div className="space-y-6">

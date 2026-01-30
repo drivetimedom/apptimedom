@@ -328,11 +328,11 @@ const AdminSwipeFileManager: React.FC = () => {
 
       {/* Type Modal */}
       <Dialog open={typeModalOpen} onOpenChange={setTypeModalOpen}>
-        <DialogContent className="bg-card border-border max-w-md">
-          <DialogHeader>
+        <DialogContent className="bg-card border-border max-w-md max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>{editingType ? 'Editar Tipo' : 'Criar Tipo de Material'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2">
             <div>
               <Label>Nome *</Label>
               <Input
@@ -396,7 +396,7 @@ const AdminSwipeFileManager: React.FC = () => {
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2 mt-4">
+          <DialogFooter className="flex-shrink-0 gap-2 mt-4 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => setTypeModalOpen(false)}>
               Cancelar
             </Button>
@@ -410,11 +410,11 @@ const AdminSwipeFileManager: React.FC = () => {
 
       {/* Category Modal */}
       <Dialog open={categoryModalOpen} onOpenChange={setCategoryModalOpen}>
-        <DialogContent className="bg-card border-border max-w-md">
-          <DialogHeader>
+        <DialogContent className="bg-card border-border max-w-md max-h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>{editingCategory ? 'Editar Categoria' : 'Criar Categoria'}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto space-y-4 pr-2">
             <div>
               <Label>Nome *</Label>
               <Input
@@ -478,7 +478,7 @@ const AdminSwipeFileManager: React.FC = () => {
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2 mt-4">
+          <DialogFooter className="flex-shrink-0 gap-2 mt-4 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => setCategoryModalOpen(false)}>
               Cancelar
             </Button>

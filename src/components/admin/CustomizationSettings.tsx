@@ -105,27 +105,72 @@ const CustomizationSettings: React.FC = () => {
     }));
   };
 
+  // Compress image to reduce size
+  const compressImage = (base64: string, maxWidth = 800): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        
+        // Scale down if too large
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Canvas context not available'));
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Use JPEG for smaller size, or PNG for transparency
+        const compressed = canvas.toDataURL('image/jpeg', 0.8);
+        resolve(compressed);
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = base64;
+    });
+  };
+
   // Handle file upload for images
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: 'Arquivo muito grande. Máximo 2MB', variant: 'destructive' });
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Arquivo muito grande. Máximo 5MB', variant: 'destructive' });
       return;
     }
 
     const reader = new FileReader();
-    reader.onload = (event) => {
-      const base64 = event.target?.result as string;
-      
-      if (uploadTarget.startsWith('course-')) {
-        updateCourseCover(uploadTarget, base64);
-      } else {
-        updateBranding(uploadTarget as keyof typeof customization.branding, base64);
+    reader.onload = async (event) => {
+      try {
+        let base64 = event.target?.result as string;
+        
+        // Compress if image is too large (> 500KB)
+        if (base64.length > 500 * 1024) {
+          toast({ title: 'Comprimindo imagem...' });
+          base64 = await compressImage(base64);
+        }
+        
+        if (uploadTarget.startsWith('course-')) {
+          updateCourseCover(uploadTarget, base64);
+        } else {
+          updateBranding(uploadTarget as keyof typeof customization.branding, base64);
+        }
+        
+        toast({ title: 'Imagem carregada!' });
+      } catch (error) {
+        console.error('Error processing image:', error);
+        toast({ title: 'Erro ao processar imagem', variant: 'destructive' });
       }
-      
-      toast({ title: 'Imagem carregada!' });
     };
     reader.readAsDataURL(file);
   };
@@ -137,9 +182,26 @@ const CustomizationSettings: React.FC = () => {
 
   // Save all changes
   const handleSave = () => {
-    saveCustomization(customization);
-    applyCustomization(customization);
-    toast({ title: 'Personalizações salvas!' });
+    try {
+      saveCustomization(customization);
+      applyCustomization(customization);
+      toast({ title: 'Personalizações salvas!' });
+    } catch (error: any) {
+      console.error('Save error:', error);
+      if (error.message === 'STORAGE_FULL') {
+        toast({ 
+          title: 'Erro: Armazenamento cheio', 
+          description: 'Tente usar imagens menores ou remova algumas capas de cursos.',
+          variant: 'destructive' 
+        });
+      } else {
+        toast({ 
+          title: 'Erro ao salvar', 
+          description: 'Tente novamente ou use imagens menores.',
+          variant: 'destructive' 
+        });
+      }
+    }
   };
 
   // Reset to default

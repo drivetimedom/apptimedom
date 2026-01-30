@@ -1279,18 +1279,28 @@ function ensureHofCircleData(): void {
   const existingLessons = getFromStorage<Lesson[]>(STORAGE_KEYS.LESSONS, []);
   const existingProgress = getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []);
   
-  // Check if HOF CIRCLE category exists
+  // Check if HOF CIRCLE category exists with correct slug
   const hofCircleCategory = existingCategories.find(c => c.id === 'cat-hoff-circle');
+  const hofCircleBySlug = existingCategories.find(c => c.slug === 'hoff-circle');
   
-  if (!hofCircleCategory || !hofCircleCategory.hasDedicatedPage) {
-    console.log('🔄 HOF CIRCLE categoria não encontrada. Adicionando...');
+  // Category needs fix if: doesn't exist, has no dedicated page, or slug is wrong
+  const needsCategoryFix = !hofCircleCategory || 
+    !hofCircleCategory.hasDedicatedPage || 
+    hofCircleCategory.slug !== 'hoff-circle' ||
+    !hofCircleBySlug;
+  
+  if (needsCategoryFix) {
+    console.log('🔄 HOF CIRCLE categoria não encontrada ou corrompida. Corrigindo...');
     
     // Find the HOF CIRCLE category from initial data
     const hofCircleFromInitial = initialCategories.find(c => c.id === 'cat-hoff-circle');
     if (hofCircleFromInitial) {
       // Remove old hoff-circle category if exists and add the new one
-      const filteredCategories = existingCategories.filter(c => c.id !== 'cat-hoff-circle');
+      const filteredCategories = existingCategories.filter(
+        c => c.id !== 'cat-hoff-circle' && c.slug !== 'hoff-circle'
+      );
       setToStorage(STORAGE_KEYS.CATEGORIES, [...filteredCategories, hofCircleFromInitial]);
+      console.log('✅ HOF CIRCLE categoria restaurada!');
     }
   }
   

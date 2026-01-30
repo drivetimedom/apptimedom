@@ -7,10 +7,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-interface CreateAdminRequest {
+interface CreateUserRequest {
   email: string;
   password: string;
   name: string;
+  role?: "admin" | "instructor" | "user";
 }
 
 serve(async (req) => {
@@ -30,7 +31,7 @@ serve(async (req) => {
       }
     );
 
-    const { email, password, name }: CreateAdminRequest = await req.json();
+    const { email, password, name, role = "user" }: CreateUserRequest = await req.json();
 
     if (!email || !password || !name) {
       return new Response(
@@ -57,28 +58,30 @@ serve(async (req) => {
 
     const userId = userData.user.id;
 
-    // Update the user's role to admin
-    const { error: roleError } = await supabaseAdmin
-      .from("user_roles")
-      .update({ role: "admin" })
-      .eq("user_id", userId);
-
-    if (roleError) {
-      console.error("Error updating role:", roleError);
-      // Try insert if update fails (in case trigger didn't create it)
-      const { error: insertError } = await supabaseAdmin
+    // Update the user's role (trigger creates default 'user' role, so we update if different)
+    if (role !== "user") {
+      const { error: roleError } = await supabaseAdmin
         .from("user_roles")
-        .upsert({ user_id: userId, role: "admin" }, { onConflict: "user_id" });
-      
-      if (insertError) {
-        console.error("Error inserting role:", insertError);
+        .update({ role })
+        .eq("user_id", userId);
+
+      if (roleError) {
+        console.error("Error updating role:", roleError);
+        // Try upsert if update fails (in case trigger didn't create it)
+        const { error: insertError } = await supabaseAdmin
+          .from("user_roles")
+          .upsert({ user_id: userId, role }, { onConflict: "user_id" });
+        
+        if (insertError) {
+          console.error("Error inserting role:", insertError);
+        }
       }
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Admin user created: ${email}`,
+        message: `User created: ${email} with role: ${role}`,
         userId 
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

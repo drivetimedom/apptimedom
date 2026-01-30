@@ -36,7 +36,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Trash2, Target, BookOpen, Settings, FileDown } from 'lucide-react';
+import { Plus, Trash2, Target, BookOpen, Settings, FileDown, Loader2 } from 'lucide-react';
 
 // Types for Maps and Challenges
 interface HofMap {
@@ -63,6 +63,7 @@ interface UserFormModalProps {
   onSave: (user: Partial<User> & { password?: string; confirmPassword?: string }) => void;
   user?: User | null;
   existingEmails: string[];
+  isLoading?: boolean;
 }
 
 const statusOptions: { value: UserStatus; label: string; icon: string }[] = [
@@ -79,6 +80,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
   onSave,
   user,
   existingEmails,
+  isLoading = false,
 }) => {
   const { toast } = useToast();
   const [courses] = useState(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []));
@@ -815,11 +817,18 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
         </Tabs>
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} disabled={isLoading}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit}>
-            {user ? 'Salvar Alterações' : 'Criar Usuário'}
+          <Button onClick={handleSubmit} disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Criando...
+              </>
+            ) : (
+              user ? 'Salvar Alterações' : 'Criar Usuário'
+            )}
           </Button>
         </div>
       </DialogContent>

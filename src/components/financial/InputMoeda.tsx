@@ -98,6 +98,16 @@ const InputMoeda: React.FC<InputMoedaProps> = ({
     ? 'bg-[#f59e0b]/10 border-[#f59e0b] text-[#f59e0b] font-bold'
     : 'bg-[#3b82f6]/10 border-[#3b82f6] text-white focus:ring-2 focus:ring-[#3b82f6]/50';
 
+  const showEditIcon = !readOnly && !isTotal;
+
+  // Ensure the value never renders underneath suffix/edit icon
+  const rightPaddingClass = (() => {
+    if (suffix && showEditIcon) return 'pr-16';
+    if (suffix) return 'pr-12';
+    if (showEditIcon) return 'pr-10';
+    return 'pr-3';
+  })();
+
   return (
     <div className={`space-y-1.5 ${className}`}>
       <div className="flex items-center gap-2">
@@ -129,7 +139,7 @@ const InputMoeda: React.FC<InputMoedaProps> = ({
           className={`
             w-full h-10 rounded-lg border px-3 text-right
             ${prefix ? 'pl-10' : 'pl-3'}
-            ${suffix ? 'pr-12' : 'pr-3'}
+            ${rightPaddingClass}
             ${baseStyles}
             border-[#404040] outline-none transition-all
           `}
@@ -139,8 +149,10 @@ const InputMoeda: React.FC<InputMoedaProps> = ({
             {suffix}
           </span>
         )}
-        {!readOnly && !isTotal && (
-          <Pencil className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#3b82f6]" />
+        {showEditIcon && (
+          <Pencil
+            className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 text-[#3b82f6] ${suffix ? 'right-10' : 'right-3'}`}
+          />
         )}
       </div>
     </div>

@@ -25,10 +25,12 @@ import {
   Percent,
   Calendar,
   BarChart3,
-  User as UserIcon
+  User as UserIcon,
+  ClipboardList
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
+import ActivationPlanReadOnly from './ActivationPlanReadOnly';
 
 interface WeekData {
   id: string;
@@ -42,6 +44,13 @@ interface WeekData {
   createdAt: string;
 }
 
+interface ActivationTask {
+  id: string;
+  text: string;
+  done: boolean;
+  fromTemplate?: string;
+}
+
 interface StudentWithTracking extends User {
   tracking: WeekData[];
   totals: {
@@ -52,6 +61,7 @@ interface StudentWithTracking extends User {
     revenue: number;
   };
   hasData: boolean;
+  activationPlan: ActivationTask[];
 }
 
 const AdminCommercialTracking: React.FC = () => {
@@ -68,12 +78,14 @@ const AdminCommercialTracking: React.FC = () => {
     return students.map(student => {
       const tracking = getStudentCommercialTracking(student.id);
       const totals = calculateTotals(tracking);
+      const activationPlan = student.activationPlan || [];
       
       return {
         ...student,
         tracking,
         totals,
-        hasData: tracking.length > 0
+        hasData: tracking.length > 0,
+        activationPlan
       };
     });
   }, []);
@@ -397,144 +409,163 @@ const AdminCommercialTracking: React.FC = () => {
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-3 mt-4">
+                <div className="flex items-center gap-3 mt-4 flex-wrap">
                   <Badge variant={selectedStudent.hasData ? 'default' : 'secondary'}>
-                    {selectedStudent.hasData ? `${selectedStudent.tracking.length} semanas` : 'Sem dados'}
+                    {selectedStudent.hasData ? `${selectedStudent.tracking.length} semanas` : 'Sem dados comerciais'}
                   </Badge>
                   <Badge variant="outline">
                     {formatCurrency(selectedStudent.totals.revenue)} total
                   </Badge>
+                  <Badge variant="outline" className="bg-success/10 text-success border-success/30">
+                    <ClipboardList className="w-3 h-3 mr-1" />
+                    {selectedStudent.activationPlan.filter(t => t.done).length}/{selectedStudent.activationPlan.length} tarefas
+                  </Badge>
                 </div>
               </CardHeader>
 
-              <CardContent className="pt-6 space-y-6">
-                {selectedStudent.hasData ? (
-                  <>
-                    {/* Tracking Table */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5" />
-                        Histórico de Acompanhamento
-                      </h3>
-                      
-                      <div className="rounded-lg border border-border overflow-hidden">
-                        <div className="overflow-x-auto">
-                          <Table>
-                            <TableHeader>
-                              <TableRow className="bg-muted/50">
-                                <TableHead>Período</TableHead>
-                                <TableHead className="text-center">Leads</TableHead>
-                                <TableHead className="text-center">Agend.</TableHead>
-                                <TableHead className="text-center">Compar.</TableHead>
-                                <TableHead className="text-center">Fecham.</TableHead>
-                                <TableHead className="text-right">Faturamento</TableHead>
-                                <TableHead>Observações</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {selectedStudent.tracking.map(week => (
-                                <TableRow key={week.id}>
-                                  <TableCell className="font-medium">{week.period}</TableCell>
-                                  <TableCell className="text-center">{week.leadsGenerated}</TableCell>
-                                  <TableCell className="text-center">{week.appointments}</TableCell>
-                                  <TableCell className="text-center">{week.attended}</TableCell>
-                                  <TableCell className="text-center">{week.closed}</TableCell>
-                                  <TableCell className="text-right">{formatCurrency(week.revenue)}</TableCell>
-                                  <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
-                                    {week.observations || '-'}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                            <TableFooter className="bg-primary/5 border-t-2 border-primary">
-                              <TableRow>
-                                <TableCell className="font-semibold">TOTAIS</TableCell>
-                                <TableCell className="text-center font-bold">{selectedStudent.totals.leads}</TableCell>
-                                <TableCell className="text-center font-bold">{selectedStudent.totals.appointments}</TableCell>
-                                <TableCell className="text-center font-bold">{selectedStudent.totals.attended}</TableCell>
-                                <TableCell className="text-center font-bold">{selectedStudent.totals.closed}</TableCell>
-                                <TableCell className="text-right font-bold text-success">
-                                  {formatCurrency(selectedStudent.totals.revenue)}
-                                </TableCell>
-                                <TableCell></TableCell>
-                              </TableRow>
-                            </TableFooter>
-                          </Table>
+              <CardContent className="pt-6">
+                {/* Two Column Layout */}
+                <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-6">
+                  {/* Left Column - Commercial Tracking */}
+                  <div className="space-y-6">
+                    {selectedStudent.hasData ? (
+                      <>
+                        {/* Tracking Table */}
+                        <div>
+                          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                            <BarChart3 className="w-5 h-5" />
+                            Histórico de Acompanhamento
+                          </h3>
+                          
+                          <div className="rounded-lg border border-border overflow-hidden">
+                            <div className="overflow-x-auto">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow className="bg-muted/50">
+                                    <TableHead>Período</TableHead>
+                                    <TableHead className="text-center">Leads</TableHead>
+                                    <TableHead className="text-center">Agend.</TableHead>
+                                    <TableHead className="text-center">Compar.</TableHead>
+                                    <TableHead className="text-center">Fecham.</TableHead>
+                                    <TableHead className="text-right">Faturamento</TableHead>
+                                    <TableHead>Obs.</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {selectedStudent.tracking.map(week => (
+                                    <TableRow key={week.id}>
+                                      <TableCell className="font-medium">{week.period}</TableCell>
+                                      <TableCell className="text-center">{week.leadsGenerated}</TableCell>
+                                      <TableCell className="text-center">{week.appointments}</TableCell>
+                                      <TableCell className="text-center">{week.attended}</TableCell>
+                                      <TableCell className="text-center">{week.closed}</TableCell>
+                                      <TableCell className="text-right">{formatCurrency(week.revenue)}</TableCell>
+                                      <TableCell className="text-sm text-muted-foreground max-w-[120px] truncate">
+                                        {week.observations || '-'}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
+                                <TableFooter className="bg-primary/5 border-t-2 border-primary">
+                                  <TableRow>
+                                    <TableCell className="font-semibold">TOTAIS</TableCell>
+                                    <TableCell className="text-center font-bold">{selectedStudent.totals.leads}</TableCell>
+                                    <TableCell className="text-center font-bold">{selectedStudent.totals.appointments}</TableCell>
+                                    <TableCell className="text-center font-bold">{selectedStudent.totals.attended}</TableCell>
+                                    <TableCell className="text-center font-bold">{selectedStudent.totals.closed}</TableCell>
+                                    <TableCell className="text-right font-bold text-success">
+                                      {formatCurrency(selectedStudent.totals.revenue)}
+                                    </TableCell>
+                                    <TableCell></TableCell>
+                                  </TableRow>
+                                </TableFooter>
+                              </Table>
+                            </div>
+                          </div>
                         </div>
+
+                        {/* Metrics Cards */}
+                        <div>
+                          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                            <TrendingUp className="w-5 h-5" />
+                            Métricas e Performance
+                          </h3>
+                          
+                          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <Card className="bg-muted/30 border-border">
+                              <CardContent className="pt-4">
+                                <p className="text-xs text-muted-foreground mb-1">Taxa de Agendamento</p>
+                                <p className="text-2xl font-bold text-foreground">
+                                  {calculateRate(selectedStudent.totals.appointments, selectedStudent.totals.leads)}%
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {selectedStudent.totals.appointments} de {selectedStudent.totals.leads} leads
+                                </p>
+                              </CardContent>
+                            </Card>
+
+                            <Card className="bg-muted/30 border-border">
+                              <CardContent className="pt-4">
+                                <p className="text-xs text-muted-foreground mb-1">Taxa de Comparecimento</p>
+                                <p className="text-2xl font-bold text-foreground">
+                                  {calculateRate(selectedStudent.totals.attended, selectedStudent.totals.appointments)}%
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {selectedStudent.totals.attended} de {selectedStudent.totals.appointments} agendados
+                                </p>
+                              </CardContent>
+                            </Card>
+
+                            <Card className="bg-muted/30 border-border">
+                              <CardContent className="pt-4">
+                                <p className="text-xs text-muted-foreground mb-1">Taxa de Conversão</p>
+                                <p className="text-2xl font-bold text-success">
+                                  {calculateRate(selectedStudent.totals.closed, selectedStudent.totals.attended)}%
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {selectedStudent.totals.closed} de {selectedStudent.totals.attended} atendidos
+                                </p>
+                              </CardContent>
+                            </Card>
+
+                            <Card className="bg-muted/30 border-border">
+                              <CardContent className="pt-4">
+                                <p className="text-xs text-muted-foreground mb-1">Ticket Médio</p>
+                                <p className="text-2xl font-bold text-foreground">
+                                  {selectedStudent.totals.closed > 0 
+                                    ? formatCurrency(selectedStudent.totals.revenue / selectedStudent.totals.closed)
+                                    : 'R$ 0'}
+                                </p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {selectedStudent.totals.closed} vendas
+                                </p>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-16 text-center">
+                        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                          <BarChart3 className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-foreground mb-2">Sem dados de acompanhamento</h3>
+                        <p className="text-muted-foreground max-w-md">
+                          Este aluno ainda não preencheu nenhuma semana de acompanhamento comercial.
+                        </p>
                       </div>
-                    </div>
-
-                    {/* Metrics Cards */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5" />
-                        Métricas e Performance
-                      </h3>
-                      
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                        <Card className="bg-muted/30 border-border">
-                          <CardContent className="pt-4">
-                            <p className="text-xs text-muted-foreground mb-1">Taxa de Agendamento</p>
-                            <p className="text-2xl font-bold text-foreground">
-                              {calculateRate(selectedStudent.totals.appointments, selectedStudent.totals.leads)}%
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {selectedStudent.totals.appointments} de {selectedStudent.totals.leads} leads
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card className="bg-muted/30 border-border">
-                          <CardContent className="pt-4">
-                            <p className="text-xs text-muted-foreground mb-1">Taxa de Comparecimento</p>
-                            <p className="text-2xl font-bold text-foreground">
-                              {calculateRate(selectedStudent.totals.attended, selectedStudent.totals.appointments)}%
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {selectedStudent.totals.attended} de {selectedStudent.totals.appointments} agendados
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card className="bg-muted/30 border-border">
-                          <CardContent className="pt-4">
-                            <p className="text-xs text-muted-foreground mb-1">Taxa de Conversão</p>
-                            <p className="text-2xl font-bold text-success">
-                              {calculateRate(selectedStudent.totals.closed, selectedStudent.totals.attended)}%
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {selectedStudent.totals.closed} de {selectedStudent.totals.attended} atendidos
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card className="bg-muted/30 border-border">
-                          <CardContent className="pt-4">
-                            <p className="text-xs text-muted-foreground mb-1">Ticket Médio</p>
-                            <p className="text-2xl font-bold text-foreground">
-                              {selectedStudent.totals.closed > 0 
-                                ? formatCurrency(selectedStudent.totals.revenue / selectedStudent.totals.closed)
-                                : 'R$ 0'}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {selectedStudent.totals.closed} vendas
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-16 text-center">
-                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-                      <BarChart3 className="w-8 h-8 text-muted-foreground" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-foreground mb-2">Sem dados de acompanhamento</h3>
-                    <p className="text-muted-foreground max-w-md">
-                      Este aluno ainda não preencheu nenhuma semana de acompanhamento comercial.
-                    </p>
+                    )}
                   </div>
-                )}
+
+                  {/* Right Column - Activation Plan */}
+                  <div className="xl:sticky xl:top-6 h-fit">
+                    <ActivationPlanReadOnly
+                      activationPlan={selectedStudent.activationPlan}
+                      studentName={selectedStudent.name}
+                      studentId={selectedStudent.id}
+                    />
+                  </div>
+                </div>
               </CardContent>
             </>
           ) : (

@@ -1,13 +1,18 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getFromStorage, STORAGE_KEYS, Course, User, Progress } from '@/lib/storage';
+import { getCustomization } from '@/lib/customization';
 import CourseCard from '@/components/courses/CourseCard';
-import { BookOpen, Clock, Trophy, Filter } from 'lucide-react';
+import { BookOpen, Clock, Trophy, Filter, Home, ChevronRight, GraduationCap, ArrowDown } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 
 const MyCoursesPage: React.FC = () => {
+  const navigate = useNavigate();
   const { user, profile, isAdmin, isInstructor } = useAuth();
   const [activeTab, setActiveTab] = useState('all');
+  const customization = getCustomization();
 
   const courses = useMemo(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []), []);
   const users = useMemo(() => getFromStorage<User[]>(STORAGE_KEYS.USERS, []), []);
@@ -79,17 +84,72 @@ const MyCoursesPage: React.FC = () => {
 
   const totalLessonsCompleted = userProgress.reduce((acc, p) => acc + p.completedLessons.length, 0);
 
+  const scrollToContent = () => {
+    document.getElementById('courses-content')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-card/50">
-        <div className="container py-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Meus Cursos</h1>
-          <p className="text-muted-foreground">Acompanhe seu progresso e continue aprendendo</p>
+      {/* Hero Banner */}
+      <section 
+        className="relative h-[350px] md:h-[400px] w-full bg-cover bg-center"
+        style={{
+          backgroundImage: customization.branding.bannerUrl 
+            ? `url(${customization.branding.bannerUrl})`
+            : 'linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)'
+        }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background" />
+        
+        {/* Content */}
+        <div className="relative z-10 container h-full flex flex-col justify-center">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+            <button onClick={() => navigate('/')} className="hover:text-foreground transition-colors flex items-center gap-1">
+              <Home className="w-4 h-4" />
+              Início
+            </button>
+            <ChevronRight className="w-4 h-4" />
+            <span className="text-foreground">Meus Cursos</span>
+          </div>
+
+          {/* Title */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+              <GraduationCap className="w-10 h-10 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                Meus Cursos
+              </h1>
+            </div>
+          </div>
+
+          {/* Subtitle */}
+          <p className="text-lg text-muted-foreground max-w-2xl mb-6">
+            Acompanhe seu progresso e continue aprendendo
+          </p>
+
+          {/* CTA Button */}
+          <div className="flex items-center gap-4">
+            <Button 
+              size="lg" 
+              onClick={scrollToContent}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Ver Cursos
+              <ArrowDown className="w-4 h-4 ml-2" />
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              {unlockedCourses.length} cursos disponíveis
+            </span>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Stats */}
+      <div id="courses-content"></div>
       <div className="border-b border-border bg-card/30">
         <div className="container py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

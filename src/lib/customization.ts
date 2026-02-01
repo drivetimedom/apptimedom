@@ -243,9 +243,15 @@ export function applyCustomization(customization: Customization): void {
   
   // Update favicon if set
   if (customization.branding.faviconUrl) {
-    const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+    // Try to find by ID first (more reliable), then fallback to selector
+    let favicon = document.getElementById('app-favicon') as HTMLLinkElement;
+    if (!favicon) {
+      favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+    }
     if (favicon) {
-      favicon.href = customization.branding.faviconUrl;
+      // Force refresh by adding timestamp to bypass cache
+      const url = customization.branding.faviconUrl;
+      favicon.href = url.includes('?') ? `${url}&_t=${Date.now()}` : `${url}?_t=${Date.now()}`;
     }
   }
   

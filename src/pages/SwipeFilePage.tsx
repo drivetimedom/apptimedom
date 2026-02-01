@@ -1,5 +1,7 @@
 import React, { useMemo, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { getCustomization } from '@/lib/customization';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { 
@@ -9,7 +11,11 @@ import {
   Grid3X3, 
   List, 
   FileText,
-  Loader2
+  Loader2,
+  Home,
+  ChevronRight,
+  FolderOpen,
+  ArrowDown
 } from 'lucide-react';
 import {
   Select,
@@ -35,8 +41,10 @@ import {
 } from '@/hooks/useSwipeFile';
 
 const SwipeFilePage: React.FC = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin } = useAuth();
+  const customization = getCustomization();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
@@ -78,6 +86,10 @@ const SwipeFilePage: React.FC = () => {
       categoryId: m.category_id,
     }));
   }, [materials]);
+
+  const scrollToContent = () => {
+    document.getElementById('swipefile-content')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   // Get unique categories for filter
   const categories = useMemo(() => {
@@ -203,23 +215,66 @@ const SwipeFilePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-card/50">
-        <div className="container py-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Swipe File</h1>
-              <p className="text-muted-foreground">Processos, templates e materiais de referência</p>
+      {/* Hero Banner */}
+      <section 
+        className="relative h-[350px] md:h-[400px] w-full bg-cover bg-center"
+        style={{
+          backgroundImage: customization.branding.bannerUrl 
+            ? `url(${customization.branding.bannerUrl})`
+            : 'linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)'
+        }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background" />
+        
+        {/* Content */}
+        <div className="relative z-10 container h-full flex flex-col justify-center">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+            <button onClick={() => navigate('/')} className="hover:text-foreground transition-colors flex items-center gap-1">
+              <Home className="w-4 h-4" />
+              Início
+            </button>
+            <ChevronRight className="w-4 h-4" />
+            <span className="text-foreground">Swipe File</span>
+          </div>
+
+          {/* Title */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+              <FolderOpen className="w-10 h-10 text-primary" />
             </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                Swipe File
+              </h1>
+            </div>
+          </div>
+
+          {/* Subtitle */}
+          <p className="text-lg text-muted-foreground max-w-2xl mb-6">
+            Processos, templates e materiais de referência
+          </p>
+
+          {/* CTA Button */}
+          <div className="flex items-center gap-4">
+            <Button 
+              size="lg" 
+              onClick={scrollToContent}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Explorar Materiais
+              <ArrowDown className="w-4 h-4 ml-2" />
+            </Button>
             {isAdmin && (
-              <Button onClick={handleCreate} className="gap-2">
+              <Button onClick={handleCreate} variant="outline" size="lg" className="gap-2">
                 <Plus className="w-4 h-4" />
                 Novo Processo
               </Button>
             )}
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Filters */}
       <div className="border-b border-border bg-card/30">
@@ -280,6 +335,7 @@ const SwipeFilePage: React.FC = () => {
       </div>
 
       {/* Content */}
+      <div id="swipefile-content"></div>
       <div className="container py-8">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">

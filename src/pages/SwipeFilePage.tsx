@@ -275,9 +275,7 @@ const SwipeFilePage: React.FC = () => {
       <section 
         className="relative h-[350px] md:h-[400px] w-full bg-cover bg-center"
         style={{
-          backgroundImage: customization.branding.bannerUrl 
-            ? `url(${customization.branding.bannerUrl})`
-            : 'linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)'
+          backgroundImage: `url(/images/banner-secoes.png)`
         }}
       >
         {/* Overlay */}

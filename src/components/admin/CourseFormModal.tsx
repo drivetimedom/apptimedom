@@ -409,21 +409,21 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="bg-card border-border max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
-          <DialogHeader>
+        <DialogContent className="bg-card border-border max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-foreground text-xl">
               {course ? 'Editar Curso' : 'Novo Curso'}
             </DialogTitle>
           </DialogHeader>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
-            <TabsList className="bg-secondary border border-border w-full justify-start">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+            <TabsList className="bg-secondary border border-border w-full justify-start flex-shrink-0">
               <TabsTrigger value="basic">Informações</TabsTrigger>
               <TabsTrigger value="content">Conteúdo</TabsTrigger>
               <TabsTrigger value="advanced">Avançado</TabsTrigger>
             </TabsList>
 
-            <ScrollArea className="flex-1 max-h-[60vh] mt-4">
+            <ScrollArea className="flex-1 mt-4">
               {/* Basic Info Tab */}
               <TabsContent value="basic" className="space-y-4 m-0 pr-4">
                 <div className="grid grid-cols-2 gap-4">

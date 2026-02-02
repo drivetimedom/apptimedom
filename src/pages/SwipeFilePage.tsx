@@ -7,24 +7,17 @@ import { Input } from '@/components/ui/input';
 import { 
   Search, 
   Plus, 
-  Filter, 
-  Grid3X3, 
-  List, 
   FileText,
   Loader2,
   Home,
   ChevronRight,
   FolderOpen,
-  ArrowDown
+  ArrowDown,
+  List,
+  Folder
 } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import SwipeTable from '@/components/swipefile/SwipeTable';
 import SwipeProcessModal, { SwipeProcess } from '@/components/swipefile/SwipeProcessModal';
 import SwipeDeleteConfirmation from '@/components/swipefile/SwipeDeleteConfirmation';
@@ -47,7 +40,7 @@ const SwipeFilePage: React.FC = () => {
   const customization = getCustomization();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [selectedType, setSelectedType] = useState<string>('all');
   
   // Modal states
   const [selectedProcess, setSelectedProcess] = useState<SwipeProcess | null>(null);
@@ -91,10 +84,55 @@ const SwipeFilePage: React.FC = () => {
     document.getElementById('swipefile-content')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Get unique categories for filter
+  // Get category names for dropdown
   const categories = useMemo(() => {
     return categoriesData.map(c => c.name);
   }, [categoriesData]);
+
+  // Count materials per category
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: materials.length };
+    categoriesData.forEach(cat => {
+      counts[cat.id] = materials.filter(m => m.category_id === cat.id).length;
+    });
+    return counts;
+  }, [materials, categoriesData]);
+
+  // Count materials per type (filtered by selected category)
+  const typeCounts = useMemo(() => {
+    const materialsInCategory = selectedCategory === 'all' 
+      ? materials 
+      : materials.filter(m => m.category_id === selectedCategory);
+    
+    const counts: Record<string, number> = { all: materialsInCategory.length };
+    typesData.forEach(type => {
+      counts[type.id] = materialsInCategory.filter(m => m.type_id === type.id).length;
+    });
+    return counts;
+  }, [materials, typesData, selectedCategory]);
+
+  // Get types that have materials in the selected category
+  const typesInCategory = useMemo(() => {
+    if (selectedCategory === 'all') return typesData;
+    
+    const typeIdsInCategory = new Set(
+      materials
+        .filter(m => m.category_id === selectedCategory && m.type_id)
+        .map(m => m.type_id)
+    );
+    
+    return typesData.filter(t => typeIdsInCategory.has(t.id));
+  }, [materials, typesData, selectedCategory]);
+
+  // Get selected category data
+  const selectedCategoryData = useMemo(() => {
+    return categoriesData.find(c => c.id === selectedCategory);
+  }, [categoriesData, selectedCategory]);
+
+  // Get selected type data
+  const selectedTypeData = useMemo(() => {
+    return typesData.find(t => t.id === selectedType);
+  }, [typesData, selectedType]);
 
   const filteredProcesses = useMemo(() => {
     return processes.filter(p => {
@@ -105,11 +143,18 @@ const SwipeFilePage: React.FC = () => {
         p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.type || '').toLowerCase().includes(searchQuery.toLowerCase());
       
-      const matchesCategory = selectedCategory === 'all' || p.category === selectedCategory;
+      const matchesCategory = selectedCategory === 'all' || p.categoryId === selectedCategory;
+      const matchesType = selectedType === 'all' || p.typeId === selectedType;
       
-      return matchesSearch && matchesCategory;
+      return matchesSearch && matchesCategory && matchesType;
     });
-  }, [processes, searchQuery, selectedCategory]);
+  }, [processes, searchQuery, selectedCategory, selectedType]);
+
+  // Handle category change - reset type when changing category
+  const handleCategoryChange = useCallback((categoryId: string) => {
+    setSelectedCategory(categoryId);
+    setSelectedType('all');
+  }, []);
 
   // Handlers
   const handleView = useCallback((process: SwipeProcess) => {
@@ -213,6 +258,17 @@ const SwipeFilePage: React.FC = () => {
 
   const isLoading = materialsLoading;
 
+  // Get search placeholder text
+  const searchPlaceholder = useMemo(() => {
+    if (selectedType !== 'all' && selectedTypeData) {
+      return `Buscar em ${selectedTypeData.name}...`;
+    }
+    if (selectedCategory !== 'all' && selectedCategoryData) {
+      return `Buscar em ${selectedCategoryData.name}...`;
+    }
+    return 'Buscar materiais...';
+  }, [selectedCategory, selectedType, selectedCategoryData, selectedTypeData]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Banner */}
@@ -276,60 +332,150 @@ const SwipeFilePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Filters */}
+      {/* Category Tabs */}
+      <div className="border-b border-border bg-card/30">
+        <div className="container py-6">
+          <p className="text-sm text-muted-foreground mb-3">Categoria:</p>
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex items-center gap-3 pb-2">
+              {/* Tab: Todos */}
+              <button
+                onClick={() => handleCategoryChange('all')}
+                className={`
+                  flex items-center gap-2 px-5 py-3 rounded-lg font-semibold transition-all whitespace-nowrap
+                  ${selectedCategory === 'all'
+                    ? 'bg-primary text-primary-foreground shadow-md'
+                    : 'bg-card text-muted-foreground hover:bg-secondary hover:text-foreground border border-border'
+                  }
+                `}
+              >
+                <Folder className="w-5 h-5" />
+                <span>Todos</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  selectedCategory === 'all' 
+                    ? 'bg-primary-foreground/20' 
+                    : 'bg-muted'
+                }`}>
+                  {categoryCounts.all}
+                </span>
+              </button>
+              
+              {/* Category Tabs */}
+              {categoriesData.map(category => (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategoryChange(category.id)}
+                  className={`
+                    flex items-center gap-2 px-5 py-3 rounded-lg font-semibold transition-all whitespace-nowrap
+                    ${selectedCategory === category.id
+                      ? 'bg-primary text-primary-foreground shadow-md'
+                      : 'bg-card text-muted-foreground hover:bg-secondary hover:text-foreground border border-border'
+                    }
+                  `}
+                >
+                  <span className="text-lg">{category.icon}</span>
+                  <span>{category.name}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    selectedCategory === category.id 
+                      ? 'bg-primary-foreground/20' 
+                      : 'bg-muted'
+                  }`}>
+                    {categoryCounts[category.id] || 0}
+                  </span>
+                </button>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
+      </div>
+
+      {/* Type Subfolder (only shows when category is selected) */}
+      {selectedCategory !== 'all' && typesInCategory.length > 0 && (
+        <div className="border-b border-border">
+          <div className="container py-5">
+            <div className="bg-card border border-border rounded-xl p-5">
+              {/* Subfolder Header */}
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-2xl">{selectedCategoryData?.icon}</span>
+                <h2 className="text-lg font-bold text-foreground">
+                  {selectedCategoryData?.name}
+                </h2>
+              </div>
+              
+              {/* Type Pills */}
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* All Types */}
+                <button
+                  onClick={() => setSelectedType('all')}
+                  className={`
+                    flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
+                    ${selectedType === 'all'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
+                    }
+                  `}
+                >
+                  <span>Todos</span>
+                  <span className={`text-xs ${selectedType === 'all' ? 'opacity-70' : ''}`}>
+                    {typeCounts.all}
+                  </span>
+                </button>
+                
+                {/* Type Pills */}
+                {typesInCategory.map(type => (
+                  <button
+                    key={type.id}
+                    onClick={() => setSelectedType(type.id)}
+                    className={`
+                      flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
+                      ${selectedType === type.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
+                      }
+                    `}
+                  >
+                    <span className="text-base">{type.icon}</span>
+                    <span>{type.name}</span>
+                    <span className={`text-xs ${selectedType === type.id ? 'opacity-70' : ''}`}>
+                      {typeCounts[type.id] || 0}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Search and View Controls */}
       <div className="border-b border-border bg-card/30">
         <div className="container py-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-muted-foreground" />
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            {/* Search */}
+            <div className="relative flex-1 max-w-xl w-full">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar processos..."
+                placeholder={searchPlaceholder}
                 className="pl-12 h-12 bg-card border-border text-sm"
               />
             </div>
+            
+            {/* View Mode - Only List (as requested) */}
             <div className="flex items-center gap-3">
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-[200px] h-12 bg-card border-border">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Categoria" />
-                </SelectTrigger>
-                <SelectContent className="bg-popover border-border">
-                  <SelectItem value="all">Todas as categorias</SelectItem>
-                  {categories.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex items-center rounded-lg border border-border overflow-hidden h-12">
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`w-12 h-full flex items-center justify-center transition-colors ${
-                    viewMode === 'grid' 
-                      ? 'bg-secondary text-foreground' 
-                      : 'text-muted-foreground hover:text-foreground hover:bg-card'
-                  }`}
-                >
-                  <Grid3X3 className="w-[18px] h-[18px]" />
-                </button>
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`w-12 h-full flex items-center justify-center transition-colors ${
-                    viewMode === 'list' 
-                      ? 'bg-secondary text-foreground' 
-                      : 'text-muted-foreground hover:text-foreground hover:bg-card'
-                  }`}
-                >
-                  <List className="w-[18px] h-[18px]" />
-                </button>
+              <span className="text-sm text-muted-foreground">Visualização:</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-foreground">
+                <List className="w-4 h-4" />
+                <span className="text-sm font-medium">Lista</span>
               </div>
             </div>
           </div>
           
           {/* Results counter */}
-          <p className="text-[13px] text-muted-foreground mt-3">
-            {filteredProcesses.length} processo{filteredProcesses.length !== 1 ? 's' : ''} encontrado{filteredProcesses.length !== 1 ? 's' : ''}
+          <p className="text-sm text-muted-foreground mt-3">
+            {filteredProcesses.length} {filteredProcesses.length === 1 ? 'material encontrado' : 'materiais encontrados'}
           </p>
         </div>
       </div>
@@ -355,23 +501,23 @@ const SwipeFilePage: React.FC = () => {
           />
         ) : (
           <div className="text-center py-16">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-8 h-8 text-muted-foreground" />
+            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <FileText className="w-10 h-10 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-medium text-foreground mb-2">
-              Nenhum processo encontrado
+            <h3 className="text-xl font-bold text-foreground mb-2">
+              Nenhum material encontrado
             </h3>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-muted-foreground mb-6">
               {searchQuery 
-                ? 'Tente buscar por outros termos' 
+                ? `Nenhum resultado para "${searchQuery}"` 
                 : isAdmin 
-                  ? 'Comece adicionando seu primeiro processo' 
+                  ? 'Comece adicionando seu primeiro material' 
                   : 'Aguarde novos conteúdos'}
             </p>
-            {isAdmin && (
+            {isAdmin && !searchQuery && (
               <Button onClick={handleCreate} className="gap-2">
                 <Plus className="w-4 h-4" />
-                Novo Processo
+                Novo Material
               </Button>
             )}
           </div>

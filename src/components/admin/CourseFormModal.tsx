@@ -409,21 +409,21 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="bg-card border-border max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="bg-card border-border max-w-4xl h-[85vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-foreground text-xl">
               {course ? 'Editar Curso' : 'Novo Curso'}
             </DialogTitle>
           </DialogHeader>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
             <TabsList className="bg-secondary border border-border w-full justify-start flex-shrink-0">
               <TabsTrigger value="basic">Informações</TabsTrigger>
               <TabsTrigger value="content">Conteúdo</TabsTrigger>
               <TabsTrigger value="advanced">Avançado</TabsTrigger>
             </TabsList>
 
-            <ScrollArea className="flex-1 mt-4">
+            <div className="flex-1 overflow-y-auto mt-4 pr-2">
               {/* Basic Info Tab */}
               <TabsContent value="basic" className="space-y-4 m-0 pr-4">
                 <div className="grid grid-cols-2 gap-4">
@@ -788,7 +788,7 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
                   )}
                 </div>
               </TabsContent>
-            </ScrollArea>
+            </div>
           </Tabs>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border">

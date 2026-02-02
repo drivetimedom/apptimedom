@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFromStorage, STORAGE_KEYS, Course, User, Progress } from '@/lib/storage';
+import { useCourses } from '@/hooks/useCourses';
+import { useUserProgress } from '@/hooks/useUserProgress';
 import { getCustomization } from '@/lib/customization';
 import CourseCard from '@/components/courses/CourseCard';
-import { BookOpen, Clock, Trophy, Filter, Home, ChevronRight, GraduationCap, ArrowDown } from 'lucide-react';
+import { BookOpen, Clock, Trophy, Filter, Home, ChevronRight, GraduationCap, ArrowDown, Loader2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 
@@ -14,21 +15,18 @@ const MyCoursesPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
   const customization = getCustomization();
 
-  const courses = useMemo(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []), []);
-  const users = useMemo(() => getFromStorage<User[]>(STORAGE_KEYS.USERS, []), []);
-  const allProgress = useMemo(() => getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []), []);
+  // Fetch data from database
+  const { data: courses = [], isLoading: coursesLoading } = useCourses();
+  const { data: userProgressList = [], isLoading: progressLoading } = useUserProgress();
 
-  const userProgress = useMemo(() => 
-    allProgress.filter(p => p.userId === user?.id), 
-    [allProgress, user?.id]
-  );
+  const isLoading = coursesLoading || progressLoading;
 
   const publishedCourses = useMemo(() => 
     courses.filter(c => c.status === 'published'), 
     [courses]
   );
 
-  const isCourseUnlocked = (course: Course) => {
+  const isCourseUnlocked = (course: any) => {
     if (isAdmin || isInstructor) return true;
     if (!course.locked) return true;
     return profile?.unlocked_courses?.includes(course.id) || false;
@@ -37,29 +35,26 @@ const MyCoursesPage: React.FC = () => {
   const unlockedCourses = publishedCourses.filter(c => isCourseUnlocked(c));
 
   const inProgressCourses = unlockedCourses.filter(c => {
-    const progress = userProgress.find(p => p.courseId === c.id);
+    const progress = userProgressList.find(p => p.courseId === c.id);
     if (!progress) return false;
     const totalLessons = c.modules.reduce((acc, m) => acc + m.lessonIds.length, 0);
     return progress.completedLessons.length > 0 && progress.completedLessons.length < totalLessons;
   });
 
   const completedCourses = unlockedCourses.filter(c => {
-    const progress = userProgress.find(p => p.courseId === c.id);
+    const progress = userProgressList.find(p => p.courseId === c.id);
     if (!progress) return false;
     const totalLessons = c.modules.reduce((acc, m) => acc + m.lessonIds.length, 0);
     return progress.completedLessons.length === totalLessons && totalLessons > 0;
   });
 
   const favoriteCourses = unlockedCourses.filter(c => {
-    const progress = userProgress.find(p => p.courseId === c.id);
+    const progress = userProgressList.find(p => p.courseId === c.id);
     return progress?.favorites && progress.favorites.length > 0;
   });
 
-  const getInstructor = (instructorId: string) => 
-    users.find(u => u.id === instructorId);
-
   const getProgress = (courseId: string) => 
-    userProgress.find(p => p.courseId === courseId);
+    userProgressList.find(p => p.courseId === courseId);
 
   const getFilteredCourses = () => {
     switch (activeTab) {
@@ -78,15 +73,24 @@ const MyCoursesPage: React.FC = () => {
 
   // Stats
   const totalHours = unlockedCourses.reduce((acc, c) => {
-    const [h, m] = c.totalDuration.split(':').map(Number);
-    return acc + h + m / 60;
+    const duration = c.totalDuration || '0:0';
+    const [h, m] = duration.split(':').map(Number);
+    return acc + (h || 0) + (m || 0) / 60;
   }, 0);
 
-  const totalLessonsCompleted = userProgress.reduce((acc, p) => acc + p.completedLessons.length, 0);
+  const totalLessonsCompleted = userProgressList.reduce((acc, p) => acc + p.completedLessons.length, 0);
 
   const scrollToContent = () => {
     document.getElementById('courses-content')?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -215,9 +219,8 @@ const MyCoursesPage: React.FC = () => {
                 {filteredCourses.map(course => (
                   <CourseCard
                     key={course.id}
-                    course={course}
-                    instructor={getInstructor(course.instructorId)}
-                    progress={getProgress(course.id)}
+                    course={course as any}
+                    progress={getProgress(course.id) as any}
                     isLocked={false}
                   />
                 ))}

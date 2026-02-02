@@ -1,15 +1,15 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   getFromStorage, 
   setToStorage, 
   STORAGE_KEYS, 
-  Course, 
-  Lesson, 
+  Course as StorageCourse, 
+  Lesson as StorageLesson, 
   User, 
   Progress, 
-  Banner, 
-  Category, 
+  Banner as StorageBanner, 
+  Category as StorageCategory, 
   generateId 
 } from '@/lib/storage';
 import { resetData } from '@/lib/seedData';
@@ -90,6 +90,12 @@ import AdminChallengesManager from '@/components/admin/AdminChallengesManager';
 import AdminSwipeFileManager from '@/components/admin/AdminSwipeFileManager';
 import { ClipboardList, Map, Trophy } from 'lucide-react';
 
+// Import database hooks
+import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course } from '@/hooks/useCourses';
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory, Category } from '@/hooks/useCategories';
+import { useLessons, useCreateLesson, useUpdateLesson, useDeleteLesson, useBulkCreateLessons, Lesson } from '@/hooks/useLessons';
+import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner, Banner } from '@/hooks/useBanners';
+
 const AdminPage: React.FC = () => {
   const { user: currentUser, isAdmin } = useAuth();
   const { toast } = useToast();
@@ -97,12 +103,37 @@ const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Data state
+  // Database hooks for courses, categories, lessons, banners
+  const { data: dbCourses = [], isLoading: coursesLoading } = useCourses();
+  const { data: dbCategories = [], isLoading: categoriesLoading } = useCategories();
+  const { data: dbLessons = [], isLoading: lessonsLoading } = useLessons();
+  const { data: dbBanners = [], isLoading: bannersLoading } = useBanners();
+
+  const createCourseMutation = useCreateCourse();
+  const updateCourseMutation = useUpdateCourse();
+  const deleteCourseMutation = useDeleteCourse();
+  
+  const createCategoryMutation = useCreateCategory();
+  const updateCategoryMutation = useUpdateCategory();
+  const deleteCategoryMutation = useDeleteCategory();
+  
+  const createLessonMutation = useCreateLesson();
+  const updateLessonMutation = useUpdateLesson();
+  const deleteLessonMutation = useDeleteLesson();
+  const bulkCreateLessonsMutation = useBulkCreateLessons();
+  
+  const createBannerMutation = useCreateBanner();
+  const updateBannerMutation = useUpdateBanner();
+  const deleteBannerMutation = useDeleteBanner();
+
+  // Convert database data to local format for compatibility
+  const courses = useMemo(() => dbCourses as unknown as StorageCourse[], [dbCourses]);
+  const categories = useMemo(() => dbCategories as unknown as StorageCategory[], [dbCategories]);
+  const lessons = useMemo(() => dbLessons as unknown as StorageLesson[], [dbLessons]);
+  const banners = useMemo(() => dbBanners as unknown as StorageBanner[], [dbBanners]);
+
+  // Users still use localStorage for now (will be migrated later)
   const [users, setUsers] = useState(() => getFromStorage<User[]>(STORAGE_KEYS.USERS, []));
-  const [courses, setCourses] = useState(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []));
-  const [lessons, setLessons] = useState(() => getFromStorage<Lesson[]>(STORAGE_KEYS.LESSONS, []));
-  const [banners, setBanners] = useState(() => getFromStorage<Banner[]>(STORAGE_KEYS.BANNERS, []));
-  const [categories, setCategories] = useState(() => getFromStorage<Category[]>(STORAGE_KEYS.CATEGORIES, []));
   const swipeProcesses = useMemo(() => getFromStorage<any[]>(STORAGE_KEYS.SWIPEFILE_PROCESSES, []), []);
 
   // Modal states
@@ -283,102 +314,98 @@ const AdminPage: React.FC = () => {
     setCourseModalOpen(true);
   };
 
-  const saveCourse = (courseData: Course, courseLessons: Lesson[]) => {
-    let updatedCourses: Course[];
-    
-    if (editingCourse) {
-      updatedCourses = courses.map(c => c.id === editingCourse.id ? courseData : c);
-      toast({ title: 'Curso atualizado!' });
-    } else {
-      updatedCourses = [...courses, courseData];
-      toast({ title: 'Curso criado!' });
-    }
-    
-    setCourses(updatedCourses);
-    setToStorage(STORAGE_KEYS.COURSES, updatedCourses);
-
-    // Update lessons
-    const otherLessons = lessons.filter(l => l.courseId !== courseData.id);
-    const updatedLessons = [...otherLessons, ...courseLessons];
-    setLessons(updatedLessons);
-    setToStorage(STORAGE_KEYS.LESSONS, updatedLessons);
-    
-    setCourseModalOpen(false);
-    setEditingCourse(null);
-  };
-
-  const duplicateCourse = (course: Course) => {
-    const duplicatedCourse: Course = {
-      ...course,
-      id: generateId(),
-      title: `${course.title} (Cópia)`,
-      status: 'draft' as const,
-      createdAt: new Date().toISOString(),
-    };
-    
-    // Duplicate modules with new IDs
-    const moduleIdMap: Record<string, string> = {};
-    duplicatedCourse.modules = course.modules.map(m => {
-      const newModuleId = generateId();
-      moduleIdMap[m.id] = newModuleId;
-      return { ...m, id: newModuleId, lessonIds: [] };
-    });
-
-    // Duplicate lessons
-    const courseLessons = lessons.filter(l => l.courseId === course.id);
-    const duplicatedLessons: Lesson[] = courseLessons.map(l => {
-      const newLessonId = generateId();
-      const newModuleId = moduleIdMap[l.moduleId] || l.moduleId;
-      
-      // Add lesson ID to module
-      const moduleIndex = duplicatedCourse.modules.findIndex(m => m.id === newModuleId);
-      if (moduleIndex !== -1) {
-        duplicatedCourse.modules[moduleIndex].lessonIds.push(newLessonId);
+  const saveCourse = async (courseData: StorageCourse, courseLessons: StorageLesson[]) => {
+    try {
+      if (editingCourse) {
+        // Update existing course
+        await updateCourseMutation.mutateAsync({
+          id: editingCourse.id,
+          ...courseData,
+        } as any);
+      } else {
+        // Create new course
+        const createdCourse = await createCourseMutation.mutateAsync(courseData as any);
+        
+        // Create lessons for the new course
+        if (courseLessons.length > 0) {
+          const lessonsToCreate = courseLessons.map(l => ({
+            ...l,
+            courseId: createdCourse.id,
+          }));
+          await bulkCreateLessonsMutation.mutateAsync(lessonsToCreate as any);
+        }
       }
       
-      return {
-        ...l,
-        id: newLessonId,
-        courseId: duplicatedCourse.id,
-        moduleId: newModuleId,
-      };
-    });
-
-    const updatedCourses = [...courses, duplicatedCourse];
-    const updatedLessons = [...lessons, ...duplicatedLessons];
-    
-    setCourses(updatedCourses);
-    setLessons(updatedLessons);
-    setToStorage(STORAGE_KEYS.COURSES, updatedCourses);
-    setToStorage(STORAGE_KEYS.LESSONS, updatedLessons);
-    
-    toast({ title: 'Curso duplicado!' });
+      setCourseModalOpen(false);
+      setEditingCourse(null);
+    } catch (error) {
+      console.error('Error saving course:', error);
+    }
   };
 
-  const toggleCourseStatus = (courseId: string) => {
+  const duplicateCourse = async (course: StorageCourse) => {
+    try {
+      const duplicatedCourse = {
+        ...course,
+        title: `${course.title} (Cópia)`,
+        status: 'draft' as const,
+      };
+      delete (duplicatedCourse as any).id;
+      delete (duplicatedCourse as any).createdAt;
+      
+      // Duplicate modules with new IDs
+      const moduleIdMap: Record<string, string> = {};
+      duplicatedCourse.modules = course.modules.map(m => {
+        const newModuleId = generateId();
+        moduleIdMap[m.id] = newModuleId;
+        return { ...m, id: newModuleId, lessonIds: [] };
+      });
+
+      const createdCourse = await createCourseMutation.mutateAsync(duplicatedCourse as any);
+
+      // Duplicate lessons
+      const courseLessons = lessons.filter(l => l.courseId === course.id);
+      if (courseLessons.length > 0) {
+        const duplicatedLessons = courseLessons.map(l => {
+          const newModuleId = moduleIdMap[l.moduleId] || l.moduleId;
+          return {
+            ...l,
+            courseId: createdCourse.id,
+            moduleId: newModuleId,
+          };
+        });
+        await bulkCreateLessonsMutation.mutateAsync(duplicatedLessons as any);
+      }
+      
+      toast({ title: 'Curso duplicado!' });
+    } catch (error) {
+      console.error('Error duplicating course:', error);
+    }
+  };
+
+  const toggleCourseStatus = async (courseId: string) => {
     const course = courses.find(c => c.id === courseId);
     if (!course) return;
     
     const newStatus: 'draft' | 'published' = course.status === 'published' ? 'draft' : 'published';
-    const updatedCourses = courses.map(c => 
-      c.id === courseId ? { ...c, status: newStatus } : c
-    );
-    setCourses(updatedCourses as Course[]);
-    setToStorage(STORAGE_KEYS.COURSES, updatedCourses);
-    toast({ title: newStatus === 'published' ? 'Curso publicado!' : 'Curso despublicado' });
+    
+    try {
+      await updateCourseMutation.mutateAsync({
+        id: courseId,
+        status: newStatus,
+      } as any);
+    } catch (error) {
+      console.error('Error toggling course status:', error);
+    }
   };
 
-  const deleteCourse = (courseId: string) => {
-    const updatedCourses = courses.filter(c => c.id !== courseId);
-    const updatedLessons = lessons.filter(l => l.courseId !== courseId);
-    
-    setCourses(updatedCourses);
-    setLessons(updatedLessons);
-    setToStorage(STORAGE_KEYS.COURSES, updatedCourses);
-    setToStorage(STORAGE_KEYS.LESSONS, updatedLessons);
-    
-    toast({ title: 'Curso excluído' });
-    setDeleteConfirm(null);
+  const deleteCourse = async (courseId: string) => {
+    try {
+      await deleteCourseMutation.mutateAsync(courseId);
+      setDeleteConfirm(null);
+    } catch (error) {
+      console.error('Error deleting course:', error);
+    }
   };
 
   // ====================
@@ -389,33 +416,39 @@ const AdminPage: React.FC = () => {
     setCategoryModalOpen(true);
   };
 
-  const saveCategory = (categoryData: Category) => {
-    let updatedCategories: Category[];
-    
-    if (editingCategory) {
-      updatedCategories = categories.map(c => c.id === editingCategory.id ? categoryData : c);
-      toast({ title: 'Categoria atualizada!' });
-    } else {
-      updatedCategories = [...categories, categoryData];
-      toast({ title: 'Categoria criada!' });
+  const saveCategory = async (categoryData: StorageCategory) => {
+    try {
+      if (editingCategory) {
+        await updateCategoryMutation.mutateAsync({
+          id: editingCategory.id,
+          ...categoryData,
+        } as any);
+      } else {
+        await createCategoryMutation.mutateAsync(categoryData as any);
+      }
+      
+      setCategoryModalOpen(false);
+      setEditingCategory(null);
+    } catch (error) {
+      console.error('Error saving category:', error);
     }
+  };
+
+  const toggleCategoryStatus = async (categoryId: string) => {
+    const category = categories.find(c => c.id === categoryId);
+    if (!category) return;
     
-    setCategories(updatedCategories);
-    setToStorage(STORAGE_KEYS.CATEGORIES, updatedCategories);
-    setCategoryModalOpen(false);
-    setEditingCategory(null);
+    try {
+      await updateCategoryMutation.mutateAsync({
+        id: categoryId,
+        active: !category.active,
+      } as any);
+    } catch (error) {
+      console.error('Error toggling category status:', error);
+    }
   };
 
-  const toggleCategoryStatus = (categoryId: string) => {
-    const updatedCategories = categories.map(c => 
-      c.id === categoryId ? { ...c, active: !c.active } : c
-    );
-    setCategories(updatedCategories);
-    setToStorage(STORAGE_KEYS.CATEGORIES, updatedCategories);
-    toast({ title: 'Status da categoria atualizado' });
-  };
-
-  const deleteCategory = (categoryId: string) => {
+  const deleteCategory = async (categoryId: string) => {
     // Check if courses are using this category
     const coursesUsingCategory = courses.filter(c => 
       c.categoryIds?.includes(categoryId) || c.category === categoryId
@@ -430,11 +463,12 @@ const AdminPage: React.FC = () => {
       return;
     }
     
-    const updatedCategories = categories.filter(c => c.id !== categoryId);
-    setCategories(updatedCategories);
-    setToStorage(STORAGE_KEYS.CATEGORIES, updatedCategories);
-    toast({ title: 'Categoria excluída' });
-    setDeleteConfirm(null);
+    try {
+      await deleteCategoryMutation.mutateAsync(categoryId);
+      setDeleteConfirm(null);
+    } catch (error) {
+      console.error('Error deleting category:', error);
+    }
   };
 
   // ====================
@@ -465,48 +499,52 @@ const AdminPage: React.FC = () => {
     setBannerDialogOpen(true);
   };
 
-  const saveBanner = () => {
+  const saveBanner = async () => {
     if (!bannerForm.title || !bannerForm.imageUrl) {
       toast({ title: 'Preencha os campos obrigatórios', variant: 'destructive' });
       return;
     }
 
-    let updatedBanners: Banner[];
-    if (editingBanner) {
-      updatedBanners = banners.map(b => 
-        b.id === editingBanner.id ? { ...b, ...bannerForm } : b
-      );
-    } else {
-      const newBanner: Banner = {
-        id: generateId(),
-        ...bannerForm,
-        active: true,
-        order: banners.length + 1,
-      };
-      updatedBanners = [...banners, newBanner];
+    try {
+      if (editingBanner) {
+        await updateBannerMutation.mutateAsync({
+          id: editingBanner.id,
+          ...bannerForm,
+        } as any);
+      } else {
+        await createBannerMutation.mutateAsync({
+          ...bannerForm,
+          active: true,
+          order: banners.length + 1,
+        } as any);
+      }
+      setBannerDialogOpen(false);
+    } catch (error) {
+      console.error('Error saving banner:', error);
     }
-
-    setBanners(updatedBanners);
-    setToStorage(STORAGE_KEYS.BANNERS, updatedBanners);
-    setBannerDialogOpen(false);
-    toast({ title: editingBanner ? 'Banner atualizado' : 'Banner criado' });
   };
 
-  const toggleBannerStatus = (bannerId: string) => {
-    const updatedBanners = banners.map(b => 
-      b.id === bannerId ? { ...b, active: !b.active } : b
-    );
-    setBanners(updatedBanners);
-    setToStorage(STORAGE_KEYS.BANNERS, updatedBanners);
-    toast({ title: 'Status do banner atualizado' });
+  const toggleBannerStatus = async (bannerId: string) => {
+    const banner = banners.find(b => b.id === bannerId);
+    if (!banner) return;
+    
+    try {
+      await updateBannerMutation.mutateAsync({
+        id: bannerId,
+        active: !banner.active,
+      } as any);
+    } catch (error) {
+      console.error('Error toggling banner status:', error);
+    }
   };
 
-  const deleteBanner = (bannerId: string) => {
-    const updatedBanners = banners.filter(b => b.id !== bannerId);
-    setBanners(updatedBanners);
-    setToStorage(STORAGE_KEYS.BANNERS, updatedBanners);
-    toast({ title: 'Banner excluído' });
-    setDeleteConfirm(null);
+  const deleteBanner = async (bannerId: string) => {
+    try {
+      await deleteBannerMutation.mutateAsync(bannerId);
+      setDeleteConfirm(null);
+    } catch (error) {
+      console.error('Error deleting banner:', error);
+    }
   };
 
   // Functions moved above - filtered data is now computed with useMemo before conditional return

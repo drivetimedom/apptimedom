@@ -63,9 +63,7 @@ const HoffCirclePage: React.FC = () => {
       <section 
         className="relative h-[350px] md:h-[400px] w-full bg-cover bg-center"
         style={{
-          backgroundImage: pageConfig?.bannerImageUrl 
-            ? `url(${pageConfig.bannerImageUrl})`
-            : 'linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)'
+          backgroundImage: `url(/images/banner-secoes.png)`
         }}
       >
         {/* Overlay */}

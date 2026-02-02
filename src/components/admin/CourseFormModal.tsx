@@ -343,11 +343,6 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
       return;
     }
 
-    if (!lessonForm.vimeoId.trim()) {
-      toast({ title: 'Vimeo ID é obrigatório', variant: 'destructive' });
-      return;
-    }
-
     setModules(modules.map(m => {
       if (m.id !== editingLesson.moduleId) return m;
       

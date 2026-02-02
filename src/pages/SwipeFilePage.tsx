@@ -334,24 +334,24 @@ const SwipeFilePage: React.FC = () => {
 
       {/* Category Tabs */}
       <div className="border-b border-border bg-card/30">
-        <div className="container py-6">
+        <div className="container py-4 md:py-6 px-4 md:px-6">
           <p className="text-sm text-muted-foreground mb-3">Categoria:</p>
-          <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex items-center gap-3 pb-2">
+          <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="flex items-center gap-2 md:gap-3 pb-2 min-w-max">
               {/* Tab: Todos */}
               <button
                 onClick={() => handleCategoryChange('all')}
                 className={`
-                  flex items-center gap-2 px-5 py-3 rounded-lg font-semibold transition-all whitespace-nowrap
+                  flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-3 rounded-lg font-semibold transition-all whitespace-nowrap text-sm md:text-base
                   ${selectedCategory === 'all'
                     ? 'bg-primary text-primary-foreground shadow-md'
                     : 'bg-card text-muted-foreground hover:bg-secondary hover:text-foreground border border-border'
                   }
                 `}
               >
-                <Folder className="w-5 h-5" />
+                <Folder className="w-4 h-4 md:w-5 md:h-5" />
                 <span>Todos</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                <span className={`text-xs px-1.5 md:px-2 py-0.5 rounded-full ${
                   selectedCategory === 'all' 
                     ? 'bg-primary-foreground/20' 
                     : 'bg-muted'
@@ -366,16 +366,16 @@ const SwipeFilePage: React.FC = () => {
                   key={category.id}
                   onClick={() => handleCategoryChange(category.id)}
                   className={`
-                    flex items-center gap-2 px-5 py-3 rounded-lg font-semibold transition-all whitespace-nowrap
+                    flex items-center gap-1.5 md:gap-2 px-3 md:px-5 py-2 md:py-3 rounded-lg font-semibold transition-all whitespace-nowrap text-sm md:text-base
                     ${selectedCategory === category.id
                       ? 'bg-primary text-primary-foreground shadow-md'
                       : 'bg-card text-muted-foreground hover:bg-secondary hover:text-foreground border border-border'
                     }
                   `}
                 >
-                  <span className="text-lg">{category.icon}</span>
+                  <span className="text-base md:text-lg">{category.icon}</span>
                   <span>{category.name}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                  <span className={`text-xs px-1.5 md:px-2 py-0.5 rounded-full ${
                     selectedCategory === category.id 
                       ? 'bg-primary-foreground/20' 
                       : 'bg-muted'
@@ -385,63 +385,64 @@ const SwipeFilePage: React.FC = () => {
                 </button>
               ))}
             </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+          </div>
         </div>
       </div>
 
       {/* Type Subfolder (only shows when category is selected) */}
       {selectedCategory !== 'all' && typesInCategory.length > 0 && (
         <div className="border-b border-border">
-          <div className="container py-5">
-            <div className="bg-card border border-border rounded-xl p-5">
+          <div className="container py-4 md:py-5 px-4 md:px-6">
+            <div className="bg-card border border-border rounded-xl p-4 md:p-5">
               {/* Subfolder Header */}
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">{selectedCategoryData?.icon}</span>
-                <h2 className="text-lg font-bold text-foreground">
+              <div className="flex items-center gap-2 mb-3 md:mb-4">
+                <span className="text-xl md:text-2xl">{selectedCategoryData?.icon}</span>
+                <h2 className="text-base md:text-lg font-bold text-foreground">
                   {selectedCategoryData?.name}
                 </h2>
               </div>
               
               {/* Type Pills */}
-              <div className="flex items-center gap-3 flex-wrap">
-                {/* All Types */}
-                <button
-                  onClick={() => setSelectedType('all')}
-                  className={`
-                    flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
-                    ${selectedType === 'all'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
-                    }
-                  `}
-                >
-                  <span>Todos</span>
-                  <span className={`text-xs ${selectedType === 'all' ? 'opacity-70' : ''}`}>
-                    {typeCounts.all}
-                  </span>
-                </button>
-                
-                {/* Type Pills */}
-                {typesInCategory.map(type => (
+              <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+                <div className="flex items-center gap-2 md:gap-3 min-w-max">
+                  {/* All Types */}
                   <button
-                    key={type.id}
-                    onClick={() => setSelectedType(type.id)}
+                    onClick={() => setSelectedType('all')}
                     className={`
-                      flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
-                      ${selectedType === type.id
+                      flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-medium transition-all text-sm
+                      ${selectedType === 'all'
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
                       }
                     `}
                   >
-                    <span className="text-base">{type.icon}</span>
-                    <span>{type.name}</span>
-                    <span className={`text-xs ${selectedType === type.id ? 'opacity-70' : ''}`}>
-                      {typeCounts[type.id] || 0}
+                    <span>Todos</span>
+                    <span className={`text-xs ${selectedType === 'all' ? 'opacity-70' : ''}`}>
+                      {typeCounts.all}
                     </span>
                   </button>
-                ))}
+                  
+                  {/* Type Pills */}
+                  {typesInCategory.map(type => (
+                    <button
+                      key={type.id}
+                      onClick={() => setSelectedType(type.id)}
+                      className={`
+                        flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-medium transition-all text-sm
+                        ${selectedType === type.id
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground'
+                        }
+                      `}
+                    >
+                      <span className="text-sm md:text-base">{type.icon}</span>
+                      <span>{type.name}</span>
+                      <span className={`text-xs ${selectedType === type.id ? 'opacity-70' : ''}`}>
+                        {typeCounts[type.id] || 0}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -450,39 +451,41 @@ const SwipeFilePage: React.FC = () => {
 
       {/* Search and View Controls */}
       <div className="border-b border-border bg-card/30">
-        <div className="container py-4">
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        <div className="container py-4 px-4 md:px-6">
+          <div className="flex flex-col gap-3">
             {/* Search */}
-            <div className="relative flex-1 max-w-xl w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <div className="relative w-full">
+              <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-4 md:w-5 h-4 md:h-5 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={searchPlaceholder}
-                className="pl-12 h-12 bg-card border-border text-sm"
+                className="pl-10 md:pl-12 h-10 md:h-12 bg-card border-border text-sm w-full"
               />
             </div>
             
-            {/* View Mode - Only List (as requested) */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-muted-foreground">Visualização:</span>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary text-foreground">
-                <List className="w-4 h-4" />
-                <span className="text-sm font-medium">Lista</span>
+            {/* View Mode and Counter Row */}
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {filteredProcesses.length} {filteredProcesses.length === 1 ? 'material encontrado' : 'materiais encontrados'}
+              </p>
+              
+              {/* View Mode - Only List (as requested) */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs md:text-sm text-muted-foreground hidden sm:inline">Visualização:</span>
+                <div className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 md:py-2 rounded-lg bg-secondary text-foreground">
+                  <List className="w-4 h-4" />
+                  <span className="text-xs md:text-sm font-medium">Lista</span>
+                </div>
               </div>
             </div>
           </div>
-          
-          {/* Results counter */}
-          <p className="text-sm text-muted-foreground mt-3">
-            {filteredProcesses.length} {filteredProcesses.length === 1 ? 'material encontrado' : 'materiais encontrados'}
-          </p>
         </div>
       </div>
 
       {/* Content */}
       <div id="swipefile-content"></div>
-      <div className="container py-8">
+      <div className="container py-6 md:py-8 px-4 md:px-6">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />

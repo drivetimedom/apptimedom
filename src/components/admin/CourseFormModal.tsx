@@ -513,23 +513,7 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
                   </div>
                 )}
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Nível</Label>
-                    <Select
-                      value={formData.level}
-                      onValueChange={(value) => setFormData({ ...formData, level: value as any })}
-                    >
-                      <SelectTrigger className="bg-input border-border">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-popover border-border">
-                        <SelectItem value="Iniciante">Iniciante</SelectItem>
-                        <SelectItem value="Intermediário">Intermediário</SelectItem>
-                        <SelectItem value="Avançado">Avançado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Status</Label>
                     <Select
@@ -854,11 +838,11 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Vimeo ID *</Label>
+                <Label>Vimeo ID</Label>
                 <Input
                   value={lessonForm.vimeoId}
                   onChange={(e) => setLessonForm({ ...lessonForm, vimeoId: e.target.value })}
-                  placeholder="123456789"
+                  placeholder="123456789 (opcional)"
                   className="bg-input border-border"
                 />
                 <p className="text-xs text-muted-foreground">Apenas o ID numérico</p>

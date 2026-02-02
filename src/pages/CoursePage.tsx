@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFromStorage, STORAGE_KEYS, Course, Lesson, Progress } from '@/lib/storage';
+import { useCourse } from '@/hooks/useCourses';
+import { useLessons } from '@/hooks/useLessons';
+import { useCourseProgress } from '@/hooks/useUserProgress';
 import { Button } from '@/components/ui/button';
 import {
   ChevronRight,
@@ -12,6 +14,7 @@ import {
   Circle,
   ArrowLeft,
   Search,
+  Loader2,
 } from 'lucide-react';
 import {
   Accordion,
@@ -28,14 +31,14 @@ const CoursePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const courses = useMemo(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []), []);
-  const allLessons = useMemo(() => getFromStorage<Lesson[]>(STORAGE_KEYS.LESSONS, []), []);
-  const allProgress = useMemo(() => getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []), []);
+  // Fetch data from database
+  const { data: course, isLoading: courseLoading } = useCourse(courseId);
+  const { data: allLessons = [], isLoading: lessonsLoading } = useLessons(courseId);
+  const { data: userProgress } = useCourseProgress(courseId);
 
-  const course = courses.find(c => c.id === courseId);
-  const courseLessons = allLessons.filter(l => l.courseId === courseId);
-  const userProgress = allProgress.find(p => p.userId === user?.id && p.courseId === courseId);
+  const isLoading = courseLoading || lessonsLoading;
 
+  const courseLessons = allLessons;
   const totalLessons = courseLessons.length;
   const completedLessons = userProgress?.completedLessons.length || 0;
   const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
@@ -63,12 +66,20 @@ const CoursePage: React.FC = () => {
   };
 
   // Filter lessons by search term
-  const filterLessons = (lessons: Lesson[]) => {
+  const filterLessons = (lessons: any[]) => {
     if (!searchTerm.trim()) return lessons;
     return lessons.filter(l => 
       l.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   if (!course) {
     return (

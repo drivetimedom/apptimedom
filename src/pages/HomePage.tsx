@@ -1,29 +1,28 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFromStorage, STORAGE_KEYS, Course, User, Progress, Banner, Category } from '@/lib/storage';
+import { useCourses } from '@/hooks/useCourses';
+import { useCategories } from '@/hooks/useCategories';
+import { useActiveBanners } from '@/hooks/useBanners';
+import { useUserProgress } from '@/hooks/useUserProgress';
 import HeroBannerCarousel from '@/components/home/HeroBannerCarousel';
 import CategoryCarousel from '@/components/home/CategoryCarousel';
 import VerticalCourseCard from '@/components/courses/VerticalCourseCard';
-import { Gift, BookOpen } from 'lucide-react';
-import { seedData } from '@/lib/seedData';
+import { Gift, BookOpen, Loader2 } from 'lucide-react';
 
 const HomePage: React.FC = () => {
   const { user, profile, isAdmin, isInstructor } = useAuth();
 
-  // Ensure seed data exists
-  useEffect(() => {
-    seedData();
-  }, []);
+  // Fetch data from database
+  const { data: banners = [], isLoading: bannersLoading } = useActiveBanners();
+  const { data: categories = [], isLoading: categoriesLoading } = useCategories();
+  const { data: courses = [], isLoading: coursesLoading } = useCourses();
+  const { data: userProgressList = [] } = useUserProgress();
 
-  const banners = useMemo(() => getFromStorage<Banner[]>(STORAGE_KEYS.BANNERS, []), []);
-  const categories = useMemo(() => getFromStorage<Category[]>(STORAGE_KEYS.CATEGORIES, []).filter(c => c.active).sort((a, b) => a.order - b.order), []);
-  const courses = useMemo(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []), []);
-  const users = useMemo(() => getFromStorage<User[]>(STORAGE_KEYS.USERS, []), []);
-  const allProgress = useMemo(() => getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []), []);
+  const isLoading = bannersLoading || categoriesLoading || coursesLoading;
 
-  const userProgress = useMemo(() => 
-    allProgress.filter(p => p.userId === user?.id), 
-    [allProgress, user?.id]
+  const activeCategories = useMemo(() => 
+    categories.filter(c => c.active).sort((a, b) => a.order - b.order), 
+    [categories]
   );
 
   const publishedCourses = useMemo(() => 
@@ -33,31 +32,45 @@ const HomePage: React.FC = () => {
 
   const inProgressCourses = useMemo(() => 
     publishedCourses.filter(c => 
-      userProgress.some(p => p.courseId === c.id && p.completedLessons.length > 0)
+      userProgressList.some(p => p.courseId === c.id && p.completedLessons.length > 0)
     ),
-    [publishedCourses, userProgress]
+    [publishedCourses, userProgressList]
   );
 
   const getCoursesByCategory = (categoryId: string) => {
     return publishedCourses.filter(c => c.categoryIds?.includes(categoryId));
   };
 
-  const getInstructor = (instructorId: string) => 
-    users.find(u => u.id === instructorId);
-
   const getProgress = (courseId: string) => 
-    userProgress.find(p => p.courseId === courseId);
+    userProgressList.find(p => p.courseId === courseId);
 
-  const isCourseUnlocked = (course: Course) => {
+  const isCourseUnlocked = (course: any) => {
     if (isAdmin || isInstructor) return true;
     if (!course.locked) return true;
     return profile?.unlocked_courses?.includes(course.id) || false;
   };
 
+  // Transform banners for HeroBannerCarousel compatibility
+  const transformedBanners = useMemo(() => 
+    banners.map(b => ({
+      ...b,
+      imageUrl: b.imageUrl || '',
+    })),
+    [banners]
+  );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Banner Carousel */}
-      <HeroBannerCarousel banners={banners} />
+      <HeroBannerCarousel banners={transformedBanners} />
 
       {/* In Progress Courses */}
       {inProgressCourses.length > 0 && (
@@ -78,9 +91,8 @@ const HomePage: React.FC = () => {
             {inProgressCourses.map(course => (
               <VerticalCourseCard
                 key={course.id}
-                course={course}
-                instructor={getInstructor(course.instructorId)}
-                progress={getProgress(course.id)}
+                course={course as any}
+                progress={getProgress(course.id) as any}
                 isLocked={!isCourseUnlocked(course)}
               />
             ))}
@@ -90,17 +102,17 @@ const HomePage: React.FC = () => {
 
       {/* Categories with Carousels */}
       <div id="courses" className="py-8 space-y-8">
-        {categories.map(category => {
+        {activeCategories.map(category => {
           const categoryCourses = getCoursesByCategory(category.id);
           if (categoryCourses.length === 0) return null;
           
           return (
             <CategoryCarousel
               key={category.id}
-              category={category}
-              courses={categoryCourses}
-              users={users}
-              userProgress={userProgress}
+              category={category as any}
+              courses={categoryCourses as any[]}
+              users={[]}
+              userProgress={userProgressList as any[]}
               isCourseUnlocked={isCourseUnlocked}
             />
           );
@@ -108,7 +120,7 @@ const HomePage: React.FC = () => {
       </div>
 
       {/* All Courses Section (if no categories have courses) */}
-      {categories.every(cat => getCoursesByCategory(cat.id).length === 0) && (
+      {activeCategories.every(cat => getCoursesByCategory(cat.id).length === 0) && (
         <section className="py-16 px-4">
           <div className="container">
             <div className="flex items-center gap-3 mb-8">
@@ -125,9 +137,8 @@ const HomePage: React.FC = () => {
               {publishedCourses.map(course => (
                 <VerticalCourseCard
                   key={course.id}
-                  course={course}
-                  instructor={getInstructor(course.instructorId)}
-                  progress={getProgress(course.id)}
+                  course={course as any}
+                  progress={getProgress(course.id) as any}
                   isLocked={!isCourseUnlocked(course)}
                 />
               ))}

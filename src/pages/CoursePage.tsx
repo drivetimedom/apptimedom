@@ -1,20 +1,17 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFromStorage, STORAGE_KEYS, Course, Lesson, User, Progress } from '@/lib/storage';
+import { getFromStorage, STORAGE_KEYS, Course, Lesson, Progress } from '@/lib/storage';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   ChevronRight,
   Clock,
-  Users,
-  BarChart3,
   Play,
   Lock,
   CheckCircle,
   Circle,
-  Instagram,
-  CheckCircle2,
+  ArrowLeft,
+  Search,
 } from 'lucide-react';
 import {
   Accordion,
@@ -22,20 +19,21 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const CoursePage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const courses = useMemo(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []), []);
   const allLessons = useMemo(() => getFromStorage<Lesson[]>(STORAGE_KEYS.LESSONS, []), []);
-  const users = useMemo(() => getFromStorage<User[]>(STORAGE_KEYS.USERS, []), []);
   const allProgress = useMemo(() => getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []), []);
 
   const course = courses.find(c => c.id === courseId);
   const courseLessons = allLessons.filter(l => l.courseId === courseId);
-  const instructor = users.find(u => u.id === course?.instructorId);
   const userProgress = allProgress.find(p => p.userId === user?.id && p.courseId === courseId);
 
   const totalLessons = courseLessons.length;
@@ -64,6 +62,14 @@ const CoursePage: React.FC = () => {
     }
   };
 
+  // Filter lessons by search term
+  const filterLessons = (lessons: Lesson[]) => {
+    if (!searchTerm.trim()) return lessons;
+    return lessons.filter(l => 
+      l.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
   if (!course) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -72,184 +78,160 @@ const CoursePage: React.FC = () => {
     );
   }
 
-  const learningPoints = [
-    'Fundamentos e conceitos essenciais',
-    'Estratégias práticas de implementação',
-    'Técnicas avançadas de otimização',
-    'Casos de estudo reais',
-    'Templates e recursos exclusivos',
-    'Suporte da comunidade',
-  ];
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Breadcrumb */}
-      <div className="border-b border-border bg-card/50">
-        <div className="container py-3">
-          <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <Link to="/" className="hover:text-foreground transition-colors">Início</Link>
-            <span>/</span>
-            <Link to="/" className="hover:text-foreground transition-colors">Frameworks</Link>
-            <span>/</span>
-            <span className="text-foreground">{course.title}</span>
-          </nav>
-        </div>
-      </div>
+      {/* Hero Banner */}
+      <div 
+        className="relative min-h-[400px] md:min-h-[500px] bg-cover bg-center"
+        style={{ 
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.85)), url(${course.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1920&h=600&fit=crop'})`
+        }}
+      >
+        {/* Back Button */}
+        <button 
+          onClick={() => navigate(-1)}
+          className="absolute top-6 left-6 flex items-center gap-2 text-white/80 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span className="text-base">Voltar</span>
+        </button>
 
-      {/* Hero */}
-      <div className="relative border-b border-border gradient-hero">
-        <div className="container py-12">
-          <div className="flex flex-col lg:flex-row gap-8 items-start">
-            {/* Course Info */}
-            <div className="flex-1 space-y-6">
-              <div className="space-y-2">
-                <div className="flex items-center space-x-3">
-                  <span className="px-3 py-1 rounded-full bg-accent text-sm text-foreground border border-border">
-                    {course.category}
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-accent text-sm text-foreground border border-border">
-                    {course.level}
-                  </span>
-                </div>
-                <h1 className="text-4xl lg:text-5xl font-bold text-foreground">{course.title}</h1>
-                <p className="text-xl text-muted-foreground uppercase tracking-wide">{course.subtitle}</p>
+        {/* Hero Content */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+          <div className="max-w-4xl">
+            {/* Title */}
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3">
+              {course.title}
+            </h1>
+            
+            {course.subtitle && (
+              <p className="text-lg md:text-xl text-white/70 uppercase tracking-wide mb-4">
+                {course.subtitle}
+              </p>
+            )}
+
+            {/* Description */}
+            <p className="text-base md:text-lg text-white/80 mb-6 max-w-2xl line-clamp-3">
+              {course.description}
+            </p>
+
+            {/* Progress */}
+            <div className="flex items-center gap-4 mb-6">
+              <span className="text-white text-sm">
+                {completedLessons}/{totalLessons} conteúdos — {progressPercent}%
+              </span>
+              <div className="flex-1 max-w-md h-2 bg-white/20 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-success rounded-full transition-all"
+                  style={{ width: `${progressPercent}%` }}
+                />
               </div>
-
-              <p className="text-lg text-muted-foreground max-w-2xl">{course.description}</p>
-
-              {/* Meta */}
-              <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-                <div className="flex items-center space-x-2">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={instructor?.avatar} />
-                    <AvatarFallback>{instructor?.name?.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <span>{instructor?.name}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4" />
-                  <span>{course.totalDuration}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Play className="w-4 h-4" />
-                  <span>{totalLessons} aulas</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <BarChart3 className="w-4 h-4" />
-                  <span>{course.level}</span>
-                </div>
-              </div>
-
-              {/* Progress */}
-              {completedLessons > 0 && (
-                <div className="bg-card/50 rounded-xl p-4 border border-border">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Seu progresso</span>
-                    <span className="text-sm font-medium text-foreground">{progressPercent}%</span>
-                  </div>
-                  <div className="h-2 bg-accent rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-success rounded-full transition-all"
-                      style={{ width: `${progressPercent}%` }}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {completedLessons} de {totalLessons} aulas concluídas
-                  </p>
-                </div>
-              )}
-
-              {/* CTA */}
-              <Button 
-                size="lg" 
-                onClick={handleStartCourse}
-                className="text-lg px-8 py-6"
-              >
-                {completedLessons > 0 ? 'Continuar de onde parou' : 'Começar Curso'}
-                <ChevronRight className="w-5 h-5 ml-2" />
-              </Button>
             </div>
 
-            {/* Thumbnail */}
-            <div className="lg:w-96 rounded-xl overflow-hidden shadow-elegant border border-border">
-              <img
-                src={course.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop'}
-                alt={course.title}
-                className="w-full aspect-video object-cover"
-              />
-            </div>
+            {/* CTA Button */}
+            <Button 
+              size="lg" 
+              onClick={handleStartCourse}
+              className="text-base md:text-lg px-8 py-6 bg-white text-background hover:bg-white/90"
+            >
+              {completedLessons > 0 ? 'Continuar assistindo' : 'Começar agora'}
+              <Play className="w-5 h-5 ml-2" />
+            </Button>
           </div>
         </div>
       </div>
 
-      <div className="container py-12">
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Main Content */}
-          <div className="flex-1 space-y-12">
-            {/* What you'll learn */}
-            <section>
-              <h2 className="text-2xl font-bold text-foreground mb-6">O que você vai aprender</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {learningPoints.map((point, idx) => (
-                  <div key={idx} className="flex items-start space-x-3 p-4 rounded-lg bg-card border border-border">
-                    <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-                    <span className="text-foreground">{point}</span>
-                  </div>
-                ))}
+      {/* Tabs Navigation */}
+      <Tabs defaultValue="content" className="w-full">
+        <div className="border-b border-border bg-card sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto px-4 md:px-8">
+            <TabsList className="h-auto bg-transparent gap-6">
+              <TabsTrigger 
+                value="content" 
+                className="py-4 px-0 rounded-none border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:bg-transparent bg-transparent text-muted-foreground data-[state=active]:text-foreground font-medium"
+              >
+                Conteúdos
+              </TabsTrigger>
+              <TabsTrigger 
+                value="about" 
+                className="py-4 px-0 rounded-none border-b-2 border-transparent data-[state=active]:border-white data-[state=active]:bg-transparent bg-transparent text-muted-foreground data-[state=active]:text-foreground font-medium"
+              >
+                Sobre
+              </TabsTrigger>
+            </TabsList>
+          </div>
+        </div>
+
+        {/* Content Tab */}
+        <TabsContent value="content" className="mt-0">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+            {/* Header with Search */}
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-foreground">
+                Todos os conteúdos
+              </h2>
+              
+              <div className="relative w-full md:w-80">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Buscar conteúdo"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-input border-border"
+                />
               </div>
-            </section>
+            </div>
 
-            {/* Course Content */}
-            <section>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-foreground">Conteúdo do Curso</h2>
-                <span className="text-sm text-muted-foreground">
-                  {course.modules.length} módulos • {totalLessons} aulas
-                </span>
-              </div>
+            {/* Modules Accordion */}
+            <Accordion type="multiple" defaultValue={course.modules.map(m => m.id)} className="space-y-4">
+              {course.modules.sort((a, b) => a.order - b.order).map((module) => {
+                const moduleLessons = filterLessons(getModuleLessons(module.id));
+                const allModuleLessons = getModuleLessons(module.id);
+                const moduleCompleted = allModuleLessons.every(l => isLessonCompleted(l.id));
+                const moduleProgress = allModuleLessons.filter(l => isLessonCompleted(l.id)).length;
 
-              <Accordion type="multiple" className="space-y-4">
-                {course.modules.sort((a, b) => a.order - b.order).map((module) => {
-                  const moduleLessons = getModuleLessons(module.id);
-                  const moduleCompleted = moduleLessons.every(l => isLessonCompleted(l.id));
-                  const moduleProgress = moduleLessons.filter(l => isLessonCompleted(l.id)).length;
-
-                  return (
-                    <AccordionItem 
-                      key={module.id} 
-                      value={module.id}
-                      className="bg-card border border-border rounded-xl overflow-hidden"
-                    >
-                      <AccordionTrigger className="px-6 py-4 hover:bg-accent/30 transition-colors [&[data-state=open]]:bg-accent/30">
-                        <div className="flex items-center justify-between w-full pr-4">
-                          <div className="flex items-center space-x-4">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                              moduleCompleted ? 'bg-success/20' : 'bg-accent'
-                            }`}>
-                              {moduleCompleted ? (
-                                <CheckCircle className="w-4 h-4 text-success" />
-                              ) : (
-                                <span className="text-sm font-medium text-foreground">{module.order}</span>
-                              )}
-                            </div>
-                            <div className="text-left">
-                              <h3 className="font-medium text-foreground">{module.title}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {moduleLessons.length} aulas • {moduleProgress}/{moduleLessons.length} concluídas
-                              </p>
-                            </div>
+                return (
+                  <AccordionItem 
+                    key={module.id} 
+                    value={module.id}
+                    className="bg-card border border-border rounded-xl overflow-hidden"
+                  >
+                    <AccordionTrigger className="px-4 md:px-6 py-4 hover:bg-accent/30 transition-colors [&[data-state=open]]:bg-accent/30">
+                      <div className="flex items-center justify-between w-full pr-4">
+                        <div className="flex items-center gap-3 md:gap-4">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                            moduleCompleted ? 'bg-success/20' : 'bg-accent'
+                          }`}>
+                            {moduleCompleted ? (
+                              <CheckCircle className="w-4 h-4 text-success" />
+                            ) : (
+                              <span className="text-sm font-medium text-foreground">{module.order}</span>
+                            )}
+                          </div>
+                          <div className="text-left">
+                            <h3 className="font-medium text-foreground text-sm md:text-base">{module.title}</h3>
+                            <p className="text-xs md:text-sm text-muted-foreground">
+                              {allModuleLessons.length} aulas • {moduleProgress}/{allModuleLessons.length} concluídas
+                            </p>
                           </div>
                         </div>
-                      </AccordionTrigger>
-                      <AccordionContent className="px-0 pb-0">
-                        <div className="border-t border-border">
-                          {moduleLessons.map((lesson, idx) => {
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-0 pb-0">
+                      <div className="border-t border-border">
+                        {moduleLessons.length === 0 ? (
+                          <p className="text-center py-4 text-muted-foreground text-sm">
+                            {searchTerm ? 'Nenhuma aula encontrada' : 'Nenhuma aula neste módulo'}
+                          </p>
+                        ) : (
+                          moduleLessons.map((lesson, idx) => {
                             const isComplete = isLessonCompleted(lesson.id);
                             return (
                               <Link
                                 key={lesson.id}
                                 to={`/course/${courseId}/lesson/${lesson.id}`}
-                                className="flex items-center space-x-4 px-6 py-4 border-b border-border last:border-0 hover:bg-accent/30 transition-colors"
+                                className="flex items-center gap-3 md:gap-4 px-4 md:px-6 py-4 border-b border-border last:border-0 hover:bg-accent/30 transition-colors"
                               >
                                 <div className="flex-shrink-0">
                                   {isComplete ? (
@@ -261,76 +243,61 @@ const CoursePage: React.FC = () => {
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className={`font-medium ${isComplete ? 'text-muted-foreground' : 'text-foreground'}`}>
+                                  <p className={`font-medium text-sm md:text-base truncate ${isComplete ? 'text-muted-foreground' : 'text-foreground'}`}>
                                     {idx + 1}. {lesson.title}
                                   </p>
                                 </div>
-                                <div className="flex items-center space-x-3 text-sm text-muted-foreground">
-                                  <Clock className="w-4 h-4" />
-                                  <span>{lesson.duration}</span>
-                                </div>
+                                {lesson.duration && (
+                                  <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground flex-shrink-0">
+                                    <Clock className="w-4 h-4" />
+                                    <span>{lesson.duration}</span>
+                                  </div>
+                                )}
                               </Link>
                             );
-                          })}
-                        </div>
-                      </AccordionContent>
-                    </AccordionItem>
-                  );
-                })}
-              </Accordion>
-            </section>
+                          })
+                        )}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
           </div>
+        </TabsContent>
 
-          {/* Sidebar */}
-          <div className="lg:w-80">
-            <div className="sticky top-20 space-y-6">
-              {/* Instructor Card */}
-              {instructor && (
-                <div className="bg-card rounded-xl border border-border p-6">
-                  <h3 className="font-semibold text-foreground mb-4">Sobre o Instrutor</h3>
-                  <div className="flex items-center space-x-4 mb-4">
-                    <Avatar className="w-16 h-16 border-2 border-border">
-                      <AvatarImage src={instructor.avatar} />
-                      <AvatarFallback>{instructor.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <h4 className="font-medium text-foreground">{instructor.name}</h4>
-                      {instructor.instagram && (
-                        <a 
-                          href={`https://instagram.com/${instructor.instagram.replace('@', '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-1 text-sm text-info hover:text-info/80"
-                        >
-                          <Instagram className="w-4 h-4" />
-                          <span>{instructor.instagram}</span>
-                        </a>
-                      )}
-                    </div>
+        {/* About Tab */}
+        <TabsContent value="about" className="mt-0">
+          <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+            <div className="max-w-3xl">
+              <h2 className="text-2xl font-bold text-foreground mb-4">Sobre o Curso</h2>
+              <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                {course.description || 'Nenhuma descrição disponível para este curso.'}
+              </p>
+              
+              <div className="mt-8 pt-8 border-t border-border">
+                <h3 className="text-lg font-semibold text-foreground mb-4">Informações</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="bg-card border border-border rounded-lg p-4">
+                    <p className="text-sm text-muted-foreground">Módulos</p>
+                    <p className="text-xl font-bold text-foreground">{course.modules.length}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">{instructor.bio}</p>
+                  <div className="bg-card border border-border rounded-lg p-4">
+                    <p className="text-sm text-muted-foreground">Aulas</p>
+                    <p className="text-xl font-bold text-foreground">{totalLessons}</p>
+                  </div>
+                  {course.totalDuration && (
+                    <div className="bg-card border border-border rounded-lg p-4">
+                      <p className="text-sm text-muted-foreground">Duração Total</p>
+                      <p className="text-xl font-bold text-foreground">{course.totalDuration}</p>
+                    </div>
+                  )}
                 </div>
-              )}
-
-              {/* CTA Card */}
-              <div className="bg-card rounded-xl border border-border p-6">
-                <h3 className="font-semibold text-foreground mb-4">Pronto para começar?</h3>
-                <Button 
-                  size="lg" 
-                  className="w-full"
-                  onClick={handleStartCourse}
-                >
-                  {completedLessons > 0 ? 'Continuar' : 'Iniciar Curso'}
-                  <Play className="w-4 h-4 ml-2" />
-                </Button>
-                <p className="text-xs text-muted-foreground text-center mt-4">
-                  Acesso vitalício a todo o conteúdo
-                </p>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

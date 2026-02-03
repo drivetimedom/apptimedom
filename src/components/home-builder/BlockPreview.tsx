@@ -6,7 +6,8 @@ import {
   TextBlockData, 
   ButtonBlockData, 
   VideoBlockData, 
-  DividerBlockData 
+  DividerBlockData,
+  HeroCarouselBlockData
 } from '@/hooks/useHomeBlocks';
 
 interface BlockPreviewProps {
@@ -15,6 +16,22 @@ interface BlockPreviewProps {
 
 const BlockPreview: React.FC<BlockPreviewProps> = ({ block }) => {
   switch (block.type) {
+    case 'hero_carousel': {
+      const data = block.data as HeroCarouselBlockData;
+      return (
+        <div className="w-full h-20 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 rounded flex items-center justify-center gap-4">
+          <div className="flex gap-2">
+            <div className="w-8 h-12 bg-muted rounded" />
+            <div className="w-10 h-14 bg-primary/30 rounded border-2 border-primary" />
+            <div className="w-8 h-12 bg-muted rounded" />
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Carrossel Hero • Altura: {data.height} • Intervalo: {data.autoplayInterval / 1000}s
+          </div>
+        </div>
+      );
+    }
+
     case 'banner': {
       const data = block.data as BannerBlockData;
       return (

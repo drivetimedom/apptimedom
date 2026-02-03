@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Json } from '@/integrations/supabase/types';
 
-export type BlockType = 'banner' | 'courses' | 'text' | 'button' | 'video' | 'divider';
+export type BlockType = 'banner' | 'courses' | 'text' | 'button' | 'video' | 'divider' | 'hero_carousel';
 
 export interface BannerBlockData {
   imageUrl: string;
@@ -44,7 +44,12 @@ export interface DividerBlockData {
   spacing: string;
 }
 
-export type BlockData = BannerBlockData | CoursesBlockData | TextBlockData | ButtonBlockData | VideoBlockData | DividerBlockData;
+export interface HeroCarouselBlockData {
+  height: string;
+  autoplayInterval: number;
+}
+
+export type BlockData = BannerBlockData | CoursesBlockData | TextBlockData | ButtonBlockData | VideoBlockData | DividerBlockData | HeroCarouselBlockData;
 
 export interface HomeBlock {
   id: string;
@@ -112,6 +117,11 @@ export const getDefaultBlockData = (type: BlockType): BlockData => {
     case 'divider':
       return {
         spacing: '40px'
+      };
+    case 'hero_carousel':
+      return {
+        height: '500px',
+        autoplayInterval: 5000
       };
     default:
       return {} as BlockData;

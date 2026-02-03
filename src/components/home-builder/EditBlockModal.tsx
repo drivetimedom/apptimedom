@@ -26,9 +26,10 @@ import {
   ButtonBlockData,
   VideoBlockData,
   DividerBlockData,
+  HeroCarouselBlockData,
   BlockType
 } from '@/hooks/useHomeBlocks';
-import { Image, BookOpen, Type, Link2, Video, Minus } from 'lucide-react';
+import { Image, BookOpen, Type, Link2, Video, Minus, Layers } from 'lucide-react';
 
 interface EditBlockModalProps {
   block: HomeBlock;
@@ -38,6 +39,7 @@ interface EditBlockModalProps {
 
 const getBlockName = (type: BlockType): string => {
   switch (type) {
+    case 'hero_carousel': return 'Carrossel Hero';
     case 'banner': return 'Banner com Link';
     case 'courses': return 'Seção de Cursos';
     case 'text': return 'Texto/Título';
@@ -50,6 +52,7 @@ const getBlockName = (type: BlockType): string => {
 
 const getBlockIcon = (type: BlockType) => {
   switch (type) {
+    case 'hero_carousel': return <Layers className="w-5 h-5" />;
     case 'banner': return <Image className="w-5 h-5" />;
     case 'courses': return <BookOpen className="w-5 h-5" />;
     case 'text': return <Type className="w-5 h-5" />;
@@ -453,8 +456,59 @@ const EditBlockModal: React.FC<EditBlockModalProps> = ({ block, onSave, onCancel
     );
   };
 
+  const renderHeroCarouselForm = () => {
+    const data = formData as HeroCarouselBlockData;
+    return (
+      <div className="space-y-4">
+        <div className="p-4 bg-muted rounded-lg">
+          <p className="text-sm text-muted-foreground">
+            Este bloco exibe os banners configurados em <strong>Admin → Banners</strong>. 
+            Para adicionar ou editar banners, acesse a seção de gerenciamento de banners.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Altura do Carrossel</Label>
+          <Select
+            value={data.height}
+            onValueChange={(value) => setFormData({ ...data, height: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="400px">400px (Pequeno)</SelectItem>
+              <SelectItem value="500px">500px (Médio)</SelectItem>
+              <SelectItem value="600px">600px (Grande)</SelectItem>
+              <SelectItem value="700px">700px (Extra Grande)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Intervalo de Autoplay (ms)</Label>
+          <Select
+            value={String(data.autoplayInterval)}
+            onValueChange={(value) => setFormData({ ...data, autoplayInterval: parseInt(value) })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="3000">3 segundos</SelectItem>
+              <SelectItem value="5000">5 segundos</SelectItem>
+              <SelectItem value="7000">7 segundos</SelectItem>
+              <SelectItem value="10000">10 segundos</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    );
+  };
+
   const renderForm = () => {
     switch (block.type) {
+      case 'hero_carousel': return renderHeroCarouselForm();
       case 'banner': return renderBannerForm();
       case 'courses': return renderCoursesForm();
       case 'text': return renderTextForm();

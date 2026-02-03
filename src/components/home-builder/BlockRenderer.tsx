@@ -9,15 +9,37 @@ import {
   TextBlockData,
   ButtonBlockData,
   VideoBlockData,
-  DividerBlockData
+  DividerBlockData,
+  HeroCarouselBlockData
 } from '@/hooks/useHomeBlocks';
 import VerticalCourseCard from '@/components/courses/VerticalCourseCard';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBanners } from '@/hooks/useBanners';
+import HeroBannerCarousel from '@/components/home/HeroBannerCarousel';
 
 interface BlockRendererProps {
   block: HomeBlock;
 }
+
+// Hero Carousel Block Component
+const HeroCarouselBlock: React.FC<{ data: HeroCarouselBlockData }> = ({ data }) => {
+  const { data: banners = [] } = useBanners();
+  
+  if (banners.length === 0) {
+    return (
+      <div className="w-full h-[400px] bg-muted flex items-center justify-center">
+        <p className="text-muted-foreground">Nenhum banner configurado. Adicione banners em Admin → Banners.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ height: data.height }} className="overflow-hidden">
+      <HeroBannerCarousel banners={banners} />
+    </div>
+  );
+};
 
 // Banner Block Component
 const BannerBlock: React.FC<{ data: BannerBlockData }> = ({ data }) => {
@@ -226,6 +248,8 @@ const DividerBlock: React.FC<{ data: DividerBlockData }> = ({ data }) => {
 // Main Block Renderer
 const BlockRenderer: React.FC<BlockRendererProps> = ({ block }) => {
   switch (block.type) {
+    case 'hero_carousel':
+      return <HeroCarouselBlock data={block.data as HeroCarouselBlockData} />;
     case 'banner':
       return <BannerBlock data={block.data as BannerBlockData} />;
     case 'courses':

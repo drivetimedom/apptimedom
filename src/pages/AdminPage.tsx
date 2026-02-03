@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   getFromStorage, 
@@ -223,7 +224,7 @@ const AdminPage: React.FC = () => {
 
   const saveUser = async (userData: Partial<User> & { password?: string }) => {
     if (editingUser) {
-      // Update existing user (still uses localStorage for now)
+      // Update existing user in localStorage
       const updatedUsers = users.map(u => 
         u.id === editingUser.id 
           ? { ...u, ...userData, password: userData.password || u.password }
@@ -231,7 +232,37 @@ const AdminPage: React.FC = () => {
       );
       setUsers(updatedUsers);
       setToStorage(STORAGE_KEYS.USERS, updatedUsers);
-      toast({ title: 'Usuário atualizado!' });
+      
+      // CRITICAL: Also update profile in Supabase for prescription data
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            name: userData.name,
+            avatar: userData.avatar || null,
+            status: userData.status || 'iniciante',
+            prescribed_map: userData.prescribedMap === 'none' ? null : userData.prescribedMap,
+            visible_challenges: userData.visibleChallenges || [],
+            activation_plan: (userData.activationPlan || []) as unknown as any,
+            unlocked_courses: userData.unlockedCourses || [],
+          })
+          .eq('user_id', editingUser.id);
+        
+        if (profileError) {
+          console.error('Error updating profile in Supabase:', profileError);
+          toast({ 
+            title: 'Aviso', 
+            description: 'Dados locais salvos, mas houve erro ao sincronizar com o Cloud',
+            variant: 'destructive' 
+          });
+        } else {
+          toast({ title: 'Usuário atualizado!' });
+        }
+      } catch (err) {
+        console.error('Error syncing profile:', err);
+        toast({ title: 'Usuário atualizado localmente' });
+      }
+      
       setUserModalOpen(false);
       setEditingUser(null);
     } else {

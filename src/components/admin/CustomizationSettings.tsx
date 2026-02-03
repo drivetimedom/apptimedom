@@ -459,6 +459,34 @@ const CustomizationSettings: React.FC = () => {
               </div>
 
               <div className="bg-card rounded-xl border border-border p-6">
+                <h3 className="font-semibold text-foreground mb-4">Imagem de Fundo do Login</h3>
+                <div className="space-y-4">
+                  {customization.branding.loginBackgroundUrl && (
+                    <div className="bg-accent/30 rounded-lg p-2">
+                      <img 
+                        src={customization.branding.loginBackgroundUrl} 
+                        alt="Login Background" 
+                        className="w-full h-40 object-cover rounded"
+                      />
+                    </div>
+                  )}
+                  <div className="flex gap-3">
+                    <Input
+                      value={customization.branding.loginBackgroundUrl || ''}
+                      onChange={(e) => updateBranding('loginBackgroundUrl', e.target.value || null)}
+                      placeholder="URL da imagem..."
+                      className="flex-1 bg-input border-border"
+                    />
+                    <Button variant="outline" onClick={() => triggerUpload('loginBackgroundUrl')} className="gap-2">
+                      <Upload className="w-4 h-4" />
+                      Upload
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Recomendado: 1080x1920px (vertical) ou 960x1080px. Aparece à esquerda da tela de login.</p>
+                </div>
+              </div>
+
+              <div className="bg-card rounded-xl border border-border p-6">
                 <h3 className="font-semibold text-foreground mb-4">Favicon</h3>
                 <div className="space-y-4">
                   {customization.branding.faviconUrl && (

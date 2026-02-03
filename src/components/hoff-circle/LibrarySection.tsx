@@ -91,6 +91,7 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
                   <VerticalCourseCard 
                     course={course}
                     fixedWidth={false}
+                    isLocked={false}
                     badgeType={course.sequenceConfig?.isPillar ? `T${course.sequenceConfig.position}` : undefined}
                   />
                 </div>

@@ -14,7 +14,8 @@ import {
   Video,
   Minus,
   ArrowLeft,
-  Loader2
+  Loader2,
+  Layers
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,6 +46,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const blockTypes: { type: BlockType; icon: React.ElementType; name: string; desc: string }[] = [
+  { type: 'hero_carousel', icon: Layers, name: '🎠 Carrossel Hero', desc: 'Carrossel com banners do sistema' },
   { type: 'banner', icon: Image, name: '📸 Banner com Link', desc: 'Imagem clicável com redirecionamento' },
   { type: 'courses', icon: BookOpen, name: '🎓 Seção de Cursos', desc: 'Grid de cursos filtrados' },
   { type: 'text', icon: Type, name: '📝 Texto/Título', desc: 'Título e subtítulo customizados' },
@@ -55,6 +57,7 @@ const blockTypes: { type: BlockType; icon: React.ElementType; name: string; desc
 
 const getBlockIcon = (type: BlockType) => {
   switch (type) {
+    case 'hero_carousel': return <Layers className="w-4 h-4" />;
     case 'banner': return <Image className="w-4 h-4" />;
     case 'courses': return <BookOpen className="w-4 h-4" />;
     case 'text': return <Type className="w-4 h-4" />;
@@ -67,6 +70,7 @@ const getBlockIcon = (type: BlockType) => {
 
 const getBlockName = (type: BlockType): string => {
   switch (type) {
+    case 'hero_carousel': return 'Carrossel Hero';
     case 'banner': return 'Banner com Link';
     case 'courses': return 'Seção de Cursos';
     case 'text': return 'Texto/Título';

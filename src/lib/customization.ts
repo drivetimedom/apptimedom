@@ -12,6 +12,7 @@ export interface CustomizationColors {
 export interface CustomizationBranding {
   logoUrl: string | null;
   logoLoginUrl: string | null;
+  loginBackgroundUrl: string | null;
   faviconUrl: string | null;
   bannerUrl: string | null;
 }
@@ -53,6 +54,7 @@ export const defaultCustomization: Customization = {
   branding: {
     logoUrl: null,
     logoLoginUrl: null,
+    loginBackgroundUrl: null,
     faviconUrl: null,
     bannerUrl: null,
   },

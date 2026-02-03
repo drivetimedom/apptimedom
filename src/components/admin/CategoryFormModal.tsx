@@ -235,14 +235,14 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="bg-card border-border max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogHeader>
+        <DialogContent className="bg-card border-border max-w-2xl h-[85vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-foreground">
               {category ? 'Editar Categoria' : 'Nova Categoria'}
             </DialogTitle>
           </DialogHeader>
 
-          <ScrollArea className="flex-1 pr-4">
+          <div className="flex-1 overflow-y-auto pr-2">
             <div className="space-y-6 py-4">
               {/* Basic Info */}
               <div className="grid grid-cols-2 gap-4">
@@ -449,9 +449,9 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({
                 )}
               </div>
             </div>
-          </ScrollArea>
+          </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-border">
+          <div className="flex-shrink-0 flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={onClose}>
               Cancelar
             </Button>

@@ -1,6 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCourse } from '@/hooks/useCourses';
+import { useLessons } from '@/hooks/useLessons';
 import { 
   getFromStorage, 
   setToStorage,
@@ -33,6 +35,7 @@ import {
   ExternalLink,
   Send,
   Instagram,
+  Loader2,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -44,18 +47,80 @@ const LessonPage: React.FC = () => {
   
   const [newComment, setNewComment] = useState('');
 
-  // Get data
+  // Backend data (source of truth)
+  const {
+    data: courseFromDb,
+    isLoading: courseLoading,
+    error: courseError,
+  } = useCourse(courseId);
+  const {
+    data: lessonsFromDb = [],
+    isLoading: lessonsLoading,
+    error: lessonsError,
+  } = useLessons(courseId);
+
+  // Local storage fallback (legacy)
   const courses = useMemo(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []), []);
   const allLessons = useMemo(() => getFromStorage<Lesson[]>(STORAGE_KEYS.LESSONS, []), []);
   const users = useMemo(() => getFromStorage<User[]>(STORAGE_KEYS.USERS, []), []);
   const [allProgress, setAllProgress] = useState(() => getFromStorage<Progress[]>(STORAGE_KEYS.PROGRESS, []));
   const [comments, setComments] = useState(() => getFromStorage<Comment[]>(STORAGE_KEYS.COMMENTS, []));
 
-  const course = courses.find(c => c.id === courseId);
-  const courseLessons = allLessons.filter(l => l.courseId === courseId).sort((a, b) => a.order - b.order);
+  // Choose best available sources
+  const course = courseFromDb ?? courses.find(c => c.id === courseId);
+  const courseLessons = (lessonsFromDb.length > 0
+    ? lessonsFromDb
+    : allLessons.filter(l => l.courseId === courseId)
+  ).sort((a, b) => a.order - b.order);
   const currentLesson = courseLessons.find(l => l.id === lessonId);
   const instructor = users.find(u => u.id === course?.instructorId);
   
+  // Debug logs + visible errors
+  useEffect(() => {
+    console.log('[LessonPage] route params', { courseId, lessonId });
+  }, [courseId, lessonId]);
+
+  useEffect(() => {
+    if (courseError) {
+      console.error('[LessonPage] course fetch error', courseError);
+      toast({
+        title: 'Erro ao carregar curso',
+        description: (courseError as any)?.message ?? 'Tente novamente.',
+        variant: 'destructive',
+      });
+    }
+  }, [courseError, toast]);
+
+  useEffect(() => {
+    if (lessonsError) {
+      console.error('[LessonPage] lessons fetch error', { courseId, lessonsError });
+      toast({
+        title: 'Erro ao carregar aulas',
+        description: (lessonsError as any)?.message ?? 'Tente novamente.',
+        variant: 'destructive',
+      });
+    }
+  }, [courseId, lessonsError, toast]);
+
+  useEffect(() => {
+    console.log('[LessonPage] data snapshot', {
+      courseId,
+      lessonId,
+      courseFound: !!course,
+      lessonsFromDbCount: lessonsFromDb.length,
+      lessonsFromStorageCount: allLessons.filter(l => l.courseId === courseId).length,
+      currentLessonFound: !!currentLesson,
+    });
+  }, [courseId, lessonId, course, lessonsFromDb.length, allLessons, currentLesson]);
+
+  if (courseLoading || lessonsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   const currentIndex = courseLessons.findIndex(l => l.id === lessonId);
   const prevLesson = currentIndex > 0 ? courseLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex < courseLessons.length - 1 ? courseLessons[currentIndex + 1] : null;

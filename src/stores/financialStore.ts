@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase } from '@/integrations/supabase/client';
 
 // Types
 export interface DespesasFixas {
@@ -167,6 +168,11 @@ interface FinancialStore {
   };
   getPacientesNecessarios: (cenario: 'minima' | 'ideal' | 'sonho') => number;
   getTotalCaptacao: (cenario: 'minima' | 'ideal' | 'sonho') => number;
+  
+  // Cloud sync
+  syncToCloud: () => Promise<void>;
+  loadFromCloud: () => Promise<void>;
+  _isSyncing: boolean;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -556,9 +562,111 @@ export const useFinancialStore = create<FinancialStore>()(
         const custom = fontes.customizadas.reduce((a, f) => a + f[cenario], 0);
         return fixas + custom;
       },
+
+      // Cloud sync
+      _isSyncing: false,
+
+      syncToCloud: async () => {
+        const state = get();
+        if (state._isSyncing) return;
+        
+        set({ _isSyncing: true });
+        
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) {
+            set({ _isSyncing: false });
+            return;
+          }
+
+          const payload = {
+            despesasFixas: state.despesasFixas,
+            horaClinica: state.horaClinica,
+            procedimentos: state.procedimentos,
+            parametros: state.parametros,
+            dadosPE: state.dadosPE,
+            mcProcedimentos: state.mcProcedimentos,
+            planoMetas: state.planoMetas,
+          };
+
+          // Check if record exists
+          const { data: existing } = await supabase
+            .from('financial_data')
+            .select('id, data')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (existing) {
+            await supabase
+              .from('financial_data')
+              .update({ data: payload as any })
+              .eq('id', existing.id);
+          } else {
+            await supabase
+              .from('financial_data')
+              .insert({
+                user_id: user.id,
+                data: payload as any,
+              });
+          }
+        } catch (error) {
+          console.error('[syncToCloud] error', error);
+        } finally {
+          set({ _isSyncing: false });
+        }
+      },
+
+      loadFromCloud: async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const { data } = await supabase
+            .from('financial_data')
+            .select('data')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (data?.data) {
+            const cloudData = data.data as any;
+            set({
+              despesasFixas: cloudData.despesasFixas || defaultDespesasFixas,
+              horaClinica: cloudData.horaClinica || defaultHoraClinica,
+              procedimentos: cloudData.procedimentos || defaultProcedimentos,
+              parametros: cloudData.parametros || defaultParametros,
+              dadosPE: cloudData.dadosPE || defaultDadosPE,
+              mcProcedimentos: cloudData.mcProcedimentos || defaultMCProcedimentos,
+              planoMetas: cloudData.planoMetas || defaultPlanoMetas,
+            });
+          }
+        } catch (error) {
+          console.error('[loadFromCloud] error', error);
+        }
+      },
     }),
     {
       name: 'hof-financial-store',
     }
   )
 );
+
+// Auto-sync to cloud on changes (debounced)
+let syncTimeout: NodeJS.Timeout | null = null;
+useFinancialStore.subscribe((state, prevState) => {
+  // Skip if only _isSyncing changed
+  if (state._isSyncing !== prevState._isSyncing && 
+      state.despesasFixas === prevState.despesasFixas &&
+      state.horaClinica === prevState.horaClinica &&
+      state.procedimentos === prevState.procedimentos &&
+      state.parametros === prevState.parametros &&
+      state.dadosPE === prevState.dadosPE &&
+      state.mcProcedimentos === prevState.mcProcedimentos &&
+      state.planoMetas === prevState.planoMetas) {
+    return;
+  }
+  
+  if (syncTimeout) clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(() => {
+    useFinancialStore.getState().syncToCloud();
+  }, 2000); // Debounce 2 seconds
+});

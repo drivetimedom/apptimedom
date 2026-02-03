@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -12,13 +12,24 @@ import PlanoMetas from '@/components/financial/PlanoMetas';
 import Conceitos from '@/components/financial/Conceitos';
 import ComoUsar from '@/components/financial/ComoUsar';
 import Glossario from '@/components/financial/Glossario';
+import { useFinancialStore } from '@/stores/financialStore';
+import { useAuth } from '@/contexts/AuthContext';
 
 const FinancialSystemPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const loadFromCloud = useFinancialStore(state => state.loadFromCloud);
   const [mainTab, setMainTab] = useState('precificacao');
   const [subTab, setSubTab] = useState('despesas');
   const [metasSubTab, setMetasSubTab] = useState('mc');
   const [guiaSubTab, setGuiaSubTab] = useState('conceitos');
+
+  // Load data from cloud on mount
+  useEffect(() => {
+    if (user) {
+      loadFromCloud();
+    }
+  }, [user, loadFromCloud]);
 
   const scrollToContent = () => {
     document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth' });

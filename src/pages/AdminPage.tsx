@@ -316,15 +316,41 @@ const AdminPage: React.FC = () => {
 
   const saveCourse = async (courseData: StorageCourse, courseLessons: StorageLesson[]) => {
     try {
+      console.log('[saveCourse] Starting save...', { courseData, courseLessons, isEditing: !!editingCourse });
+      
       if (editingCourse) {
         // Update existing course
         await updateCourseMutation.mutateAsync({
           id: editingCourse.id,
           ...courseData,
         } as any);
+        
+        // Handle lessons for existing course
+        const existingLessonIds = lessons.filter(l => l.courseId === editingCourse.id).map(l => l.id);
+        const newLessonIds = courseLessons.map(l => l.id);
+        
+        // Delete removed lessons
+        const lessonsToDelete = existingLessonIds.filter(id => !newLessonIds.includes(id));
+        for (const lessonId of lessonsToDelete) {
+          console.log('[saveCourse] Deleting lesson:', lessonId);
+          await deleteLessonMutation.mutateAsync(lessonId);
+        }
+        
+        // Update or create lessons
+        for (const lesson of courseLessons) {
+          const lessonPayload = { ...lesson, courseId: editingCourse.id };
+          if (existingLessonIds.includes(lesson.id)) {
+            console.log('[saveCourse] Updating lesson:', lesson.id);
+            await updateLessonMutation.mutateAsync(lessonPayload as any);
+          } else {
+            console.log('[saveCourse] Creating new lesson:', lesson.id);
+            await createLessonMutation.mutateAsync(lessonPayload as any);
+          }
+        }
       } else {
         // Create new course
         const createdCourse = await createCourseMutation.mutateAsync(courseData as any);
+        console.log('[saveCourse] Created course:', createdCourse.id);
         
         // Create lessons for the new course
         if (courseLessons.length > 0) {
@@ -332,6 +358,7 @@ const AdminPage: React.FC = () => {
             ...l,
             courseId: createdCourse.id,
           }));
+          console.log('[saveCourse] Creating bulk lessons:', lessonsToCreate.length);
           await bulkCreateLessonsMutation.mutateAsync(lessonsToCreate as any);
         }
       }
@@ -339,7 +366,7 @@ const AdminPage: React.FC = () => {
       setCourseModalOpen(false);
       setEditingCourse(null);
     } catch (error) {
-      console.error('Error saving course:', error);
+      console.error('[saveCourse] Error saving course:', error);
     }
   };
 
@@ -418,19 +445,23 @@ const AdminPage: React.FC = () => {
 
   const saveCategory = async (categoryData: StorageCategory) => {
     try {
+      console.log('[saveCategory] Saving category:', categoryData);
+      
       if (editingCategory) {
+        console.log('[saveCategory] Updating existing category:', editingCategory.id);
         await updateCategoryMutation.mutateAsync({
           id: editingCategory.id,
           ...categoryData,
         } as any);
       } else {
+        console.log('[saveCategory] Creating new category');
         await createCategoryMutation.mutateAsync(categoryData as any);
       }
       
       setCategoryModalOpen(false);
       setEditingCategory(null);
     } catch (error) {
-      console.error('Error saving category:', error);
+      console.error('[saveCategory] Error saving category:', error);
     }
   };
 
@@ -1242,6 +1273,7 @@ const AdminPage: React.FC = () => {
         onSave={saveCourse}
         course={editingCourse}
         existingLessons={lessons}
+        categories={categories}
       />
 
       {/* Category Form Modal */}

@@ -19,6 +19,7 @@ import SwipeFilePage from "@/pages/SwipeFilePage";
 import AdminPage from "@/pages/AdminPage";
 import HoffCirclePage from "@/pages/HoffCirclePage";
 import FinancialSystemPage from "@/pages/FinancialSystemPage";
+import HomeBuilderPage from "@/pages/HomeBuilderPage";
 import NotFound from "@/pages/NotFound";
 
 // Initialize seed data
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/hoff-circle" element={<HoffCirclePage />} />
               <Route path="/financial-system" element={<FinancialSystemPage />} />
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/admin/home-builder" element={<HomeBuilderPage />} />
             </Route>
             
             {/* Catch all */}

@@ -4,9 +4,11 @@ import { useCourses } from '@/hooks/useCourses';
 import { useCategories } from '@/hooks/useCategories';
 import { useActiveBanners } from '@/hooks/useBanners';
 import { useUserProgress } from '@/hooks/useUserProgress';
+import { useHomeBlocks } from '@/hooks/useHomeBlocks';
 import HeroBannerCarousel from '@/components/home/HeroBannerCarousel';
 import CategoryCarousel from '@/components/home/CategoryCarousel';
 import VerticalCourseCard from '@/components/courses/VerticalCourseCard';
+import BlockRenderer from '@/components/home-builder/BlockRenderer';
 import { Gift, BookOpen, Loader2 } from 'lucide-react';
 
 const HomePage: React.FC = () => {
@@ -17,8 +19,12 @@ const HomePage: React.FC = () => {
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
   const { data: courses = [], isLoading: coursesLoading } = useCourses();
   const { data: userProgressList = [] } = useUserProgress();
+  const { data: homeBlocks = [], isLoading: blocksLoading } = useHomeBlocks();
 
-  const isLoading = bannersLoading || categoriesLoading || coursesLoading;
+  const isLoading = bannersLoading || categoriesLoading || coursesLoading || blocksLoading;
+
+  // Check if we have custom home blocks
+  const hasCustomHome = homeBlocks.length > 0;
 
   const activeCategories = useMemo(() => 
     categories.filter(c => c.active).sort((a, b) => a.order - b.order), 
@@ -67,6 +73,18 @@ const HomePage: React.FC = () => {
     );
   }
 
+  // If we have custom home blocks, render them instead of the default layout
+  if (hasCustomHome) {
+    return (
+      <div className="min-h-screen bg-background">
+        {homeBlocks.map(block => (
+          <BlockRenderer key={block.id} block={block} />
+        ))}
+      </div>
+    );
+  }
+
+  // Default layout (fallback when no custom blocks exist)
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Banner Carousel */}

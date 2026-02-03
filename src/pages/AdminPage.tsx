@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
+import {
   getFromStorage, 
   setToStorage, 
   STORAGE_KEYS, 
@@ -60,6 +61,7 @@ import {
   Palette,
   Settings,
   Loader2,
+  LayoutDashboard,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -97,6 +99,7 @@ import { useLessons, useCreateLesson, useUpdateLesson, useDeleteLesson, useBulkC
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner, Banner } from '@/hooks/useBanners';
 
 const AdminPage: React.FC = () => {
+  const navigate = useNavigate();
   const { user: currentUser, isAdmin } = useAuth();
   const { toast } = useToast();
   const { createUser, isLoading: isCreatingUser } = useCreateUser();
@@ -695,6 +698,9 @@ const AdminPage: React.FC = () => {
             <div className="bg-card rounded-xl border border-border p-6">
               <h3 className="font-semibold text-foreground mb-4">Ações Rápidas</h3>
               <div className="flex flex-wrap gap-4">
+                <Button onClick={() => navigate('/admin/home-builder')} variant="default" className="gap-2 bg-primary">
+                  <LayoutDashboard className="w-4 h-4" /> Construtor da Home
+                </Button>
                 <Button onClick={() => openCourseModal()} className="gap-2">
                   <Plus className="w-4 h-4" /> Novo Curso
                 </Button>

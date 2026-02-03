@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Course, getFromStorage, setToStorage, STORAGE_KEYS, UserStatus, PrescribedMap, ActivationTask, ActivationPlanTemplate, generateId } from '@/lib/storage';
+import { User, UserStatus, ActivationTask, generateId } from '@/lib/storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,24 +38,11 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Trash2, Target, BookOpen, Settings, FileDown, Loader2 } from 'lucide-react';
 
-// Types for Maps and Challenges
-interface HofMap {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  videos: any[];
-  totalDuration: number;
-}
-
-interface HofChallenge {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  videos: any[];
-  totalDuration: number;
-}
+// Cloud hooks
+import { useCourses, Course } from '@/hooks/useCourses';
+import { useHofMaps, HofMap } from '@/hooks/useHofMaps';
+import { useHofChallenges, HofChallenge } from '@/hooks/useHofChallenges';
+import { useActivationPlanTemplates, ActivationPlanTemplate } from '@/hooks/useActivationPlanTemplates';
 
 interface UserFormModalProps {
   isOpen: boolean;
@@ -83,10 +70,13 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
   isLoading = false,
 }) => {
   const { toast } = useToast();
-  const [courses] = useState(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []));
-  const [templates] = useState(() => getFromStorage<ActivationPlanTemplate[]>(STORAGE_KEYS.ACTIVATION_TEMPLATES, []));
-  const [hofMaps] = useState(() => getFromStorage<HofMap[]>(STORAGE_KEYS.HOF_MAPS, []));
-  const [hofChallenges] = useState(() => getFromStorage<HofChallenge[]>(STORAGE_KEYS.HOF_CHALLENGES, []));
+  
+  // Cloud data hooks - always fresh from database
+  const { data: courses = [], isLoading: coursesLoading } = useCourses();
+  const { data: hofMaps = [], isLoading: mapsLoading } = useHofMaps();
+  const { data: hofChallenges = [], isLoading: challengesLoading } = useHofChallenges();
+  const { data: templates = [], isLoading: templatesLoading } = useActivationPlanTemplates();
+  
   const [activeTab, setActiveTab] = useState('basic');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('none');
   const [customTaskInput, setCustomTaskInput] = useState('');
@@ -291,9 +281,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     const template = templates.find(t => t.id === selectedTemplateId);
     if (!template) return;
 
-    const newTasks: ActivationTask[] = template.tasks.map((taskText, index) => ({
+    const newTasks: ActivationTask[] = template.tasks.map((task, index) => ({
       id: generateId(),
-      text: taskText,
+      text: typeof task === 'string' ? task : task.text,
       done: false,
       fromTemplate: template.name,
       order: formData.activationPlan.length + index,
@@ -598,7 +588,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                       ))}
                     </SelectContent>
                   </Select>
-                  {hofMaps.length === 0 && (
+                  {hofMaps.length === 0 && !mapsLoading && (
                     <p className="text-xs text-muted-foreground">
                       Nenhum mapa cadastrado. Crie mapas na aba "Mapas" do painel admin.
                     </p>
@@ -613,7 +603,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                       Selecione quais desafios aparecerão no "Plano de Ação" do aluno
                     </p>
                   </div>
-                  {hofChallenges.length === 0 ? (
+                  {hofChallenges.length === 0 && !challengesLoading ? (
                     <p className="text-sm text-muted-foreground italic p-4 bg-muted/10 rounded-lg text-center">
                       Nenhum desafio cadastrado. Crie desafios na aba "Desafios" do painel admin.
                     </p>
@@ -660,9 +650,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                         if (value !== 'none') {
                           const template = templates.find(t => t.id === value);
                           if (template) {
-                            const newTasks: ActivationTask[] = template.tasks.map((taskText, index) => ({
+                            const newTasks: ActivationTask[] = template.tasks.map((task, index) => ({
                               id: generateId(),
-                              text: taskText,
+                              text: typeof task === 'string' ? task : task.text,
                               done: false,
                               fromTemplate: template.name,
                               order: index,
@@ -685,12 +675,11 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                         {templates.map(template => (
                           <SelectItem key={template.id} value={template.id}>
                             📋 {template.name} ({template.tasks.length} tarefas)
-                            {template.category && ` • ${template.category}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {templates.length === 0 && (
+                    {templates.length === 0 && !templatesLoading && (
                       <p className="text-xs text-muted-foreground">
                         Nenhum template cadastrado. Crie templates na aba "Planos de Ativação" do painel admin.
                       </p>

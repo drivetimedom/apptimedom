@@ -5,7 +5,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,33 +24,41 @@ import {
   Save,
   Upload,
   Eye,
-  Check,
+  Loader2,
 } from 'lucide-react';
 import { 
   Customization, 
   defaultCustomization, 
   colorPalettes, 
   availableFonts,
-  getCustomization,
-  saveCustomization,
   applyCustomization,
 } from '@/lib/customization';
-import { getFromStorage, STORAGE_KEYS, Course } from '@/lib/storage';
+import { useCourses } from '@/hooks/useCourses';
+import { useCustomizationSettings, useUpdateCustomizationSettings, useResetCustomizationSettings } from '@/hooks/useCustomizationSettings';
 import { useToast } from '@/hooks/use-toast';
 
 const CustomizationSettings: React.FC = () => {
   const { toast } = useToast();
-  const [customization, setCustomization] = useState<Customization>(getCustomization);
+  
+  // Cloud data
+  const { data: cloudSettings, isLoading } = useCustomizationSettings();
+  const updateSettings = useUpdateCustomizationSettings();
+  const resetSettings = useResetCustomizationSettings();
+  const { data: courses = [] } = useCourses();
+  
+  const [customization, setCustomization] = useState<Customization>(defaultCustomization);
   const [activeTab, setActiveTab] = useState('colors');
   const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
-  const [courses] = useState(() => getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []));
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadTarget, setUploadTarget] = useState<string>('');
 
-  // Apply changes in real-time for preview
+  // Sync with cloud data when loaded
   useEffect(() => {
-    applyCustomization(customization);
-  }, [customization]);
+    if (cloudSettings?.settings) {
+      setCustomization(cloudSettings.settings);
+      applyCustomization(cloudSettings.settings);
+    }
+  }, [cloudSettings]);
 
   // Update color
   const updateColor = (key: keyof typeof customization.colors, value: string) => {
@@ -181,37 +188,24 @@ const CustomizationSettings: React.FC = () => {
   };
 
   // Save all changes
-  const handleSave = () => {
-    try {
-      saveCustomization(customization);
-      applyCustomization(customization);
-      toast({ title: 'Personalizações salvas!' });
-    } catch (error: any) {
-      console.error('Save error:', error);
-      if (error.message === 'STORAGE_FULL') {
-        toast({ 
-          title: 'Erro: Armazenamento cheio', 
-          description: 'Tente usar imagens menores ou remova algumas capas de cursos.',
-          variant: 'destructive' 
-        });
-      } else {
-        toast({ 
-          title: 'Erro ao salvar', 
-          description: 'Tente novamente ou use imagens menores.',
-          variant: 'destructive' 
-        });
-      }
-    }
+  const handleSave = async () => {
+    await updateSettings.mutateAsync(customization);
   };
 
   // Reset to default
-  const handleReset = () => {
+  const handleReset = async () => {
+    await resetSettings.mutateAsync();
     setCustomization(defaultCustomization);
-    saveCustomization(defaultCustomization);
-    applyCustomization(defaultCustomization);
     setResetConfirmOpen(false);
-    toast({ title: 'Personalização resetada!' });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   // Color picker component
   const ColorPicker = ({ 
@@ -256,12 +250,12 @@ const CustomizationSettings: React.FC = () => {
           <p className="text-muted-foreground">Customize cores, logos, textos e aparência</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => setResetConfirmOpen(true)} className="gap-2">
-            <RotateCcw className="w-4 h-4" />
+          <Button variant="outline" onClick={() => setResetConfirmOpen(true)} className="gap-2" disabled={resetSettings.isPending}>
+            {resetSettings.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
             Resetar
           </Button>
-          <Button onClick={handleSave} className="gap-2">
-            <Save className="w-4 h-4" />
+          <Button onClick={handleSave} className="gap-2" disabled={updateSettings.isPending}>
+            {updateSettings.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             Salvar Alterações
           </Button>
         </div>

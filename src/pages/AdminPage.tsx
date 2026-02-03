@@ -319,10 +319,23 @@ const AdminPage: React.FC = () => {
 
   const saveCourse = async (courseData: StorageCourse, courseLessons: StorageLesson[]) => {
     try {
-      console.log('[saveCourse] Starting save...', { courseData, courseLessons, isEditing: !!editingCourse });
+      console.log('[saveCourse] ========== STARTING SAVE ==========');
+      console.log('[saveCourse] Course data:', { 
+        id: courseData.id, 
+        title: courseData.title,
+        modules: courseData.modules?.length 
+      });
+      console.log('[saveCourse] Lessons to save:', courseLessons.map(l => ({ 
+        id: l.id, 
+        title: l.title, 
+        moduleId: l.moduleId,
+        courseId: l.courseId 
+      })));
+      console.log('[saveCourse] Is editing existing course:', !!editingCourse);
       
       if (editingCourse) {
         // Update existing course
+        console.log('[saveCourse] Updating course:', editingCourse.id);
         await updateCourseMutation.mutateAsync({
           id: editingCourse.id,
           ...courseData,
@@ -332,8 +345,13 @@ const AdminPage: React.FC = () => {
         const existingLessonIds = lessons.filter(l => l.courseId === editingCourse.id).map(l => l.id);
         const newLessonIds = courseLessons.map(l => l.id);
         
+        console.log('[saveCourse] Existing lesson IDs:', existingLessonIds);
+        console.log('[saveCourse] New lesson IDs:', newLessonIds);
+        
         // Delete removed lessons
         const lessonsToDelete = existingLessonIds.filter(id => !newLessonIds.includes(id));
+        console.log('[saveCourse] Lessons to delete:', lessonsToDelete);
+        
         for (const lessonId of lessonsToDelete) {
           console.log('[saveCourse] Deleting lesson:', lessonId);
           await deleteLessonMutation.mutateAsync(lessonId);
@@ -342,8 +360,16 @@ const AdminPage: React.FC = () => {
         // Update or create lessons
         for (const lesson of courseLessons) {
           const lessonPayload = { ...lesson, courseId: editingCourse.id };
+          console.log('[saveCourse] Processing lesson:', { 
+            id: lesson.id, 
+            title: lesson.title,
+            courseId: lessonPayload.courseId,
+            moduleId: lesson.moduleId,
+            isExisting: existingLessonIds.includes(lesson.id)
+          });
+          
           if (existingLessonIds.includes(lesson.id)) {
-            console.log('[saveCourse] Updating lesson:', lesson.id);
+            console.log('[saveCourse] Updating existing lesson:', lesson.id);
             await updateLessonMutation.mutateAsync(lessonPayload as any);
           } else {
             console.log('[saveCourse] Creating new lesson:', lesson.id);
@@ -352,8 +378,9 @@ const AdminPage: React.FC = () => {
         }
       } else {
         // Create new course
+        console.log('[saveCourse] Creating new course...');
         const createdCourse = await createCourseMutation.mutateAsync(courseData as any);
-        console.log('[saveCourse] Created course:', createdCourse.id);
+        console.log('[saveCourse] Course created with ID:', createdCourse.id);
         
         // Create lessons for the new course
         if (courseLessons.length > 0) {
@@ -361,15 +388,30 @@ const AdminPage: React.FC = () => {
             ...l,
             courseId: createdCourse.id,
           }));
-          console.log('[saveCourse] Creating bulk lessons:', lessonsToCreate.length);
+          console.log('[saveCourse] Bulk creating lessons with courseId:', createdCourse.id);
+          console.log('[saveCourse] Lessons to create:', lessonsToCreate.map(l => ({ 
+            title: l.title, 
+            moduleId: l.moduleId, 
+            courseId: l.courseId 
+          })));
           await bulkCreateLessonsMutation.mutateAsync(lessonsToCreate as any);
+          console.log('[saveCourse] Bulk lessons created successfully');
+        } else {
+          console.log('[saveCourse] No lessons to create');
         }
       }
       
+      console.log('[saveCourse] ========== SAVE COMPLETED ==========');
       setCourseModalOpen(false);
       setEditingCourse(null);
     } catch (error) {
-      console.error('[saveCourse] Error saving course:', error);
+      console.error('[saveCourse] ========== ERROR ==========');
+      console.error('[saveCourse] Error details:', error);
+      toast({ 
+        title: 'Erro ao salvar curso', 
+        description: error instanceof Error ? error.message : 'Erro desconhecido', 
+        variant: 'destructive' 
+      });
     }
   };
 

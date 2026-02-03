@@ -112,7 +112,24 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
   const [moduleForm, setModuleForm] = useState({ title: '', description: '' });
 
   useEffect(() => {
+    console.log('[CourseFormModal] useEffect triggered', { 
+      course: course?.id, 
+      existingLessons: existingLessons.length,
+      isOpen 
+    });
+    
     if (course) {
+      console.log('[CourseFormModal] Loading course:', course.id, course.title);
+      console.log('[CourseFormModal] Course modules:', course.modules);
+      console.log('[CourseFormModal] Existing lessons for this course:', 
+        existingLessons.filter(l => l.courseId === course.id).map(l => ({
+          id: l.id,
+          title: l.title,
+          moduleId: l.moduleId,
+          courseId: l.courseId
+        }))
+      );
+      
       setFormData({
         title: course.title,
         subtitle: course.subtitle,
@@ -127,8 +144,14 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
 
       // Load modules with lessons
       const courseModules: ModuleFormData[] = (course.modules || []).map(mod => {
+        console.log('[CourseFormModal] Processing module:', mod.id, mod.title);
+        
         const moduleLessons = existingLessons
-          .filter(l => l.moduleId === mod.id)
+          .filter(l => {
+            const match = l.moduleId === mod.id;
+            console.log('[CourseFormModal] Checking lesson:', l.id, l.title, 'moduleId:', l.moduleId, 'vs mod.id:', mod.id, 'match:', match);
+            return match;
+          })
           .sort((a, b) => a.order - b.order)
           .map(l => ({
             id: l.id,
@@ -140,6 +163,8 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
             resources: l.resources || [],
           }));
 
+        console.log('[CourseFormModal] Module lessons found:', moduleLessons.length);
+        
         return {
           id: mod.id,
           title: mod.title,
@@ -149,6 +174,8 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
           expanded: true,
         };
       });
+      
+      console.log('[CourseFormModal] Final modules with lessons:', courseModules);
       setModules(courseModules);
 
       if (course.sequenceConfig) {

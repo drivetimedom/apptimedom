@@ -52,6 +52,8 @@ export function useLessons(courseId?: string) {
   return useQuery({
     queryKey: ['lessons', courseId],
     queryFn: async () => {
+      console.log('[useLessons] Fetching lessons for courseId:', courseId);
+      
       let query = supabase
         .from('lessons')
         .select('*')
@@ -63,7 +65,12 @@ export function useLessons(courseId?: string) {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useLessons] Error fetching lessons:', error);
+        throw error;
+      }
+      
+      console.log('[useLessons] Fetched lessons:', data?.length, 'for courseId:', courseId);
       return (data || []).map(transformLesson);
     },
   });
@@ -94,21 +101,37 @@ export function useCreateLesson() {
 
   return useMutation({
     mutationFn: async (lesson: Omit<Lesson, 'id'>) => {
+      console.log('[useCreateLesson] Creating lesson:', { 
+        title: lesson.title, 
+        courseId: lesson.courseId, 
+        moduleId: lesson.moduleId 
+      });
+      
+      const row = transformToRow(lesson);
+      console.log('[useCreateLesson] Transformed row:', row);
+      
       const { data, error } = await supabase
         .from('lessons')
-        .insert(transformToRow(lesson))
+        .insert(row)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useCreateLesson] Error creating lesson:', error);
+        throw error;
+      }
+      
+      console.log('[useCreateLesson] Lesson created successfully:', data);
       return transformLesson(data);
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (data, variables) => {
+      console.log('[useCreateLesson] Invalidating queries for courseId:', variables.courseId);
       queryClient.invalidateQueries({ queryKey: ['lessons'] });
       queryClient.invalidateQueries({ queryKey: ['lessons', variables.courseId] });
       toast({ title: 'Aula criada com sucesso!' });
     },
     onError: (error) => {
+      console.error('[useCreateLesson] Mutation error:', error);
       toast({ title: 'Erro ao criar aula', description: error.message, variant: 'destructive' });
     },
   });
@@ -165,20 +188,45 @@ export function useDeleteLesson() {
 
 export function useBulkCreateLessons() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   return useMutation({
     mutationFn: async (lessons: Omit<Lesson, 'id'>[]) => {
+      console.log('[useBulkCreateLessons] Creating bulk lessons:', lessons.length);
+      console.log('[useBulkCreateLessons] Lessons data:', lessons.map(l => ({ 
+        title: l.title, 
+        courseId: l.courseId, 
+        moduleId: l.moduleId 
+      })));
+      
       const rows = lessons.map(transformToRow);
+      console.log('[useBulkCreateLessons] Transformed rows:', rows);
+      
       const { data, error } = await supabase
         .from('lessons')
         .insert(rows)
         .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[useBulkCreateLessons] Error creating lessons:', error);
+        throw error;
+      }
+      
+      console.log('[useBulkCreateLessons] Lessons created successfully:', data?.length);
       return (data || []).map(transformLesson);
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      const courseId = variables[0]?.courseId;
+      console.log('[useBulkCreateLessons] Invalidating queries for courseId:', courseId);
       queryClient.invalidateQueries({ queryKey: ['lessons'] });
+      if (courseId) {
+        queryClient.invalidateQueries({ queryKey: ['lessons', courseId] });
+      }
+      toast({ title: `${data.length} aulas criadas com sucesso!` });
+    },
+    onError: (error) => {
+      console.error('[useBulkCreateLessons] Mutation error:', error);
+      toast({ title: 'Erro ao criar aulas', description: error.message, variant: 'destructive' });
     },
   });
 }

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getFromStorage, setToStorage, generateId } from '@/lib/storage';
+import { 
+  useCommercialTracking, 
+  useCreateCommercialTracking, 
+  useUpdateCommercialTracking, 
+  useDeleteCommercialTracking 
+} from '@/hooks/useCommercialTracking';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,25 +27,18 @@ import {
   CalendarCheck,
   CheckCircle,
   DollarSign,
-  FileText
+  FileText,
+  Loader2
 } from 'lucide-react';
-import { toast } from 'sonner';
-
-interface WeekData {
-  id: string;
-  period: string;
-  leadsGenerated: number;
-  appointments: number;
-  attended: number;
-  closed: number;
-  revenue: number;
-  observations: string;
-  createdAt: string;
-}
+import { format } from 'date-fns';
 
 const CommercialTrackingTable: React.FC = () => {
   const { user } = useAuth();
-  const [weeks, setWeeks] = useState<WeekData[]>([]);
+  const { data: weeks = [], isLoading } = useCommercialTracking();
+  const createMutation = useCreateCommercialTracking();
+  const updateMutation = useUpdateCommercialTracking();
+  const deleteMutation = useDeleteCommercialTracking();
+  
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -50,56 +48,32 @@ const CommercialTrackingTable: React.FC = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      const data = getFromStorage<WeekData[]>(`commercial-tracking-${user.id}`, []);
-      setWeeks(data);
-    }
-  }, [user]);
-
-  const saveData = (newWeeks: WeekData[]) => {
-    if (user) {
-      setToStorage(`commercial-tracking-${user.id}`, newWeeks);
-      setWeeks(newWeeks);
-    }
-  };
-
   const addNewWeek = () => {
-    const newWeek: WeekData = {
-      id: generateId(),
-      period: '',
-      leadsGenerated: 0,
+    const today = new Date();
+    const weekStart = format(today, 'yyyy-MM-dd');
+    
+    createMutation.mutate({
+      week_start: weekStart,
+      leads: 0,
       appointments: 0,
-      attended: 0,
-      closed: 0,
+      attendance: 0,
+      deals: 0,
       revenue: 0,
       observations: '',
-      createdAt: new Date().toISOString(),
-    };
-    const newWeeks = [...weeks, newWeek];
-    saveData(newWeeks);
-    toast.success('Nova semana adicionada!');
+    });
   };
 
-  const updateWeek = (weekId: string, field: keyof WeekData, value: string | number) => {
-    const newWeeks = weeks.map(week => 
-      week.id === weekId ? { ...week, [field]: value } : week
-    );
-    saveData(newWeeks);
+  const handleFieldChange = (weekId: string, field: string, value: string | number) => {
+    updateMutation.mutate({ id: weekId, [field]: value });
   };
 
   const deleteWeek = (weekId: string) => {
     if (!confirm('Excluir esta semana?')) return;
-    const newWeeks = weeks.filter(w => w.id !== weekId);
-    saveData(newWeeks);
-    toast.success('Semana excluída!');
+    deleteMutation.mutate(weekId);
   };
 
-  const calculateTotal = (field: keyof WeekData): number => {
-    return weeks.reduce((sum, week) => {
-      const value = week[field];
-      return sum + (typeof value === 'number' ? value : 0);
-    }, 0);
+  const calculateTotal = (field: 'leads' | 'appointments' | 'attendance' | 'deals' | 'revenue'): number => {
+    return weeks.reduce((sum, week) => sum + (week[field] || 0), 0);
   };
 
   const formatCurrency = (value: number): string => {
@@ -115,12 +89,20 @@ const CommercialTrackingTable: React.FC = () => {
   };
 
   const handleRevenueChange = (weekId: string, value: string) => {
-    // Remove non-numeric except comma and dot
     const numericValue = parseCurrency(value);
-    updateWeek(weekId, 'revenue', numericValue);
+    handleFieldChange(weekId, 'revenue', numericValue);
   };
 
   if (!user) return null;
+
+  if (isLoading) {
+    return (
+      <div className="bg-card border border-border rounded-xl p-8 flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+        <span className="ml-2 text-muted-foreground">Carregando dados...</span>
+      </div>
+    );
+  }
 
   // Mobile card view
   if (isMobile) {
@@ -157,10 +139,9 @@ const CommercialTrackingTable: React.FC = () => {
                       <Calendar className="w-3 h-3" /> Período
                     </label>
                     <Input
-                      type="text"
-                      placeholder="Ex: 1/08 a 8/08"
-                      value={week.period}
-                      onChange={(e) => updateWeek(week.id, 'period', e.target.value)}
+                      type="date"
+                      value={week.week_start}
+                      onChange={(e) => handleFieldChange(week.id, 'week_start', e.target.value)}
                       className="mt-1 h-9"
                     />
                   </div>
@@ -168,6 +149,7 @@ const CommercialTrackingTable: React.FC = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => deleteWeek(week.id)}
+                    disabled={deleteMutation.isPending}
                     className="text-destructive hover:text-destructive hover:bg-destructive/10 ml-2"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -182,8 +164,8 @@ const CommercialTrackingTable: React.FC = () => {
                     <Input
                       type="number"
                       min="0"
-                      value={week.leadsGenerated}
-                      onChange={(e) => updateWeek(week.id, 'leadsGenerated', parseInt(e.target.value) || 0)}
+                      value={week.leads}
+                      onChange={(e) => handleFieldChange(week.id, 'leads', parseInt(e.target.value) || 0)}
                       className="mt-1 h-9"
                     />
                   </div>
@@ -195,7 +177,7 @@ const CommercialTrackingTable: React.FC = () => {
                       type="number"
                       min="0"
                       value={week.appointments}
-                      onChange={(e) => updateWeek(week.id, 'appointments', parseInt(e.target.value) || 0)}
+                      onChange={(e) => handleFieldChange(week.id, 'appointments', parseInt(e.target.value) || 0)}
                       className="mt-1 h-9"
                     />
                   </div>
@@ -206,8 +188,8 @@ const CommercialTrackingTable: React.FC = () => {
                     <Input
                       type="number"
                       min="0"
-                      value={week.attended}
-                      onChange={(e) => updateWeek(week.id, 'attended', parseInt(e.target.value) || 0)}
+                      value={week.attendance}
+                      onChange={(e) => handleFieldChange(week.id, 'attendance', parseInt(e.target.value) || 0)}
                       className="mt-1 h-9"
                     />
                   </div>
@@ -218,8 +200,8 @@ const CommercialTrackingTable: React.FC = () => {
                     <Input
                       type="number"
                       min="0"
-                      value={week.closed}
-                      onChange={(e) => updateWeek(week.id, 'closed', parseInt(e.target.value) || 0)}
+                      value={week.deals}
+                      onChange={(e) => handleFieldChange(week.id, 'deals', parseInt(e.target.value) || 0)}
                       className="mt-1 h-9"
                     />
                   </div>
@@ -243,8 +225,8 @@ const CommercialTrackingTable: React.FC = () => {
                     <FileText className="w-3 h-3" /> Observações
                   </label>
                   <Textarea
-                    value={week.observations}
-                    onChange={(e) => updateWeek(week.id, 'observations', e.target.value)}
+                    value={week.observations || ''}
+                    onChange={(e) => handleFieldChange(week.id, 'observations', e.target.value)}
                     placeholder="Anotações, ações extras..."
                     rows={2}
                     className="mt-1 resize-none"
@@ -261,7 +243,7 @@ const CommercialTrackingTable: React.FC = () => {
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Leads:</span>
-                  <span className="font-bold text-foreground">{calculateTotal('leadsGenerated')}</span>
+                  <span className="font-bold text-foreground">{calculateTotal('leads')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Agendamentos:</span>
@@ -269,11 +251,11 @@ const CommercialTrackingTable: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Compareceu:</span>
-                  <span className="font-bold text-foreground">{calculateTotal('attended')}</span>
+                  <span className="font-bold text-foreground">{calculateTotal('attendance')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Fechamento:</span>
-                  <span className="font-bold text-foreground">{calculateTotal('closed')}</span>
+                  <span className="font-bold text-foreground">{calculateTotal('deals')}</span>
                 </div>
                 <div className="col-span-2 flex justify-between pt-2 border-t border-border">
                   <span className="text-muted-foreground">Faturamento Total:</span>
@@ -286,8 +268,12 @@ const CommercialTrackingTable: React.FC = () => {
 
         {/* Add Button */}
         <div className="px-4 py-4 border-t border-border">
-          <Button onClick={addNewWeek} className="w-full">
-            <Plus className="w-4 h-4 mr-2" />
+          <Button onClick={addNewWeek} className="w-full" disabled={createMutation.isPending}>
+            {createMutation.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Plus className="w-4 h-4 mr-2" />
+            )}
             Nova Semana
           </Button>
         </div>
@@ -364,10 +350,9 @@ const CommercialTrackingTable: React.FC = () => {
                 <TableRow key={week.id} className="hover:bg-muted/20">
                   <TableCell>
                     <Input
-                      type="text"
-                      placeholder="Ex: 1/08 a 8/08"
-                      value={week.period}
-                      onChange={(e) => updateWeek(week.id, 'period', e.target.value)}
+                      type="date"
+                      value={week.week_start}
+                      onChange={(e) => handleFieldChange(week.id, 'week_start', e.target.value)}
                       className="h-9"
                     />
                   </TableCell>
@@ -375,8 +360,8 @@ const CommercialTrackingTable: React.FC = () => {
                     <Input
                       type="number"
                       min="0"
-                      value={week.leadsGenerated}
-                      onChange={(e) => updateWeek(week.id, 'leadsGenerated', parseInt(e.target.value) || 0)}
+                      value={week.leads}
+                      onChange={(e) => handleFieldChange(week.id, 'leads', parseInt(e.target.value) || 0)}
                       className="h-9 text-center w-20 mx-auto"
                     />
                   </TableCell>
@@ -385,7 +370,7 @@ const CommercialTrackingTable: React.FC = () => {
                       type="number"
                       min="0"
                       value={week.appointments}
-                      onChange={(e) => updateWeek(week.id, 'appointments', parseInt(e.target.value) || 0)}
+                      onChange={(e) => handleFieldChange(week.id, 'appointments', parseInt(e.target.value) || 0)}
                       className="h-9 text-center w-20 mx-auto"
                     />
                   </TableCell>
@@ -393,8 +378,8 @@ const CommercialTrackingTable: React.FC = () => {
                     <Input
                       type="number"
                       min="0"
-                      value={week.attended}
-                      onChange={(e) => updateWeek(week.id, 'attended', parseInt(e.target.value) || 0)}
+                      value={week.attendance}
+                      onChange={(e) => handleFieldChange(week.id, 'attendance', parseInt(e.target.value) || 0)}
                       className="h-9 text-center w-20 mx-auto"
                     />
                   </TableCell>
@@ -402,8 +387,8 @@ const CommercialTrackingTable: React.FC = () => {
                     <Input
                       type="number"
                       min="0"
-                      value={week.closed}
-                      onChange={(e) => updateWeek(week.id, 'closed', parseInt(e.target.value) || 0)}
+                      value={week.deals}
+                      onChange={(e) => handleFieldChange(week.id, 'deals', parseInt(e.target.value) || 0)}
                       className="h-9 text-center w-20 mx-auto"
                     />
                   </TableCell>
@@ -418,8 +403,8 @@ const CommercialTrackingTable: React.FC = () => {
                   </TableCell>
                   <TableCell>
                     <Textarea
-                      value={week.observations}
-                      onChange={(e) => updateWeek(week.id, 'observations', e.target.value)}
+                      value={week.observations || ''}
+                      onChange={(e) => handleFieldChange(week.id, 'observations', e.target.value)}
                       placeholder="Anotações..."
                       rows={1}
                       className="resize-none min-h-[36px]"
@@ -430,6 +415,7 @@ const CommercialTrackingTable: React.FC = () => {
                       variant="ghost"
                       size="icon"
                       onClick={() => deleteWeek(week.id)}
+                      disabled={deleteMutation.isPending}
                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -442,22 +428,21 @@ const CommercialTrackingTable: React.FC = () => {
               <TableRow className="hover:bg-accent/10">
                 <TableCell className="font-semibold text-muted-foreground">TOTAIS:</TableCell>
                 <TableCell className="text-center font-bold text-foreground">
-                  {calculateTotal('leadsGenerated')}
+                  {calculateTotal('leads')}
                 </TableCell>
                 <TableCell className="text-center font-bold text-foreground">
                   {calculateTotal('appointments')}
                 </TableCell>
                 <TableCell className="text-center font-bold text-foreground">
-                  {calculateTotal('attended')}
+                  {calculateTotal('attendance')}
                 </TableCell>
                 <TableCell className="text-center font-bold text-foreground">
-                  {calculateTotal('closed')}
+                  {calculateTotal('deals')}
                 </TableCell>
                 <TableCell className="text-center font-bold text-accent">
                   {formatCurrency(calculateTotal('revenue'))}
                 </TableCell>
-                <TableCell></TableCell>
-                <TableCell></TableCell>
+                <TableCell colSpan={2}></TableCell>
               </TableRow>
             </TableFooter>
           </Table>
@@ -466,8 +451,12 @@ const CommercialTrackingTable: React.FC = () => {
 
       {/* Add Button */}
       <div className="px-6 py-4 border-t border-border">
-        <Button onClick={addNewWeek}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button onClick={addNewWeek} disabled={createMutation.isPending}>
+          {createMutation.isPending ? (
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4 mr-2" />
+          )}
           Nova Semana
         </Button>
       </div>

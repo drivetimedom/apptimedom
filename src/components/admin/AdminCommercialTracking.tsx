@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-import { getFromStorage, STORAGE_KEYS, User } from '@/lib/storage';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -26,23 +25,15 @@ import {
   Calendar,
   BarChart3,
   User as UserIcon,
-  ClipboardList
+  ClipboardList,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 import ActivationPlanReadOnly from './ActivationPlanReadOnly';
-
-interface WeekData {
-  id: string;
-  period: string;
-  leadsGenerated: number;
-  appointments: number;
-  attended: number;
-  closed: number;
-  revenue: number;
-  observations: string;
-  createdAt: string;
-}
+import { useAllCommercialTracking, CommercialTrackingWeek } from '@/hooks/useCommercialTracking';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
 
 interface ActivationTask {
   id: string;
@@ -51,17 +42,59 @@ interface ActivationTask {
   fromTemplate?: string;
 }
 
-interface StudentWithTracking extends User {
-  tracking: WeekData[];
+interface Profile {
+  id: string;
+  user_id: string;
+  name: string;
+  avatar: string | null;
+  bio: string | null;
+  instagram: string | null;
+  status: string | null;
+  activation_plan: ActivationTask[] | null;
+}
+
+interface StudentWithTracking {
+  id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  tracking: CommercialTrackingWeek[];
   totals: {
     leads: number;
     appointments: number;
-    attended: number;
-    closed: number;
+    attendance: number;
+    deals: number;
     revenue: number;
   };
   hasData: boolean;
   activationPlan: ActivationTask[];
+}
+
+// Hook to fetch all profiles with their auth emails
+function useProfiles() {
+  return useQuery({
+    queryKey: ['admin-profiles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      
+      // Map to our Profile interface
+      return (data || []).map(row => ({
+        id: row.id,
+        user_id: row.user_id,
+        name: row.name,
+        avatar: row.avatar,
+        bio: row.bio,
+        instagram: row.instagram,
+        status: row.status,
+        activation_plan: Array.isArray(row.activation_plan) ? row.activation_plan as unknown as ActivationTask[] : []
+      })) as Profile[];
+    },
+  });
 }
 
 const AdminCommercialTracking: React.FC = () => {
@@ -70,32 +103,34 @@ const AdminCommercialTracking: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
-  // Get all students with their tracking data
+  // Fetch all profiles and tracking data
+  const { data: profiles = [], isLoading: loadingProfiles } = useProfiles();
+  const { data: allTracking = [], isLoading: loadingTracking } = useAllCommercialTracking();
+
+  // Build students with tracking data
   const studentsWithTracking = useMemo((): StudentWithTracking[] => {
-    const users = getFromStorage<User[]>(STORAGE_KEYS.USERS, []);
-    const students = users.filter(u => u.type === 'user');
-    
-    return students.map(student => {
-      const tracking = getStudentCommercialTracking(student.id);
+    return profiles.map(profile => {
+      const tracking = allTracking.filter(t => t.user_id === profile.user_id);
       const totals = calculateTotals(tracking);
-      const activationPlan = student.activationPlan || [];
+      const activationPlan = (profile.activation_plan || []) as ActivationTask[];
       
       return {
-        ...student,
+        id: profile.id,
+        user_id: profile.user_id,
+        name: profile.name,
+        email: profile.user_id, // We'll display user_id since we can't access auth.users
         tracking,
         totals,
         hasData: tracking.length > 0,
         activationPlan
       };
     });
-  }, []);
+  }, [profiles, allTracking]);
 
   // Filter students
   const filteredStudents = useMemo(() => {
     return studentsWithTracking.filter(student => {
-      const matchesSearch = 
-        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesFilter = 
         filterStatus === 'all' || 
@@ -113,24 +148,18 @@ const AdminCommercialTracking: React.FC = () => {
   }, [selectedStudentId, studentsWithTracking, filteredStudents]);
 
   // Helper functions
-  function getStudentCommercialTracking(studentId: string): WeekData[] {
-    const key = `commercial-tracking-${studentId}`;
-    const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : [];
-  }
-
-  function calculateTotals(tracking: WeekData[]) {
+  function calculateTotals(tracking: CommercialTrackingWeek[]) {
     return tracking.reduce((acc, week) => ({
-      leads: acc.leads + (week.leadsGenerated || 0),
+      leads: acc.leads + (week.leads || 0),
       appointments: acc.appointments + (week.appointments || 0),
-      attended: acc.attended + (week.attended || 0),
-      closed: acc.closed + (week.closed || 0),
-      revenue: acc.revenue + (week.revenue || 0)
+      attendance: acc.attendance + (week.attendance || 0),
+      deals: acc.deals + (week.deals || 0),
+      revenue: acc.revenue + (Number(week.revenue) || 0)
     }), {
       leads: 0,
       appointments: 0,
-      attended: 0,
-      closed: 0,
+      attendance: 0,
+      deals: 0,
       revenue: 0
     });
   }
@@ -153,6 +182,11 @@ const AdminCommercialTracking: React.FC = () => {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   }
 
+  function formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  }
+
   // Export function
   function exportStudentData(student: StudentWithTracking) {
     if (!student.hasData) {
@@ -163,13 +197,13 @@ const AdminCommercialTracking: React.FC = () => {
     // Sheet 1: Weekly data
     const ws1 = XLSX.utils.json_to_sheet(
       student.tracking.map(week => ({
-        'Período': week.period,
-        'Leads Gerados': week.leadsGenerated,
+        'Semana': formatDate(week.week_start),
+        'Leads': week.leads,
         'Agendamentos': week.appointments,
-        'Comparecimento': week.attended,
-        'Fechamentos': week.closed,
-        'Faturamento': week.revenue,
-        'Observações': week.observations
+        'Comparecimento': week.attendance,
+        'Fechamentos': week.deals,
+        'Faturamento': Number(week.revenue),
+        'Observações': week.observations || ''
       }))
     );
 
@@ -180,15 +214,15 @@ const AdminCommercialTracking: React.FC = () => {
       ['TOTAIS'],
       ['Total de Leads', student.totals.leads],
       ['Total de Agendamentos', student.totals.appointments],
-      ['Total Comparecimento', student.totals.attended],
-      ['Total Fechamentos', student.totals.closed],
+      ['Total Comparecimento', student.totals.attendance],
+      ['Total Fechamentos', student.totals.deals],
       ['Faturamento Total', student.totals.revenue],
       [''],
       ['TAXAS'],
       ['Taxa de Agendamento', `${calculateRate(student.totals.appointments, student.totals.leads)}%`],
-      ['Taxa de Comparecimento', `${calculateRate(student.totals.attended, student.totals.appointments)}%`],
-      ['Taxa de Conversão', `${calculateRate(student.totals.closed, student.totals.attended)}%`],
-      ['Ticket Médio', student.totals.closed > 0 ? (student.totals.revenue / student.totals.closed).toFixed(2) : '0']
+      ['Taxa de Comparecimento', `${calculateRate(student.totals.attendance, student.totals.appointments)}%`],
+      ['Taxa de Conversão', `${calculateRate(student.totals.deals, student.totals.attendance)}%`],
+      ['Ticket Médio', student.totals.deals > 0 ? (student.totals.revenue / student.totals.deals).toFixed(2) : '0']
     ]);
 
     // Create workbook
@@ -208,10 +242,10 @@ const AdminCommercialTracking: React.FC = () => {
     const totals = studentsWithTracking.reduce((acc, student) => ({
       leads: acc.leads + student.totals.leads,
       appointments: acc.appointments + student.totals.appointments,
-      attended: acc.attended + student.totals.attended,
-      closed: acc.closed + student.totals.closed,
+      attendance: acc.attendance + student.totals.attendance,
+      deals: acc.deals + student.totals.deals,
       revenue: acc.revenue + student.totals.revenue
-    }), { leads: 0, appointments: 0, attended: 0, closed: 0, revenue: 0 });
+    }), { leads: 0, appointments: 0, attendance: 0, deals: 0, revenue: 0 });
 
     return {
       ...totals,
@@ -219,6 +253,17 @@ const AdminCommercialTracking: React.FC = () => {
       totalStudents: studentsWithTracking.length
     };
   }, [studentsWithTracking]);
+
+  const isLoading = loadingProfiles || loadingTracking;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <span className="ml-3 text-muted-foreground">Carregando dados...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -259,7 +304,7 @@ const AdminCommercialTracking: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Total Vendas</p>
-                <p className="text-2xl font-bold text-foreground">{globalStats.closed}</p>
+                <p className="text-2xl font-bold text-foreground">{globalStats.deals}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
                 <TrendingUp className="w-5 h-5 text-success" />
@@ -274,7 +319,7 @@ const AdminCommercialTracking: React.FC = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Conv. Geral</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {calculateRate(globalStats.closed, globalStats.leads)}%
+                  {calculateRate(globalStats.deals, globalStats.leads)}%
                 </p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
@@ -358,7 +403,6 @@ const AdminCommercialTracking: React.FC = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-foreground truncate">{student.name}</h3>
-                          <p className="text-xs text-muted-foreground truncate">{student.email}</p>
                         </div>
                       </div>
                       
@@ -394,7 +438,6 @@ const AdminCommercialTracking: React.FC = () => {
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold text-foreground">{selectedStudent.name}</h2>
-                      <p className="text-muted-foreground">{selectedStudent.email}</p>
                     </div>
                   </div>
                   
@@ -441,7 +484,7 @@ const AdminCommercialTracking: React.FC = () => {
                             <Table>
                               <TableHeader>
                                 <TableRow className="bg-muted/50">
-                                  <TableHead>Período</TableHead>
+                                  <TableHead>Semana</TableHead>
                                   <TableHead className="text-center">Leads</TableHead>
                                   <TableHead className="text-center">Agend.</TableHead>
                                   <TableHead className="text-center">Compar.</TableHead>
@@ -453,12 +496,12 @@ const AdminCommercialTracking: React.FC = () => {
                               <TableBody>
                                 {selectedStudent.tracking.map(week => (
                                   <TableRow key={week.id}>
-                                    <TableCell className="font-medium">{week.period}</TableCell>
-                                    <TableCell className="text-center">{week.leadsGenerated}</TableCell>
+                                    <TableCell className="font-medium">{formatDate(week.week_start)}</TableCell>
+                                    <TableCell className="text-center">{week.leads}</TableCell>
                                     <TableCell className="text-center">{week.appointments}</TableCell>
-                                    <TableCell className="text-center">{week.attended}</TableCell>
-                                    <TableCell className="text-center">{week.closed}</TableCell>
-                                    <TableCell className="text-right">{formatCurrency(week.revenue)}</TableCell>
+                                    <TableCell className="text-center">{week.attendance}</TableCell>
+                                    <TableCell className="text-center">{week.deals}</TableCell>
+                                    <TableCell className="text-right">{formatCurrency(Number(week.revenue))}</TableCell>
                                     <TableCell className="text-sm text-muted-foreground max-w-[120px] truncate">
                                       {week.observations || '-'}
                                     </TableCell>
@@ -470,8 +513,8 @@ const AdminCommercialTracking: React.FC = () => {
                                   <TableCell className="font-semibold">TOTAIS</TableCell>
                                   <TableCell className="text-center font-bold">{selectedStudent.totals.leads}</TableCell>
                                   <TableCell className="text-center font-bold">{selectedStudent.totals.appointments}</TableCell>
-                                  <TableCell className="text-center font-bold">{selectedStudent.totals.attended}</TableCell>
-                                  <TableCell className="text-center font-bold">{selectedStudent.totals.closed}</TableCell>
+                                  <TableCell className="text-center font-bold">{selectedStudent.totals.attendance}</TableCell>
+                                  <TableCell className="text-center font-bold">{selectedStudent.totals.deals}</TableCell>
                                   <TableCell className="text-right font-bold text-success">
                                     {formatCurrency(selectedStudent.totals.revenue)}
                                   </TableCell>
@@ -507,10 +550,10 @@ const AdminCommercialTracking: React.FC = () => {
                             <CardContent className="pt-4">
                               <p className="text-xs text-muted-foreground mb-1">Taxa de Comparecimento</p>
                               <p className="text-2xl font-bold text-foreground">
-                                {calculateRate(selectedStudent.totals.attended, selectedStudent.totals.appointments)}%
+                                {calculateRate(selectedStudent.totals.attendance, selectedStudent.totals.appointments)}%
                               </p>
                               <p className="text-xs text-muted-foreground mt-1">
-                                {selectedStudent.totals.attended} de {selectedStudent.totals.appointments} agendados
+                                {selectedStudent.totals.attendance} de {selectedStudent.totals.appointments} agendados
                               </p>
                             </CardContent>
                           </Card>
@@ -519,10 +562,10 @@ const AdminCommercialTracking: React.FC = () => {
                             <CardContent className="pt-4">
                               <p className="text-xs text-muted-foreground mb-1">Taxa de Conversão</p>
                               <p className="text-2xl font-bold text-success">
-                                {calculateRate(selectedStudent.totals.closed, selectedStudent.totals.attended)}%
+                                {calculateRate(selectedStudent.totals.deals, selectedStudent.totals.attendance)}%
                               </p>
                               <p className="text-xs text-muted-foreground mt-1">
-                                {selectedStudent.totals.closed} de {selectedStudent.totals.attended} atendidos
+                                {selectedStudent.totals.deals} de {selectedStudent.totals.attendance} atendidos
                               </p>
                             </CardContent>
                           </Card>
@@ -531,12 +574,12 @@ const AdminCommercialTracking: React.FC = () => {
                             <CardContent className="pt-4">
                               <p className="text-xs text-muted-foreground mb-1">Ticket Médio</p>
                               <p className="text-2xl font-bold text-foreground">
-                                {selectedStudent.totals.closed > 0 
-                                  ? formatCurrency(selectedStudent.totals.revenue / selectedStudent.totals.closed)
+                                {selectedStudent.totals.deals > 0 
+                                  ? formatCurrency(selectedStudent.totals.revenue / selectedStudent.totals.deals)
                                   : 'R$ 0'}
                               </p>
                               <p className="text-xs text-muted-foreground mt-1">
-                                {selectedStudent.totals.closed} vendas
+                                {selectedStudent.totals.deals} vendas
                               </p>
                             </CardContent>
                           </Card>
@@ -559,7 +602,7 @@ const AdminCommercialTracking: React.FC = () => {
                   <ActivationPlanReadOnly
                     activationPlan={selectedStudent.activationPlan}
                     studentName={selectedStudent.name}
-                    studentId={selectedStudent.id}
+                    studentId={selectedStudent.user_id}
                   />
                 </div>
               </CardContent>

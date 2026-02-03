@@ -166,6 +166,48 @@ export type Database = {
           },
         ]
       }
+      commercial_tracking: {
+        Row: {
+          appointments: number
+          attendance: number
+          created_at: string
+          deals: number
+          id: string
+          leads: number
+          observations: string | null
+          revenue: number
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          appointments?: number
+          attendance?: number
+          created_at?: string
+          deals?: number
+          id?: string
+          leads?: number
+          observations?: string | null
+          revenue?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          appointments?: number
+          attendance?: number
+          created_at?: string
+          deals?: number
+          id?: string
+          leads?: number
+          observations?: string | null
+          revenue?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       courses: {
         Row: {
           category: string | null
@@ -250,6 +292,30 @@ export type Database = {
           id?: string
           settings?: Json
           updated_at?: string
+        }
+        Relationships: []
+      }
+      financial_data: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

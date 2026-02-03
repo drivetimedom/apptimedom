@@ -471,6 +471,7 @@ export type Database = {
           avatar: string | null
           bio: string | null
           created_at: string
+          email: string | null
           id: string
           instagram: string | null
           name: string
@@ -486,6 +487,7 @@ export type Database = {
           avatar?: string | null
           bio?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           instagram?: string | null
           name: string
@@ -501,6 +503,7 @@ export type Database = {
           avatar?: string | null
           bio?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           instagram?: string | null
           name?: string

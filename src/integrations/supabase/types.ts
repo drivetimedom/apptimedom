@@ -208,6 +208,33 @@ export type Database = {
         }
         Relationships: []
       }
+      home_blocks: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+          order_index: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+          order_index?: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+          order_index?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lessons: {
         Row: {
           course_id: string | null

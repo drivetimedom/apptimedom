@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   HomeBlock,
   BannerBlockData,
@@ -77,6 +78,9 @@ const CoursesBlock: React.FC<{ data: CoursesBlockData }> = ({ data }) => {
   const { title, filterType, categoryId, courseId, layout, itemsPerRow, limit } = data;
   const { data: userProgressList = [] } = useUserProgress();
   const { profile, isAdmin, isInstructor } = useAuth();
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
 
   const { data: courses = [] } = useQuery({
     queryKey: ['courses-block', filterType, categoryId, courseId],
@@ -105,6 +109,30 @@ const CoursesBlock: React.FC<{ data: CoursesBlockData }> = ({ data }) => {
     return profile?.unlocked_courses?.includes(course.id) || false;
   };
 
+  const checkScrollButtons = () => {
+    if (carouselRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+      setShowLeftArrow(scrollLeft > 0);
+      setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  useEffect(() => {
+    checkScrollButtons();
+    window.addEventListener('resize', checkScrollButtons);
+    return () => window.removeEventListener('resize', checkScrollButtons);
+  }, [courses]);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (carouselRef.current) {
+      const scrollAmount = carouselRef.current.clientWidth * 0.8;
+      carouselRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   const gridCols: Record<number, string> = {
     1: 'grid-cols-1',
     2: 'grid-cols-1 md:grid-cols-2',
@@ -120,15 +148,45 @@ const CoursesBlock: React.FC<{ data: CoursesBlockData }> = ({ data }) => {
       <h2 className="text-2xl font-bold text-foreground mb-6">{title}</h2>
 
       {layout === 'carousel' ? (
-        <div className="flex gap-5 overflow-x-auto scrollbar-hide pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          {courses.map((course: any) => (
-            <VerticalCourseCard
-              key={course.id}
-              course={course}
-              progress={getProgress(course.id)}
-              isLocked={!isCourseUnlocked(course)}
-            />
-          ))}
+        <div className="relative group">
+          {/* Left Arrow */}
+          {showLeftArrow && (
+            <button
+              onClick={() => scroll('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-card/90 hover:bg-card border border-border flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg opacity-0 group-hover:opacity-100"
+              aria-label="Anterior"
+            >
+              <ChevronLeft className="w-5 h-5 text-foreground" />
+            </button>
+          )}
+
+          {/* Right Arrow */}
+          {showRightArrow && (
+            <button
+              onClick={() => scroll('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-card/90 hover:bg-card border border-border flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg opacity-0 group-hover:opacity-100"
+              aria-label="Próximo"
+            >
+              <ChevronRight className="w-5 h-5 text-foreground" />
+            </button>
+          )}
+
+          {/* Carousel Container */}
+          <div 
+            ref={carouselRef}
+            onScroll={checkScrollButtons}
+            className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 px-1" 
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {courses.map((course: any) => (
+              <VerticalCourseCard
+                key={course.id}
+                course={course}
+                progress={getProgress(course.id)}
+                isLocked={!isCourseUnlocked(course)}
+              />
+            ))}
+          </div>
         </div>
       ) : (
         <div className={`grid ${gridCols[itemsPerRow] || gridCols[3]} gap-6`}>

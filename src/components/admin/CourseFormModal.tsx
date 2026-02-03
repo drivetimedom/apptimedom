@@ -29,6 +29,7 @@ interface CourseFormModalProps {
   onSave: (course: Course, lessons: Lesson[]) => void;
   course?: Course | null;
   existingLessons?: Lesson[];
+  categories?: Category[];
 }
 
 interface LessonFormData {
@@ -56,9 +57,9 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
   onSave,
   course,
   existingLessons = [],
+  categories = [],
 }) => {
   const { toast } = useToast();
-  const [categories] = useState(() => getFromStorage<Category[]>(STORAGE_KEYS.CATEGORIES, []));
   const [activeTab, setActiveTab] = useState('basic');
   
   const [formData, setFormData] = useState({

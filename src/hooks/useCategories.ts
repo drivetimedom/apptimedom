@@ -48,19 +48,31 @@ const transformCategory = (row: any): Category => ({
   subcategories: row.subcategories || [],
 });
 
-// Transform Category to database row
-const transformToRow = (category: Partial<Category>) => ({
-  name: category.name,
-  icon: category.icon,
-  description: category.description,
-  slug: category.slug,
-  order: category.order,
-  active: category.active,
-  has_dedicated_page: category.hasDedicatedPage,
-  show_in_main_menu: category.showInMainMenu,
-  page_config: category.pageConfig ? JSON.parse(JSON.stringify(category.pageConfig)) : null,
-  subcategories: JSON.parse(JSON.stringify(category.subcategories || [])),
-});
+// Transform Category to database row - only include fields that exist in database schema
+const transformToRow = (category: Partial<Category>) => {
+  const row: Record<string, any> = {};
+  
+  // Only set fields that are defined (avoid sending undefined to DB)
+  if (category.name !== undefined) row.name = category.name;
+  if (category.icon !== undefined) row.icon = category.icon;
+  if (category.description !== undefined) row.description = category.description || null;
+  if (category.slug !== undefined) row.slug = category.slug;
+  if (category.order !== undefined) row.order = category.order;
+  if (category.active !== undefined) row.active = category.active;
+  if (category.hasDedicatedPage !== undefined) row.has_dedicated_page = category.hasDedicatedPage;
+  if (category.showInMainMenu !== undefined) row.show_in_main_menu = category.showInMainMenu;
+  if (category.pageConfig !== undefined) {
+    row.page_config = category.pageConfig ? JSON.parse(JSON.stringify(category.pageConfig)) : null;
+  }
+  if (category.subcategories !== undefined) {
+    row.subcategories = JSON.parse(JSON.stringify(category.subcategories || []));
+  }
+  
+  console.log('[transformToRow] Category input:', category);
+  console.log('[transformToRow] Row output:', row);
+  
+  return row;
+};
 
 export function useCategories() {
   return useQuery({
@@ -121,9 +133,10 @@ export function useCreateCategory() {
 
   return useMutation({
     mutationFn: async (category: Omit<Category, 'id'>) => {
+      const row = transformToRow(category);
       const { data, error } = await supabase
         .from('categories')
-        .insert(transformToRow(category))
+        .insert(row as any)
         .select()
         .single();
 
@@ -146,9 +159,10 @@ export function useUpdateCategory() {
 
   return useMutation({
     mutationFn: async ({ id, ...category }: Partial<Category> & { id: string }) => {
+      const row = transformToRow(category);
       const { data, error } = await supabase
         .from('categories')
-        .update(transformToRow(category))
+        .update(row as any)
         .eq('id', id)
         .select()
         .single();

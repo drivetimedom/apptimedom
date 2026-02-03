@@ -1,12 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import {
-  getFromStorage,
-  setToStorage,
-  STORAGE_KEYS,
-  ActivationPlanTemplate,
-  TemplateCategory,
-  generateId,
-} from '@/lib/storage';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,7 +33,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Plus,
@@ -52,7 +43,16 @@ import {
   Search,
   ClipboardList,
   CheckSquare,
+  Loader2,
 } from 'lucide-react';
+import {
+  useActivationPlanTemplates,
+  useCreateActivationPlanTemplate,
+  useUpdateActivationPlanTemplate,
+  useDeleteActivationPlanTemplate,
+  TemplateCategory,
+  ActivationPlanTemplate,
+} from '@/hooks/useActivationPlanTemplates';
 
 const categoryOptions: { value: TemplateCategory; label: string }[] = [
   { value: 'setup', label: 'Setup' },
@@ -63,51 +63,12 @@ const categoryOptions: { value: TemplateCategory; label: string }[] = [
   { value: 'geral', label: 'Geral' },
 ];
 
-// Default templates to seed
-const defaultTemplates: ActivationPlanTemplate[] = [
-  {
-    id: 'template-mapa-10k',
-    name: 'MAPA 10K - Setup Completo',
-    description: 'Checklist inicial para alunos começando no Hof Circle e indo para os primeiros R$ 10 mil/mês',
-    category: 'setup',
-    tasks: [
-      'Criar conta Business Manager',
-      'Conectar Instagram',
-      'Conectar WhatsApp Business',
-      'Rodar 1ª campanha',
-      'Investir R$ 500 em tráfego',
-      'Gerar 30 leads',
-      'Fazer 5 vendas',
-      'Atingir R$ 2.000 de faturamento',
-    ],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: 'template-mapa-30k',
-    name: 'MAPA 30K - Aceleração',
-    description: 'Para alunos que já faturam R$ 10k e querem chegar a R$ 30k',
-    category: 'vendas',
-    tasks: [
-      'Estruturar Kanban de vendas',
-      'Criar 3 criativos de anúncios',
-      'Definir avatar detalhado',
-      'Implementar follow-up estruturado',
-      'Aumentar ticket médio em 30%',
-      'Contratar assistente comercial',
-      'Gerar 100 leads/mês',
-      'Atingir 20% de conversão',
-      'Faturar R$ 30.000 no mês',
-      'Criar processo documentado',
-    ],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
-
 const ActivationPlanTemplates: React.FC = () => {
-  const { toast } = useToast();
-  const [templates, setTemplates] = useState<ActivationPlanTemplate[]>([]);
+  const { data: templates = [], isLoading } = useActivationPlanTemplates();
+  const createTemplate = useCreateActivationPlanTemplate();
+  const updateTemplate = useUpdateActivationPlanTemplate();
+  const deleteTemplateMutation = useDeleteActivationPlanTemplate();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<ActivationPlanTemplate | null>(null);
@@ -120,19 +81,6 @@ const ActivationPlanTemplates: React.FC = () => {
     tasks: [''],
   });
 
-  // Load templates on mount
-  useEffect(() => {
-    let stored = getFromStorage<ActivationPlanTemplate[]>(STORAGE_KEYS.ACTIVATION_TEMPLATES, []);
-    
-    // Seed defaults if empty
-    if (stored.length === 0) {
-      stored = defaultTemplates;
-      setToStorage(STORAGE_KEYS.ACTIVATION_TEMPLATES, stored);
-    }
-    
-    setTemplates(stored);
-  }, []);
-
   const filteredTemplates = templates.filter(t =>
     t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.description?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -141,11 +89,15 @@ const ActivationPlanTemplates: React.FC = () => {
   const openModal = (template?: ActivationPlanTemplate) => {
     if (template) {
       setEditingTemplate(template);
+      // Extract text from tasks array (which is JSONB with {id, text, category})
+      const taskTexts = template.tasks.map(t => 
+        typeof t === 'string' ? t : (t as any).text || ''
+      );
       setFormData({
         name: template.name,
         description: template.description || '',
-        category: template.category || 'geral',
-        tasks: template.tasks.length > 0 ? [...template.tasks] : [''],
+        category: (template.tasks[0] as any)?.category || 'geral',
+        tasks: taskTexts.length > 0 ? taskTexts : [''],
       });
     } else {
       setEditingTemplate(null);
@@ -186,86 +138,71 @@ const ActivationPlanTemplates: React.FC = () => {
     }));
   };
 
-  const saveTemplate = () => {
-    if (!formData.name.trim()) {
-      toast({ title: 'Nome é obrigatório', variant: 'destructive' });
-      return;
-    }
+  const saveTemplate = async () => {
+    if (!formData.name.trim()) return;
 
     const validTasks = formData.tasks.filter(t => t.trim() !== '');
-    if (validTasks.length === 0) {
-      toast({ title: 'Adicione pelo menos uma tarefa', variant: 'destructive' });
-      return;
-    }
-
-    const now = new Date().toISOString();
-    let updatedTemplates: ActivationPlanTemplate[];
+    if (validTasks.length === 0) return;
 
     if (editingTemplate) {
-      // Update
-      updatedTemplates = templates.map(t =>
-        t.id === editingTemplate.id
-          ? {
-              ...t,
-              name: formData.name.trim(),
-              description: formData.description.trim() || undefined,
-              category: formData.category,
-              tasks: validTasks,
-              updatedAt: now,
-            }
-          : t
-      );
-      toast({ title: 'Template atualizado!' });
-    } else {
-      // Create
-      const newTemplate: ActivationPlanTemplate = {
-        id: generateId(),
+      await updateTemplate.mutateAsync({
+        id: editingTemplate.id,
         name: formData.name.trim(),
-        description: formData.description.trim() || undefined,
+        description: formData.description.trim(),
         category: formData.category,
         tasks: validTasks,
-        createdAt: now,
-        updatedAt: now,
-      };
-      updatedTemplates = [...templates, newTemplate];
-      toast({ title: 'Template criado!' });
+      });
+    } else {
+      await createTemplate.mutateAsync({
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        category: formData.category,
+        tasks: validTasks,
+      });
     }
 
-    setTemplates(updatedTemplates);
-    setToStorage(STORAGE_KEYS.ACTIVATION_TEMPLATES, updatedTemplates);
     closeModal();
   };
 
-  const duplicateTemplate = (template: ActivationPlanTemplate) => {
-    const now = new Date().toISOString();
-    const duplicate: ActivationPlanTemplate = {
-      ...template,
-      id: generateId(),
+  const duplicateTemplate = async (template: ActivationPlanTemplate) => {
+    const taskTexts = template.tasks.map(t => 
+      typeof t === 'string' ? t : (t as any).text || ''
+    );
+    await createTemplate.mutateAsync({
       name: `${template.name} (Cópia)`,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    const updatedTemplates = [...templates, duplicate];
-    setTemplates(updatedTemplates);
-    setToStorage(STORAGE_KEYS.ACTIVATION_TEMPLATES, updatedTemplates);
-    toast({ title: 'Template duplicado!' });
+      description: template.description || '',
+      category: (template.tasks[0] as any)?.category || 'geral',
+      tasks: taskTexts,
+    });
   };
 
-  const deleteTemplate = () => {
+  const handleDelete = async () => {
     if (!deleteConfirm) return;
-
-    const updatedTemplates = templates.filter(t => t.id !== deleteConfirm.id);
-    setTemplates(updatedTemplates);
-    setToStorage(STORAGE_KEYS.ACTIVATION_TEMPLATES, updatedTemplates);
-    toast({ title: 'Template excluído' });
+    await deleteTemplateMutation.mutateAsync(deleteConfirm.id);
     setDeleteConfirm(null);
   };
 
-  const getCategoryLabel = (cat?: TemplateCategory) => {
+  const getCategoryLabel = (tasks: ActivationPlanTemplate['tasks']) => {
+    const cat = (tasks[0] as any)?.category;
     if (!cat) return 'Geral';
     return categoryOptions.find(c => c.value === cat)?.label || 'Geral';
   };
+
+  const getTasksCount = (tasks: ActivationPlanTemplate['tasks']) => {
+    return tasks.length;
+  };
+
+  const getTaskTexts = (tasks: ActivationPlanTemplate['tasks']) => {
+    return tasks.map(t => typeof t === 'string' ? t : (t as any).text || '');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -324,10 +261,10 @@ const ActivationPlanTemplates: React.FC = () => {
                     </CardTitle>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent">
-                        {getCategoryLabel(template.category)}
+                        {getCategoryLabel(template.tasks)}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {template.tasks.length} tarefas
+                        {getTasksCount(template.tasks)} tarefas
                       </span>
                     </div>
                   </div>
@@ -362,7 +299,7 @@ const ActivationPlanTemplates: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-1">
-                  {template.tasks.slice(0, 5).map((task, idx) => (
+                  {getTaskTexts(template.tasks).slice(0, 5).map((task, idx) => (
                     <li key={idx} className="text-sm text-foreground flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-accent" />
                       {task}
@@ -472,7 +409,13 @@ const ActivationPlanTemplates: React.FC = () => {
             <Button variant="outline" onClick={closeModal}>
               Cancelar
             </Button>
-            <Button onClick={saveTemplate}>
+            <Button 
+              onClick={saveTemplate}
+              disabled={createTemplate.isPending || updateTemplate.isPending}
+            >
+              {(createTemplate.isPending || updateTemplate.isPending) && (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              )}
               {editingTemplate ? 'Salvar Alterações' : 'Salvar Template'}
             </Button>
           </div>
@@ -491,7 +434,7 @@ const ActivationPlanTemplates: React.FC = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={deleteTemplate}
+              onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Excluir

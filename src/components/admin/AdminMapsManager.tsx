@@ -27,37 +27,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
-import { getFromStorage, setToStorage, STORAGE_KEYS, generateId } from '@/lib/storage';
-import { Plus, MoreHorizontal, Edit, Copy, Trash2, Map, Search, GripVertical, Video } from 'lucide-react';
-
-// Types
-export interface MapVideo {
-  id: string;
-  title: string;
-  vimeoId: string;
-  duration: number; // in minutes
-  order: number;
-}
-
-export interface HofMap {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  videos: MapVideo[];
-  totalDuration: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Plus, MoreHorizontal, Edit, Copy, Trash2, Map, Search, GripVertical, Video, Loader2 } from 'lucide-react';
+import { 
+  useHofMaps, 
+  useCreateHofMap, 
+  useUpdateHofMap, 
+  useDeleteHofMap,
+  MapVideo,
+  HofMap,
+} from '@/hooks/useHofMaps';
 
 const iconOptions = ['🗺️', '🎯', '🚀', '🏆', '⚡', '💎', '🔥', '📈', '🛡️', '⭐'];
 
 const AdminMapsManager: React.FC = () => {
-  const { toast } = useToast();
-  const [maps, setMaps] = useState<HofMap[]>(() => 
-    getFromStorage<HofMap[]>(STORAGE_KEYS.HOF_MAPS, [])
-  );
+  const { data: maps = [], isLoading } = useHofMaps();
+  const createMap = useCreateHofMap();
+  const updateMap = useUpdateHofMap();
+  const deleteMap = useDeleteHofMap();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMap, setEditingMap] = useState<HofMap | null>(null);
@@ -80,7 +67,7 @@ const AdminMapsManager: React.FC = () => {
       setEditingMap(map);
       setFormData({
         name: map.name,
-        description: map.description,
+        description: map.description || '',
         icon: map.icon,
         videos: [...map.videos],
       });
@@ -95,6 +82,8 @@ const AdminMapsManager: React.FC = () => {
     }
     setIsModalOpen(true);
   };
+
+  const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
 
   const addVideo = () => {
     const newVideo: MapVideo = {
@@ -139,76 +128,61 @@ const AdminMapsManager: React.FC = () => {
     return `${mins}min`;
   };
 
-  const saveMap = () => {
-    if (!formData.name.trim()) {
-      toast({ title: 'Nome é obrigatório', variant: 'destructive' });
-      return;
-    }
-
-    if (formData.videos.length === 0) {
-      toast({ title: 'Adicione pelo menos um vídeo', variant: 'destructive' });
-      return;
-    }
+  const saveMap = async () => {
+    if (!formData.name.trim()) return;
+    if (formData.videos.length === 0) return;
 
     // Validate videos
     for (const video of formData.videos) {
-      if (!video.title.trim() || !video.vimeoId.trim()) {
-        toast({ title: 'Preencha título e Vimeo ID de todos os vídeos', variant: 'destructive' });
-        return;
-      }
+      if (!video.title.trim() || !video.vimeoId.trim()) return;
     }
 
     const totalDuration = calculateTotalDuration(formData.videos);
-    const now = new Date().toISOString();
-
-    let updatedMaps: HofMap[];
 
     if (editingMap) {
-      updatedMaps = maps.map(m => 
-        m.id === editingMap.id
-          ? { ...m, ...formData, totalDuration, updatedAt: now }
-          : m
-      );
-      toast({ title: 'Mapa atualizado!' });
+      await updateMap.mutateAsync({
+        id: editingMap.id,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        icon: formData.icon,
+        videos: formData.videos,
+        total_duration: totalDuration,
+      });
     } else {
-      const newMap: HofMap = {
-        id: generateId(),
-        ...formData,
-        totalDuration,
-        createdAt: now,
-        updatedAt: now,
-      };
-      updatedMaps = [...maps, newMap];
-      toast({ title: 'Mapa criado!' });
+      await createMap.mutateAsync({
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        icon: formData.icon,
+        videos: formData.videos,
+        total_duration: totalDuration,
+      });
     }
 
-    setMaps(updatedMaps);
-    setToStorage(STORAGE_KEYS.HOF_MAPS, updatedMaps);
     setIsModalOpen(false);
   };
 
-  const duplicateMap = (map: HofMap) => {
-    const duplicated: HofMap = {
-      ...map,
-      id: generateId(),
+  const duplicateMap = async (map: HofMap) => {
+    await createMap.mutateAsync({
       name: `${map.name} (Cópia)`,
+      description: map.description || '',
+      icon: map.icon,
       videos: map.videos.map(v => ({ ...v, id: generateId() })),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    const updatedMaps = [...maps, duplicated];
-    setMaps(updatedMaps);
-    setToStorage(STORAGE_KEYS.HOF_MAPS, updatedMaps);
-    toast({ title: 'Mapa duplicado!' });
+      total_duration: map.total_duration,
+    });
   };
 
-  const deleteMap = (mapId: string) => {
-    const updatedMaps = maps.filter(m => m.id !== mapId);
-    setMaps(updatedMaps);
-    setToStorage(STORAGE_KEYS.HOF_MAPS, updatedMaps);
-    toast({ title: 'Mapa excluído' });
+  const handleDelete = async (mapId: string) => {
+    await deleteMap.mutateAsync(mapId);
     setDeleteConfirm(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -290,7 +264,7 @@ const AdminMapsManager: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-3">
-                  {map.videos.length} vídeos • {formatDuration(map.totalDuration)}
+                  {map.videos.length} vídeos • {formatDuration(map.total_duration)}
                 </p>
                 <div className="space-y-1">
                   {map.videos.slice(0, 4).map((video, index) => (
@@ -439,7 +413,13 @@ const AdminMapsManager: React.FC = () => {
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={saveMap}>
+            <Button 
+              onClick={saveMap} 
+              disabled={createMap.isPending || updateMap.isPending}
+            >
+              {(createMap.isPending || updateMap.isPending) && (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              )}
               {editingMap ? 'Salvar Alterações' : 'Criar Mapa'}
             </Button>
           </div>
@@ -458,7 +438,7 @@ const AdminMapsManager: React.FC = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteConfirm && deleteMap(deleteConfirm)}
+              onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Excluir

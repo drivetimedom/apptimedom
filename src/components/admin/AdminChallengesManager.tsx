@@ -27,37 +27,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
-import { getFromStorage, setToStorage, STORAGE_KEYS, generateId } from '@/lib/storage';
-import { Plus, MoreHorizontal, Edit, Copy, Trash2, Trophy, Search, GripVertical, Video } from 'lucide-react';
-
-// Types
-export interface ChallengeVideo {
-  id: string;
-  title: string;
-  vimeoId: string;
-  duration: number; // in minutes
-  order: number;
-}
-
-export interface HofChallenge {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  videos: ChallengeVideo[];
-  totalDuration: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Plus, MoreHorizontal, Edit, Copy, Trash2, Trophy, Search, GripVertical, Video, Loader2 } from 'lucide-react';
+import { 
+  useHofChallenges, 
+  useCreateHofChallenge, 
+  useUpdateHofChallenge, 
+  useDeleteHofChallenge,
+  ChallengeVideo,
+  HofChallenge,
+} from '@/hooks/useHofChallenges';
 
 const iconOptions = ['🏆', '🎯', '🚀', '⚡', '💪', '🔥', '💎', '📈', '🛡️', '⭐'];
 
 const AdminChallengesManager: React.FC = () => {
-  const { toast } = useToast();
-  const [challenges, setChallenges] = useState<HofChallenge[]>(() => 
-    getFromStorage<HofChallenge[]>(STORAGE_KEYS.HOF_CHALLENGES, [])
-  );
+  const { data: challenges = [], isLoading } = useHofChallenges();
+  const createChallenge = useCreateHofChallenge();
+  const updateChallenge = useUpdateHofChallenge();
+  const deleteChallenge = useDeleteHofChallenge();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingChallenge, setEditingChallenge] = useState<HofChallenge | null>(null);
@@ -80,7 +67,7 @@ const AdminChallengesManager: React.FC = () => {
       setEditingChallenge(challenge);
       setFormData({
         name: challenge.name,
-        description: challenge.description,
+        description: challenge.description || '',
         icon: challenge.icon,
         videos: [...challenge.videos],
       });
@@ -95,6 +82,8 @@ const AdminChallengesManager: React.FC = () => {
     }
     setIsModalOpen(true);
   };
+
+  const generateId = () => Math.random().toString(36).substring(2) + Date.now().toString(36);
 
   const addVideo = () => {
     const newVideo: ChallengeVideo = {
@@ -139,76 +128,61 @@ const AdminChallengesManager: React.FC = () => {
     return `${mins}min`;
   };
 
-  const saveChallenge = () => {
-    if (!formData.name.trim()) {
-      toast({ title: 'Nome é obrigatório', variant: 'destructive' });
-      return;
-    }
-
-    if (formData.videos.length === 0) {
-      toast({ title: 'Adicione pelo menos um vídeo', variant: 'destructive' });
-      return;
-    }
+  const saveChallenge = async () => {
+    if (!formData.name.trim()) return;
+    if (formData.videos.length === 0) return;
 
     // Validate videos
     for (const video of formData.videos) {
-      if (!video.title.trim() || !video.vimeoId.trim()) {
-        toast({ title: 'Preencha título e Vimeo ID de todos os vídeos', variant: 'destructive' });
-        return;
-      }
+      if (!video.title.trim() || !video.vimeoId.trim()) return;
     }
 
     const totalDuration = calculateTotalDuration(formData.videos);
-    const now = new Date().toISOString();
-
-    let updatedChallenges: HofChallenge[];
 
     if (editingChallenge) {
-      updatedChallenges = challenges.map(c => 
-        c.id === editingChallenge.id
-          ? { ...c, ...formData, totalDuration, updatedAt: now }
-          : c
-      );
-      toast({ title: 'Desafio atualizado!' });
+      await updateChallenge.mutateAsync({
+        id: editingChallenge.id,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        icon: formData.icon,
+        videos: formData.videos,
+        total_duration: totalDuration,
+      });
     } else {
-      const newChallenge: HofChallenge = {
-        id: generateId(),
-        ...formData,
-        totalDuration,
-        createdAt: now,
-        updatedAt: now,
-      };
-      updatedChallenges = [...challenges, newChallenge];
-      toast({ title: 'Desafio criado!' });
+      await createChallenge.mutateAsync({
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        icon: formData.icon,
+        videos: formData.videos,
+        total_duration: totalDuration,
+      });
     }
 
-    setChallenges(updatedChallenges);
-    setToStorage(STORAGE_KEYS.HOF_CHALLENGES, updatedChallenges);
     setIsModalOpen(false);
   };
 
-  const duplicateChallenge = (challenge: HofChallenge) => {
-    const duplicated: HofChallenge = {
-      ...challenge,
-      id: generateId(),
+  const duplicateChallenge = async (challenge: HofChallenge) => {
+    await createChallenge.mutateAsync({
       name: `${challenge.name} (Cópia)`,
+      description: challenge.description || '',
+      icon: challenge.icon,
       videos: challenge.videos.map(v => ({ ...v, id: generateId() })),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    const updatedChallenges = [...challenges, duplicated];
-    setChallenges(updatedChallenges);
-    setToStorage(STORAGE_KEYS.HOF_CHALLENGES, updatedChallenges);
-    toast({ title: 'Desafio duplicado!' });
+      total_duration: challenge.total_duration,
+    });
   };
 
-  const deleteChallenge = (challengeId: string) => {
-    const updatedChallenges = challenges.filter(c => c.id !== challengeId);
-    setChallenges(updatedChallenges);
-    setToStorage(STORAGE_KEYS.HOF_CHALLENGES, updatedChallenges);
-    toast({ title: 'Desafio excluído' });
+  const handleDelete = async (challengeId: string) => {
+    await deleteChallenge.mutateAsync(challengeId);
     setDeleteConfirm(null);
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -290,7 +264,7 @@ const AdminChallengesManager: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground mb-3">
-                  {challenge.videos.length} vídeos • {formatDuration(challenge.totalDuration)}
+                  {challenge.videos.length} vídeos • {formatDuration(challenge.total_duration)}
                 </p>
                 <div className="space-y-1">
                   {challenge.videos.map((video, index) => (
@@ -434,7 +408,13 @@ const AdminChallengesManager: React.FC = () => {
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={saveChallenge}>
+            <Button 
+              onClick={saveChallenge}
+              disabled={createChallenge.isPending || updateChallenge.isPending}
+            >
+              {(createChallenge.isPending || updateChallenge.isPending) && (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              )}
               {editingChallenge ? 'Salvar Alterações' : 'Criar Desafio'}
             </Button>
           </div>
@@ -453,7 +433,7 @@ const AdminChallengesManager: React.FC = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteConfirm && deleteChallenge(deleteConfirm)}
+              onClick={() => deleteConfirm && handleDelete(deleteConfirm)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Excluir

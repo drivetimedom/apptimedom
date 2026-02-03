@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      activation_plan_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          tasks: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          tasks?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          tasks?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           active: boolean
@@ -205,6 +232,90 @@ export type Database = {
           title?: string
           total_duration?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      customization_settings: {
+        Row: {
+          id: string
+          settings: Json
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          settings?: Json
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          settings?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hof_challenges: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          total_duration: number
+          updated_at: string
+          videos: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name: string
+          total_duration?: number
+          updated_at?: string
+          videos?: Json
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          total_duration?: number
+          updated_at?: string
+          videos?: Json
+        }
+        Relationships: []
+      }
+      hof_maps: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          total_duration: number
+          updated_at: string
+          videos: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name: string
+          total_duration?: number
+          updated_at?: string
+          videos?: Json
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          total_duration?: number
+          updated_at?: string
+          videos?: Json
         }
         Relationships: []
       }

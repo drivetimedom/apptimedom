@@ -20,6 +20,7 @@ import IndividualPanel from '@/components/hoff-circle/IndividualPanel';
 import ActionPlan from '@/components/hoff-circle/ActionPlan';
 import ActivationPlan from '@/components/hoff-circle/ActivationPlan';
 import CommercialTrackingTable from '@/components/hoff-circle/CommercialTrackingTable';
+import TrafficTrackingTable from '@/components/hoff-circle/TrafficTrackingTable';
 import MonthlyMetrics from '@/components/hoff-circle/MonthlyMetrics';
 import LibrarySection from '@/components/hoff-circle/LibrarySection';
 
@@ -138,10 +139,13 @@ const HoffCirclePage: React.FC = () => {
             <ActivationPlan />
           </div>
 
-          {/* RIGHT SIDE - Commercial Tracking & Metrics */}
+          {/* RIGHT SIDE - Commercial Tracking, Traffic Tracking & Metrics */}
           <div className="space-y-6 lg:sticky lg:top-8 lg:self-start">
             {/* Commercial Tracking Table */}
             <CommercialTrackingTable />
+
+            {/* Traffic Tracking Table */}
+            <TrafficTrackingTable />
 
             {/* Monthly Metrics */}
             <MonthlyMetrics />

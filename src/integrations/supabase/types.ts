@@ -173,7 +173,6 @@ export type Database = {
           created_at: string
           deals: number
           id: string
-          leads: number
           observations: string | null
           revenue: number
           updated_at: string
@@ -186,7 +185,6 @@ export type Database = {
           created_at?: string
           deals?: number
           id?: string
-          leads?: number
           observations?: string | null
           revenue?: number
           updated_at?: string
@@ -199,7 +197,6 @@ export type Database = {
           created_at?: string
           deals?: number
           id?: string
-          leads?: number
           observations?: string | null
           revenue?: number
           updated_at?: string
@@ -650,6 +647,51 @@ export type Database = {
           icon?: string
           id?: string
           name?: string
+        }
+        Relationships: []
+      }
+      traffic_tracking: {
+        Row: {
+          appointments: number
+          attendance: number
+          average_ticket: number
+          created_at: string
+          deals: number
+          id: string
+          investment: number
+          leads_generated: number
+          revenue: number
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          appointments?: number
+          attendance?: number
+          average_ticket?: number
+          created_at?: string
+          deals?: number
+          id?: string
+          investment?: number
+          leads_generated?: number
+          revenue?: number
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          appointments?: number
+          attendance?: number
+          average_ticket?: number
+          created_at?: string
+          deals?: number
+          id?: string
+          investment?: number
+          leads_generated?: number
+          revenue?: number
+          updated_at?: string
+          user_id?: string
+          week_start?: string
         }
         Relationships: []
       }

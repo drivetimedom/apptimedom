@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  useCommercialTracking, 
-  useCreateCommercialTracking, 
-  useUpdateCommercialTracking, 
-  useDeleteCommercialTracking 
-} from '@/hooks/useCommercialTracking';
+  useTrafficTracking, 
+  useCreateTrafficTracking, 
+  useUpdateTrafficTracking, 
+  useDeleteTrafficTracking 
+} from '@/hooks/useTrafficTracking';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -21,22 +20,24 @@ import {
 import { 
   Plus, 
   Trash2, 
-  BarChart3,
+  TrendingUp,
   Calendar,
+  Users,
   CalendarCheck,
   CheckCircle,
   DollarSign,
-  FileText,
-  Loader2
+  Loader2,
+  Target,
+  Wallet
 } from 'lucide-react';
 import { format } from 'date-fns';
 
-const CommercialTrackingTable: React.FC = () => {
+const TrafficTrackingTable: React.FC = () => {
   const { user } = useAuth();
-  const { data: weeks = [], isLoading } = useCommercialTracking();
-  const createMutation = useCreateCommercialTracking();
-  const updateMutation = useUpdateCommercialTracking();
-  const deleteMutation = useDeleteCommercialTracking();
+  const { data: weeks = [], isLoading } = useTrafficTracking();
+  const createMutation = useCreateTrafficTracking();
+  const updateMutation = useUpdateTrafficTracking();
+  const deleteMutation = useDeleteTrafficTracking();
   
   const [isMobile, setIsMobile] = useState(false);
 
@@ -53,11 +54,13 @@ const CommercialTrackingTable: React.FC = () => {
     
     createMutation.mutate({
       week_start: weekStart,
+      investment: 0,
+      leads_generated: 0,
       appointments: 0,
       attendance: 0,
       deals: 0,
+      average_ticket: 0,
       revenue: 0,
-      observations: '',
     });
   };
 
@@ -66,11 +69,11 @@ const CommercialTrackingTable: React.FC = () => {
   };
 
   const deleteWeek = (weekId: string) => {
-    if (!confirm('Excluir esta semana?')) return;
+    if (!confirm('Excluir este período?')) return;
     deleteMutation.mutate(weekId);
   };
 
-  const calculateTotal = (field: 'appointments' | 'attendance' | 'deals' | 'revenue'): number => {
+  const calculateTotal = (field: 'investment' | 'leads_generated' | 'appointments' | 'attendance' | 'deals' | 'average_ticket' | 'revenue'): number => {
     return weeks.reduce((sum, week) => sum + (week[field] || 0), 0);
   };
 
@@ -86,9 +89,9 @@ const CommercialTrackingTable: React.FC = () => {
     return parseFloat(cleaned) || 0;
   };
 
-  const handleRevenueChange = (weekId: string, value: string) => {
+  const handleCurrencyChange = (weekId: string, field: string, value: string) => {
     const numericValue = parseCurrency(value);
-    handleFieldChange(weekId, 'revenue', numericValue);
+    handleFieldChange(weekId, field, numericValue);
   };
 
   if (!user) return null;
@@ -109,11 +112,11 @@ const CommercialTrackingTable: React.FC = () => {
         {/* Header */}
         <div className="bg-background px-4 py-4 border-b border-border">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-primary" />
-            Acompanhamento Comercial
+            <TrendingUp className="w-5 h-5 text-accent" />
+            Acompanhamento do Tráfego
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Registre seus resultados semanais
+            Registre seus resultados de campanhas
           </p>
         </div>
 
@@ -121,8 +124,8 @@ const CommercialTrackingTable: React.FC = () => {
         <div className="p-4 space-y-4">
           {weeks.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>Nenhuma semana registrada</p>
+              <TrendingUp className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>Nenhum período registrado</p>
               <p className="text-sm">Clique no botão abaixo para adicionar</p>
             </div>
           ) : (
@@ -157,6 +160,30 @@ const CommercialTrackingTable: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Wallet className="w-3 h-3" /> Investimento
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="R$ 0,00"
+                      value={formatCurrency(week.investment)}
+                      onChange={(e) => handleCurrencyChange(week.id, 'investment', e.target.value)}
+                      className="mt-1 h-9"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Users className="w-3 h-3" /> Leads Gerados
+                    </label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={week.leads_generated}
+                      onChange={(e) => handleFieldChange(week.id, 'leads_generated', parseInt(e.target.value) || 0)}
+                      className="mt-1 h-9"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground flex items-center gap-1">
                       <CalendarCheck className="w-3 h-3" /> Agendamentos
                     </label>
                     <Input
@@ -169,7 +196,7 @@ const CommercialTrackingTable: React.FC = () => {
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" /> Compareceu
+                      <CheckCircle className="w-3 h-3" /> Comparecimentos
                     </label>
                     <Input
                       type="number"
@@ -181,7 +208,7 @@ const CommercialTrackingTable: React.FC = () => {
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground flex items-center gap-1">
-                      <DollarSign className="w-3 h-3" /> Fechamento
+                      <Target className="w-3 h-3" /> Fechamentos
                     </label>
                     <Input
                       type="number"
@@ -193,13 +220,13 @@ const CommercialTrackingTable: React.FC = () => {
                   </div>
                   <div>
                     <label className="text-xs text-muted-foreground flex items-center gap-1">
-                      <DollarSign className="w-3 h-3" /> Faturamento
+                      <DollarSign className="w-3 h-3" /> Ticket Médio
                     </label>
                     <Input
                       type="text"
                       placeholder="R$ 0,00"
-                      value={formatCurrency(week.revenue)}
-                      onChange={(e) => handleRevenueChange(week.id, e.target.value)}
+                      value={formatCurrency(week.average_ticket)}
+                      onChange={(e) => handleCurrencyChange(week.id, 'average_ticket', e.target.value)}
                       className="mt-1 h-9"
                     />
                   </div>
@@ -207,14 +234,14 @@ const CommercialTrackingTable: React.FC = () => {
 
                 <div>
                   <label className="text-xs text-muted-foreground flex items-center gap-1">
-                    <FileText className="w-3 h-3" /> Observações
+                    <DollarSign className="w-3 h-3" /> Faturamento
                   </label>
-                  <Textarea
-                    value={week.observations || ''}
-                    onChange={(e) => handleFieldChange(week.id, 'observations', e.target.value)}
-                    placeholder="Anotações, ações extras..."
-                    rows={2}
-                    className="mt-1 resize-none"
+                  <Input
+                    type="text"
+                    placeholder="R$ 0,00"
+                    value={formatCurrency(week.revenue)}
+                    onChange={(e) => handleCurrencyChange(week.id, 'revenue', e.target.value)}
+                    className="mt-1 h-9"
                   />
                 </div>
               </div>
@@ -227,15 +254,23 @@ const CommercialTrackingTable: React.FC = () => {
               <h3 className="text-sm font-semibold text-accent mb-3">📊 TOTAIS</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="flex justify-between">
+                  <span className="text-muted-foreground">Investimento:</span>
+                  <span className="font-bold text-foreground">{formatCurrency(calculateTotal('investment'))}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Leads:</span>
+                  <span className="font-bold text-foreground">{calculateTotal('leads_generated')}</span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-muted-foreground">Agendamentos:</span>
                   <span className="font-bold text-foreground">{calculateTotal('appointments')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Compareceu:</span>
+                  <span className="text-muted-foreground">Comparecimentos:</span>
                   <span className="font-bold text-foreground">{calculateTotal('attendance')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Fechamento:</span>
+                  <span className="text-muted-foreground">Fechamentos:</span>
                   <span className="font-bold text-foreground">{calculateTotal('deals')}</span>
                 </div>
                 <div className="col-span-2 flex justify-between pt-2 border-t border-border">
@@ -255,7 +290,7 @@ const CommercialTrackingTable: React.FC = () => {
             ) : (
               <Plus className="w-4 h-4 mr-2" />
             )}
-            Nova Semana
+            Novo Período
           </Button>
         </div>
       </div>
@@ -268,11 +303,11 @@ const CommercialTrackingTable: React.FC = () => {
       {/* Header */}
       <div className="bg-background px-6 py-4 border-b border-border">
         <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-          <BarChart3 className="w-5 h-5 text-primary" />
-          Acompanhamento Comercial
+          <TrendingUp className="w-5 h-5 text-accent" />
+          Acompanhamento do Tráfego
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Registre seus resultados semanais
+          Registre seus resultados de campanhas
         </p>
       </div>
 
@@ -280,8 +315,8 @@ const CommercialTrackingTable: React.FC = () => {
       <div className="overflow-x-auto">
         {weeks.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
-            <p className="text-lg">Nenhuma semana registrada</p>
+            <TrendingUp className="w-16 h-16 mx-auto mb-4 opacity-50" />
+            <p className="text-lg">Nenhum período registrado</p>
             <p className="text-sm">Clique no botão abaixo para começar a acompanhar seus resultados</p>
           </div>
         ) : (
@@ -290,7 +325,17 @@ const CommercialTrackingTable: React.FC = () => {
               <TableRow className="bg-muted/30 hover:bg-muted/30">
                 <TableHead className="min-w-[140px]">
                   <span className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" /> Semana/Período
+                    <Calendar className="w-4 h-4" /> Período
+                  </span>
+                </TableHead>
+                <TableHead className="text-center min-w-[120px]">
+                  <span className="flex items-center justify-center gap-1">
+                    <Wallet className="w-4 h-4" /> Investimento
+                  </span>
+                </TableHead>
+                <TableHead className="text-center min-w-[100px]">
+                  <span className="flex items-center justify-center gap-1">
+                    <Users className="w-4 h-4" /> Leads Gerados
                   </span>
                 </TableHead>
                 <TableHead className="text-center min-w-[120px]">
@@ -298,24 +343,24 @@ const CommercialTrackingTable: React.FC = () => {
                     <CalendarCheck className="w-4 h-4" /> Agendamentos
                   </span>
                 </TableHead>
-                <TableHead className="text-center min-w-[120px]">
+                <TableHead className="text-center min-w-[130px]">
                   <span className="flex items-center justify-center gap-1">
-                    <CheckCircle className="w-4 h-4" /> Compareceu
+                    <CheckCircle className="w-4 h-4" /> Comparecimentos
                   </span>
                 </TableHead>
                 <TableHead className="text-center min-w-[100px]">
                   <span className="flex items-center justify-center gap-1">
-                    <DollarSign className="w-4 h-4" /> Fechamento
+                    <Target className="w-4 h-4" /> Fechamentos
+                  </span>
+                </TableHead>
+                <TableHead className="text-center min-w-[120px]">
+                  <span className="flex items-center justify-center gap-1">
+                    <DollarSign className="w-4 h-4" /> Ticket Médio
                   </span>
                 </TableHead>
                 <TableHead className="text-center min-w-[130px]">
                   <span className="flex items-center justify-center gap-1">
                     <DollarSign className="w-4 h-4" /> Faturamento
-                  </span>
-                </TableHead>
-                <TableHead className="min-w-[200px]">
-                  <span className="flex items-center gap-1">
-                    <FileText className="w-4 h-4" /> Observações/Ação Extra
                   </span>
                 </TableHead>
                 <TableHead className="w-[50px]"></TableHead>
@@ -330,6 +375,24 @@ const CommercialTrackingTable: React.FC = () => {
                       value={week.week_start}
                       onChange={(e) => handleFieldChange(week.id, 'week_start', e.target.value)}
                       className="h-9"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      type="text"
+                      placeholder="R$ 0,00"
+                      value={formatCurrency(week.investment)}
+                      onChange={(e) => handleCurrencyChange(week.id, 'investment', e.target.value)}
+                      className="h-9 w-28 mx-auto"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={week.leads_generated}
+                      onChange={(e) => handleFieldChange(week.id, 'leads_generated', parseInt(e.target.value) || 0)}
+                      className="h-9 text-center w-20 mx-auto"
                     />
                   </TableCell>
                   <TableCell>
@@ -363,18 +426,18 @@ const CommercialTrackingTable: React.FC = () => {
                     <Input
                       type="text"
                       placeholder="R$ 0,00"
-                      value={formatCurrency(week.revenue)}
-                      onChange={(e) => handleRevenueChange(week.id, e.target.value)}
+                      value={formatCurrency(week.average_ticket)}
+                      onChange={(e) => handleCurrencyChange(week.id, 'average_ticket', e.target.value)}
                       className="h-9 w-28 mx-auto"
                     />
                   </TableCell>
                   <TableCell>
-                    <Textarea
-                      value={week.observations || ''}
-                      onChange={(e) => handleFieldChange(week.id, 'observations', e.target.value)}
-                      placeholder="Anotações..."
-                      rows={1}
-                      className="resize-none min-h-[36px]"
+                    <Input
+                      type="text"
+                      placeholder="R$ 0,00"
+                      value={formatCurrency(week.revenue)}
+                      onChange={(e) => handleCurrencyChange(week.id, 'revenue', e.target.value)}
+                      className="h-9 w-28 mx-auto"
                     />
                   </TableCell>
                   <TableCell>
@@ -395,6 +458,12 @@ const CommercialTrackingTable: React.FC = () => {
               <TableRow className="hover:bg-accent/10">
                 <TableCell className="font-semibold text-muted-foreground">TOTAIS:</TableCell>
                 <TableCell className="text-center font-bold text-foreground">
+                  {formatCurrency(calculateTotal('investment'))}
+                </TableCell>
+                <TableCell className="text-center font-bold text-foreground">
+                  {calculateTotal('leads_generated')}
+                </TableCell>
+                <TableCell className="text-center font-bold text-foreground">
                   {calculateTotal('appointments')}
                 </TableCell>
                 <TableCell className="text-center font-bold text-foreground">
@@ -403,10 +472,12 @@ const CommercialTrackingTable: React.FC = () => {
                 <TableCell className="text-center font-bold text-foreground">
                   {calculateTotal('deals')}
                 </TableCell>
+                <TableCell className="text-center font-bold text-foreground">
+                  -
+                </TableCell>
                 <TableCell className="text-center font-bold text-accent">
                   {formatCurrency(calculateTotal('revenue'))}
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground">—</TableCell>
                 <TableCell></TableCell>
               </TableRow>
             </TableFooter>
@@ -422,11 +493,11 @@ const CommercialTrackingTable: React.FC = () => {
           ) : (
             <Plus className="w-4 h-4 mr-2" />
           )}
-          Nova Semana
+          Novo Período
         </Button>
       </div>
     </div>
   );
 };
 
-export default CommercialTrackingTable;
+export default TrafficTrackingTable;

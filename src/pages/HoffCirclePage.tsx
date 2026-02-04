@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  Category, 
+  Category,
   Course, 
   STORAGE_KEYS, 
   getFromStorage 
@@ -25,7 +25,12 @@ import LibrarySection from '@/components/hoff-circle/LibrarySection';
 
 const HoffCirclePage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
+  
+  // Refresh profile on mount to get latest prescription data
+  useEffect(() => {
+    refreshProfile();
+  }, []);
 
   const categories = getFromStorage<Category[]>(STORAGE_KEYS.CATEGORIES, []);
   const allCourses = getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []);

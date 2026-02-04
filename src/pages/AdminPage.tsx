@@ -101,7 +101,7 @@ import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner, Banner }
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user: currentUser, isAdmin } = useAuth();
+  const { user: currentUser, isAdmin, refreshProfile } = useAuth();
   const { toast } = useToast();
   const { createUser, isLoading: isCreatingUser } = useCreateUser();
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -284,6 +284,10 @@ const AdminPage: React.FC = () => {
             });
           } else {
             toast({ title: 'Usuário atualizado!' });
+            // Refresh the current user's profile if they updated their own profile
+            if (userEmail === currentUser?.email) {
+              refreshProfile();
+            }
           }
         } else {
           console.warn('No matching profile found for user:', editingUser.name, 'email:', userEmail);

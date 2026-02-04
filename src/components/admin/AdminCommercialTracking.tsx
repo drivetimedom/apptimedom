@@ -60,7 +60,6 @@ interface StudentWithTracking {
   email: string;
   tracking: CommercialTrackingWeek[];
   totals: {
-    leads: number;
     appointments: number;
     attendance: number;
     deals: number;
@@ -150,13 +149,11 @@ const AdminCommercialTracking: React.FC = () => {
   // Helper functions
   function calculateTotals(tracking: CommercialTrackingWeek[]) {
     return tracking.reduce((acc, week) => ({
-      leads: acc.leads + (week.leads || 0),
       appointments: acc.appointments + (week.appointments || 0),
       attendance: acc.attendance + (week.attendance || 0),
       deals: acc.deals + (week.deals || 0),
       revenue: acc.revenue + (Number(week.revenue) || 0)
     }), {
-      leads: 0,
       appointments: 0,
       attendance: 0,
       deals: 0,
@@ -198,7 +195,6 @@ const AdminCommercialTracking: React.FC = () => {
     const ws1 = XLSX.utils.json_to_sheet(
       student.tracking.map(week => ({
         'Semana': formatDate(week.week_start),
-        'Leads': week.leads,
         'Agendamentos': week.appointments,
         'Comparecimento': week.attendance,
         'Fechamentos': week.deals,
@@ -212,14 +208,12 @@ const AdminCommercialTracking: React.FC = () => {
       [`RESUMO - ${student.name}`],
       [''],
       ['TOTAIS'],
-      ['Total de Leads', student.totals.leads],
       ['Total de Agendamentos', student.totals.appointments],
       ['Total Comparecimento', student.totals.attendance],
       ['Total Fechamentos', student.totals.deals],
       ['Faturamento Total', student.totals.revenue],
       [''],
       ['TAXAS'],
-      ['Taxa de Agendamento', `${calculateRate(student.totals.appointments, student.totals.leads)}%`],
       ['Taxa de Comparecimento', `${calculateRate(student.totals.attendance, student.totals.appointments)}%`],
       ['Taxa de Conversão', `${calculateRate(student.totals.deals, student.totals.attendance)}%`],
       ['Ticket Médio', student.totals.deals > 0 ? (student.totals.revenue / student.totals.deals).toFixed(2) : '0']
@@ -240,12 +234,11 @@ const AdminCommercialTracking: React.FC = () => {
   // Global stats
   const globalStats = useMemo(() => {
     const totals = studentsWithTracking.reduce((acc, student) => ({
-      leads: acc.leads + student.totals.leads,
       appointments: acc.appointments + student.totals.appointments,
       attendance: acc.attendance + student.totals.attendance,
       deals: acc.deals + student.totals.deals,
       revenue: acc.revenue + student.totals.revenue
-    }), { leads: 0, appointments: 0, attendance: 0, deals: 0, revenue: 0 });
+    }), { appointments: 0, attendance: 0, deals: 0, revenue: 0 });
 
     return {
       ...totals,
@@ -289,8 +282,8 @@ const AdminCommercialTracking: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Total Leads</p>
-                <p className="text-2xl font-bold text-foreground">{globalStats.leads}</p>
+                <p className="text-sm text-muted-foreground">Total Agendamentos</p>
+                <p className="text-2xl font-bold text-foreground">{globalStats.appointments}</p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Target className="w-5 h-5 text-primary" />
@@ -317,9 +310,9 @@ const AdminCommercialTracking: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Conv. Geral</p>
+                <p className="text-sm text-muted-foreground">Taxa Conv.</p>
                 <p className="text-2xl font-bold text-foreground">
-                  {calculateRate(globalStats.deals, globalStats.leads)}%
+                  {calculateRate(globalStats.deals, globalStats.attendance)}%
                 </p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
@@ -485,7 +478,6 @@ const AdminCommercialTracking: React.FC = () => {
                               <TableHeader>
                                 <TableRow className="bg-muted/50">
                                   <TableHead>Semana</TableHead>
-                                  <TableHead className="text-center">Leads</TableHead>
                                   <TableHead className="text-center">Agend.</TableHead>
                                   <TableHead className="text-center">Compar.</TableHead>
                                   <TableHead className="text-center">Fecham.</TableHead>
@@ -497,7 +489,6 @@ const AdminCommercialTracking: React.FC = () => {
                                 {selectedStudent.tracking.map(week => (
                                   <TableRow key={week.id}>
                                     <TableCell className="font-medium">{formatDate(week.week_start)}</TableCell>
-                                    <TableCell className="text-center">{week.leads}</TableCell>
                                     <TableCell className="text-center">{week.appointments}</TableCell>
                                     <TableCell className="text-center">{week.attendance}</TableCell>
                                     <TableCell className="text-center">{week.deals}</TableCell>
@@ -511,7 +502,6 @@ const AdminCommercialTracking: React.FC = () => {
                               <TableFooter className="bg-primary/5 border-t-2 border-primary">
                                 <TableRow>
                                   <TableCell className="font-semibold">TOTAIS</TableCell>
-                                  <TableCell className="text-center font-bold">{selectedStudent.totals.leads}</TableCell>
                                   <TableCell className="text-center font-bold">{selectedStudent.totals.appointments}</TableCell>
                                   <TableCell className="text-center font-bold">{selectedStudent.totals.attendance}</TableCell>
                                   <TableCell className="text-center font-bold">{selectedStudent.totals.deals}</TableCell>
@@ -533,19 +523,7 @@ const AdminCommercialTracking: React.FC = () => {
                           Métricas e Performance
                         </h3>
                         
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                          <Card className="bg-muted/30 border-border">
-                            <CardContent className="pt-4">
-                              <p className="text-xs text-muted-foreground mb-1">Taxa de Agendamento</p>
-                              <p className="text-2xl font-bold text-foreground">
-                                {calculateRate(selectedStudent.totals.appointments, selectedStudent.totals.leads)}%
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {selectedStudent.totals.appointments} de {selectedStudent.totals.leads} leads
-                              </p>
-                            </CardContent>
-                          </Card>
-
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                           <Card className="bg-muted/30 border-border">
                             <CardContent className="pt-4">
                               <p className="text-xs text-muted-foreground mb-1">Taxa de Comparecimento</p>
@@ -583,6 +561,7 @@ const AdminCommercialTracking: React.FC = () => {
                               </p>
                             </CardContent>
                           </Card>
+
                         </div>
                       </div>
                     </>

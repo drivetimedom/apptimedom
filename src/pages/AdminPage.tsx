@@ -234,65 +234,60 @@ const AdminPage: React.FC = () => {
       setToStorage(STORAGE_KEYS.USERS, updatedUsers);
       
       // CRITICAL: Also update profile in Supabase for prescription data
-      // Find the profile by querying auth.users by email, then update the linked profile
+      // Now we have email column in profiles, so we can search by email
       try {
         const userEmail = userData.email || editingUser.email;
         
-        // Query profiles - we need to find by joining with auth.users via user_id
-        // Since we can't directly query auth.users, we'll use a workaround:
-        // The profile was created when the user signed up, so we query all profiles
-        // and match by user_id that corresponds to the email
-        
-        // First, try to find by doing a raw query using supabase rpc or fetching all
-        const { data: allProfiles, error: findError } = await supabase
+        // First try to find by email (most reliable)
+        let { data: matchingProfiles, error: findError } = await supabase
           .from('profiles')
-          .select('id, user_id, name');
+          .select('id, user_id, name, email')
+          .eq('email', userEmail);
+        
+        // If not found by email, try by name as fallback
+        if ((!matchingProfiles || matchingProfiles.length === 0) && !findError) {
+          const { data: nameProfiles } = await supabase
+            .from('profiles')
+            .select('id, user_id, name, email')
+            .ilike('name', `%${editingUser.name?.split(' ')[0] || ''}%`);
+          
+          matchingProfiles = nameProfiles;
+        }
         
         if (findError) {
           console.error('Error finding profiles:', findError);
           toast({ title: 'Usuário atualizado localmente' });
-        } else if (allProfiles && allProfiles.length > 0) {
-          // Try to match by name first (best effort since we don't have email in profiles)
-          let matchingProfile = allProfiles.find(p => 
-            p.name?.toLowerCase() === editingUser.name?.toLowerCase()
-          );
+        } else if (matchingProfiles && matchingProfiles.length > 0) {
+          // Use the first matching profile
+          const matchingProfile = matchingProfiles[0];
+          console.log('Found matching profile:', matchingProfile);
           
-          // If no exact match, try partial match
-          if (!matchingProfile) {
-            matchingProfile = allProfiles.find(p => 
-              p.name?.toLowerCase().includes(editingUser.name?.toLowerCase().split(' ')[0] || '')
-            );
-          }
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+              name: userData.name,
+              avatar: userData.avatar || null,
+              status: userData.status || 'iniciante',
+              prescribed_map: userData.prescribedMap === 'none' ? null : userData.prescribedMap,
+              visible_challenges: userData.visibleChallenges || [],
+              activation_plan: (userData.activationPlan || []) as unknown as any,
+              unlocked_courses: userData.unlockedCourses || [],
+            })
+            .eq('id', matchingProfile.id);
           
-          if (matchingProfile) {
-            console.log('Found matching profile:', matchingProfile);
-            const { error: profileError } = await supabase
-              .from('profiles')
-              .update({
-                name: userData.name,
-                avatar: userData.avatar || null,
-                status: userData.status || 'iniciante',
-                prescribed_map: userData.prescribedMap === 'none' ? null : userData.prescribedMap,
-                visible_challenges: userData.visibleChallenges || [],
-                activation_plan: (userData.activationPlan || []) as unknown as any,
-                unlocked_courses: userData.unlockedCourses || [],
-              })
-              .eq('id', matchingProfile.id);
-            
-            if (profileError) {
-              console.error('Error updating profile in Supabase:', profileError);
-              toast({ 
-                title: 'Aviso', 
-                description: 'Dados locais salvos, mas houve erro ao sincronizar com o Cloud',
-                variant: 'destructive' 
-              });
-            } else {
-              toast({ title: 'Usuário atualizado!' });
-            }
+          if (profileError) {
+            console.error('Error updating profile in Supabase:', profileError);
+            toast({ 
+              title: 'Aviso', 
+              description: 'Dados locais salvos, mas houve erro ao sincronizar com o Cloud',
+              variant: 'destructive' 
+            });
           } else {
-            console.warn('No matching profile found for user:', editingUser.name);
-            toast({ title: 'Usuário atualizado localmente (perfil não encontrado no Cloud)' });
+            toast({ title: 'Usuário atualizado!' });
           }
+        } else {
+          console.warn('No matching profile found for user:', editingUser.name, 'email:', userEmail);
+          toast({ title: 'Usuário atualizado localmente (perfil não encontrado no Cloud)' });
         }
       } catch (err) {
         console.error('Error syncing profile:', err);

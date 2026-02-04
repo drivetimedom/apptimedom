@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, STORAGE_KEYS, getFromStorage, setToStorage, ActivationTask } from '@/lib/storage';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { CheckSquare, Sparkles, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+
+interface ActivationTask {
+  id: string;
+  text: string;
+  done: boolean;
+  fromTemplate?: string;
+}
 
 // Default checklist for users without custom activation plan
 const defaultChecklist: ActivationTask[] = [
@@ -20,45 +27,40 @@ const defaultChecklist: ActivationTask[] = [
 ];
 
 const ActivationPlan: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
-  const [activationPlan, setActivationPlan] = useState<ActivationTask[]>([]);
 
-  // Load user's activation plan from storage
-  useEffect(() => {
-    if (user) {
-      const users = getFromStorage<User[]>(STORAGE_KEYS.USERS, []);
-      const fullUser = users.find(u => u.id === user.id);
-      
-      if (fullUser?.activationPlan && fullUser.activationPlan.length > 0) {
-        setActivationPlan(fullUser.activationPlan);
-      } else {
-        setActivationPlan(defaultChecklist);
-      }
-    }
-  }, [user]);
+  // Get activation plan from profile (Supabase) or use default
+  const activationPlan: ActivationTask[] = 
+    (profile?.activation_plan && profile.activation_plan.length > 0)
+      ? profile.activation_plan
+      : defaultChecklist;
 
-  const toggleItem = (taskId: string) => {
-    if (!user) return;
-    
-    const users = getFromStorage<User[]>(STORAGE_KEYS.USERS, []);
-    const userIndex = users.findIndex(u => u.id === user.id);
-    
-    if (userIndex === -1) return;
+  const toggleItem = async (taskId: string) => {
+    if (!user || !profile) return;
     
     const updatedPlan = activationPlan.map(task =>
       task.id === taskId ? { ...task, done: !task.done } : task
     );
     
-    // Update local state
-    setActivationPlan(updatedPlan);
+    // Update in Supabase (cast to any for JSON compatibility)
+    const { error } = await supabase
+      .from('profiles')
+      .update({ activation_plan: updatedPlan as any })
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error updating activation plan:', error);
+      toast({ 
+        title: 'Erro ao atualizar tarefa', 
+        description: error.message,
+        variant: 'destructive' 
+      });
+      return;
+    }
     
-    // Update storage
-    users[userIndex] = {
-      ...users[userIndex],
-      activationPlan: updatedPlan,
-    };
-    setToStorage(STORAGE_KEYS.USERS, users);
+    // Refresh profile to get updated data
+    await refreshProfile();
     
     // Show toast when task is completed
     const task = updatedPlan.find(t => t.id === taskId);

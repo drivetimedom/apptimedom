@@ -2,21 +2,23 @@ import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, STORAGE_KEYS, getFromStorage } from '@/lib/storage';
+import { useHofMaps } from '@/hooks/useHofMaps';
+import { useHofChallenges } from '@/hooks/useHofChallenges';
+import { getFromStorage } from '@/lib/storage';
 import { 
   Target,
   Lock,
   CheckCircle,
   Play,
-  Map,
   Trophy,
   Clock,
-  Video
+  Video,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import PlaylistPlayerModal from './PlaylistPlayerModal';
 
-// Types for Maps and Challenges
+// Types for Videos
 interface MapVideo {
   id: string;
   title: string;
@@ -25,26 +27,11 @@ interface MapVideo {
   order: number;
 }
 
-interface HofMap {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  videos: MapVideo[];
-  totalDuration: number;
-}
-
-interface HofChallenge {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  videos: MapVideo[];
-  totalDuration: number;
-}
-
 const ActionPlan: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const { data: allMaps = [], isLoading: mapsLoading } = useHofMaps();
+  const { data: allChallenges = [], isLoading: challengesLoading } = useHofChallenges();
+  
   const [playerOpen, setPlayerOpen] = useState(false);
   const [playerData, setPlayerData] = useState<{
     title: string;
@@ -53,17 +40,9 @@ const ActionPlan: React.FC = () => {
     type: 'map' | 'challenge';
   } | null>(null);
   
-  // Get full user data from storage
-  const users = getFromStorage<User[]>(STORAGE_KEYS.USERS, []);
-  const fullUser = users.find(u => u.id === user?.id);
-  
-  // Get maps and challenges from storage
-  const allMaps = getFromStorage<HofMap[]>(STORAGE_KEYS.HOF_MAPS, []);
-  const allChallenges = getFromStorage<HofChallenge[]>(STORAGE_KEYS.HOF_CHALLENGES, []);
-  
-  // Get prescribed map ID and visible challenge IDs from user
-  const prescribedMapId = fullUser?.prescribedMap || '';
-  const visibleChallengeIds = fullUser?.visibleChallenges || [];
+  // Get prescribed map ID and visible challenge IDs from profile (Supabase)
+  const prescribedMapId = profile?.prescribed_map || '';
+  const visibleChallengeIds = profile?.visible_challenges || [];
   
   // Find the prescribed map
   const prescribedMap = allMaps.find(m => m.id === prescribedMapId);
@@ -73,7 +52,7 @@ const ActionPlan: React.FC = () => {
     ? allChallenges.filter(c => visibleChallengeIds.includes(c.id))
     : [];
   
-  // Get user's progress for challenges
+  // Get user's progress for challenges from localStorage (can be migrated later)
   const getChallengeProgress = (challengeId: string): number => {
     if (!user) return 0;
     const key = `challenge-progress-${user.id}`;
@@ -81,8 +60,8 @@ const ActionPlan: React.FC = () => {
     return progress[challengeId] || 0;
   };
 
-  const getChallengeStatus = (challenge: HofChallenge, index: number): 'completed' | 'current' | 'locked' | 'available' => {
-    const progress = getChallengeProgress(challenge.id);
+  const getChallengeStatus = (challengeId: string, index: number): 'completed' | 'current' | 'locked' | 'available' => {
+    const progress = getChallengeProgress(challengeId);
     if (progress >= 100) return 'completed';
     if (progress > 0) return 'current';
     
@@ -113,22 +92,45 @@ const ActionPlan: React.FC = () => {
       setPlayerData({
         title: prescribedMap.name,
         icon: prescribedMap.icon,
-        videos: prescribedMap.videos,
+        videos: prescribedMap.videos as MapVideo[],
         type: 'map',
       });
       setPlayerOpen(true);
     }
   };
 
-  const openChallengePlayer = (challenge: HofChallenge) => {
+  const openChallengePlayer = (challenge: typeof allChallenges[0]) => {
     setPlayerData({
       title: challenge.name,
       icon: challenge.icon,
-      videos: challenge.videos,
+      videos: challenge.videos as MapVideo[],
       type: 'challenge',
     });
     setPlayerOpen(true);
   };
+
+  const isLoading = mapsLoading || challengesLoading;
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Card className="bg-card border-border">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-accent/10">
+              <Target className="w-5 h-5 text-accent" />
+            </div>
+            Plano de Ação
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Don't render if no map or challenges prescribed
   if (!prescribedMap && visibleChallenges.length === 0) {
@@ -192,11 +194,11 @@ const ActionPlan: React.FC = () => {
                     <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Video className="w-3 h-3" />
-                        {prescribedMap.videos.length} vídeos
+                        {(prescribedMap.videos as MapVideo[]).length} vídeos
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {formatDuration(prescribedMap.totalDuration)}
+                        {formatDuration(prescribedMap.total_duration)}
                       </span>
                     </div>
                   </div>
@@ -219,10 +221,11 @@ const ActionPlan: React.FC = () => {
 
               <div className="space-y-2">
                 {visibleChallenges.map((challenge, index) => {
-                  const status = getChallengeStatus(challenge, index);
+                  const status = getChallengeStatus(challenge.id, index);
                   const isLocked = status === 'locked';
                   const progress = getChallengeProgress(challenge.id);
                   const isClickable = !isLocked;
+                  const videos = challenge.videos as MapVideo[];
 
                   return (
                     <div
@@ -279,11 +282,11 @@ const ActionPlan: React.FC = () => {
                           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Video className="w-3 h-3" />
-                              {challenge.videos.length} vídeos
+                              {videos.length} vídeos
                             </span>
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              {formatDuration(challenge.totalDuration)}
+                              {formatDuration(challenge.total_duration)}
                             </span>
                           </div>
                         )}

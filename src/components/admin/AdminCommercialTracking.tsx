@@ -26,12 +26,14 @@ import {
   BarChart3,
   User as UserIcon,
   ClipboardList,
-  Loader2
+  Loader2,
+  Wallet
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 import ActivationPlanReadOnly from './ActivationPlanReadOnly';
 import { useAllCommercialTracking, CommercialTrackingWeek } from '@/hooks/useCommercialTracking';
+import { useAllTrafficTracking, TrafficTrackingWeek } from '@/hooks/useTrafficTracking';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -59,13 +61,23 @@ interface StudentWithTracking {
   name: string;
   email: string;
   tracking: CommercialTrackingWeek[];
+  trafficTracking: TrafficTrackingWeek[];
   totals: {
     appointments: number;
     attendance: number;
     deals: number;
     revenue: number;
   };
+  trafficTotals: {
+    investment: number;
+    leads_generated: number;
+    appointments: number;
+    attendance: number;
+    deals: number;
+    revenue: number;
+  };
   hasData: boolean;
+  hasTrafficData: boolean;
   activationPlan: ActivationTask[];
 }
 
@@ -105,26 +117,32 @@ const AdminCommercialTracking: React.FC = () => {
   // Fetch all profiles and tracking data
   const { data: profiles = [], isLoading: loadingProfiles } = useProfiles();
   const { data: allTracking = [], isLoading: loadingTracking } = useAllCommercialTracking();
+  const { data: allTrafficTracking = [], isLoading: loadingTrafficTracking } = useAllTrafficTracking();
 
   // Build students with tracking data
   const studentsWithTracking = useMemo((): StudentWithTracking[] => {
     return profiles.map(profile => {
       const tracking = allTracking.filter(t => t.user_id === profile.user_id);
+      const trafficTracking = allTrafficTracking.filter(t => t.user_id === profile.user_id);
       const totals = calculateTotals(tracking);
+      const trafficTotals = calculateTrafficTotals(trafficTracking);
       const activationPlan = (profile.activation_plan || []) as ActivationTask[];
       
       return {
         id: profile.id,
         user_id: profile.user_id,
         name: profile.name,
-        email: profile.user_id, // We'll display user_id since we can't access auth.users
+        email: profile.user_id,
         tracking,
+        trafficTracking,
         totals,
+        trafficTotals,
         hasData: tracking.length > 0,
+        hasTrafficData: trafficTracking.length > 0,
         activationPlan
       };
     });
-  }, [profiles, allTracking]);
+  }, [profiles, allTracking, allTrafficTracking]);
 
   // Filter students
   const filteredStudents = useMemo(() => {
@@ -154,6 +172,24 @@ const AdminCommercialTracking: React.FC = () => {
       deals: acc.deals + (week.deals || 0),
       revenue: acc.revenue + (Number(week.revenue) || 0)
     }), {
+      appointments: 0,
+      attendance: 0,
+      deals: 0,
+      revenue: 0
+    });
+  }
+
+  function calculateTrafficTotals(tracking: TrafficTrackingWeek[]) {
+    return tracking.reduce((acc, week) => ({
+      investment: acc.investment + (Number(week.investment) || 0),
+      leads_generated: acc.leads_generated + (week.leads_generated || 0),
+      appointments: acc.appointments + (week.appointments || 0),
+      attendance: acc.attendance + (week.attendance || 0),
+      deals: acc.deals + (week.deals || 0),
+      revenue: acc.revenue + (Number(week.revenue) || 0)
+    }), {
+      investment: 0,
+      leads_generated: 0,
       appointments: 0,
       attendance: 0,
       deals: 0,
@@ -247,7 +283,7 @@ const AdminCommercialTracking: React.FC = () => {
     };
   }, [studentsWithTracking]);
 
-  const isLoading = loadingProfiles || loadingTracking;
+  const isLoading = loadingProfiles || loadingTracking || loadingTrafficTracking;
 
   if (isLoading) {
     return (
@@ -577,7 +613,114 @@ const AdminCommercialTracking: React.FC = () => {
                     </div>
                   )}
                   
-                  {/* Activation Plan - Below Commercial Data */}
+                  {/* Traffic Tracking Section */}
+                  {selectedStudent.hasTrafficData ? (
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                        <Wallet className="w-5 h-5" />
+                        Acompanhamento de Tráfego
+                      </h3>
+                      
+                      <div className="rounded-lg border border-border overflow-hidden">
+                        <div className="overflow-x-auto">
+                          <Table>
+                            <TableHeader>
+                              <TableRow className="bg-muted/50">
+                                <TableHead>Período</TableHead>
+                                <TableHead className="text-right">Investimento</TableHead>
+                                <TableHead className="text-center">Leads</TableHead>
+                                <TableHead className="text-center">Agend.</TableHead>
+                                <TableHead className="text-center">Compar.</TableHead>
+                                <TableHead className="text-center">Fecham.</TableHead>
+                                <TableHead className="text-right">Faturamento</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {selectedStudent.trafficTracking.map(week => (
+                                <TableRow key={week.id}>
+                                  <TableCell className="font-medium">{formatDate(week.week_start)}</TableCell>
+                                  <TableCell className="text-right">{formatCurrency(Number(week.investment))}</TableCell>
+                                  <TableCell className="text-center">{week.leads_generated}</TableCell>
+                                  <TableCell className="text-center">{week.appointments}</TableCell>
+                                  <TableCell className="text-center">{week.attendance}</TableCell>
+                                  <TableCell className="text-center">{week.deals}</TableCell>
+                                  <TableCell className="text-right">{formatCurrency(Number(week.revenue))}</TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                            <TableFooter className="bg-accent/10 border-t-2 border-accent">
+                              <TableRow>
+                                <TableCell className="font-semibold">TOTAIS</TableCell>
+                                <TableCell className="text-right font-bold">{formatCurrency(selectedStudent.trafficTotals.investment)}</TableCell>
+                                <TableCell className="text-center font-bold">{selectedStudent.trafficTotals.leads_generated}</TableCell>
+                                <TableCell className="text-center font-bold">{selectedStudent.trafficTotals.appointments}</TableCell>
+                                <TableCell className="text-center font-bold">{selectedStudent.trafficTotals.attendance}</TableCell>
+                                <TableCell className="text-center font-bold">{selectedStudent.trafficTotals.deals}</TableCell>
+                                <TableCell className="text-right font-bold text-accent">{formatCurrency(selectedStudent.trafficTotals.revenue)}</TableCell>
+                              </TableRow>
+                            </TableFooter>
+                          </Table>
+                        </div>
+                      </div>
+
+                      {/* Traffic Metrics */}
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                        <Card className="bg-muted/30 border-border">
+                          <CardContent className="pt-4">
+                            <p className="text-xs text-muted-foreground mb-1">CPL (Custo por Lead)</p>
+                            <p className="text-2xl font-bold text-foreground">
+                              {selectedStudent.trafficTotals.leads_generated > 0 
+                                ? formatCurrency(selectedStudent.trafficTotals.investment / selectedStudent.trafficTotals.leads_generated)
+                                : 'R$ 0'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {selectedStudent.trafficTotals.leads_generated} leads gerados
+                            </p>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-muted/30 border-border">
+                          <CardContent className="pt-4">
+                            <p className="text-xs text-muted-foreground mb-1">CPA (Custo por Aquisição)</p>
+                            <p className="text-2xl font-bold text-foreground">
+                              {selectedStudent.trafficTotals.deals > 0 
+                                ? formatCurrency(selectedStudent.trafficTotals.investment / selectedStudent.trafficTotals.deals)
+                                : 'R$ 0'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {selectedStudent.trafficTotals.deals} vendas
+                            </p>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="bg-muted/30 border-border">
+                          <CardContent className="pt-4">
+                            <p className="text-xs text-muted-foreground mb-1">ROI</p>
+                            <p className="text-2xl font-bold text-success">
+                              {selectedStudent.trafficTotals.investment > 0 
+                                ? `${(((selectedStudent.trafficTotals.revenue - selectedStudent.trafficTotals.investment) / selectedStudent.trafficTotals.investment) * 100).toFixed(1)}%`
+                                : '0%'}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Retorno sobre investimento
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-8 text-center border border-border rounded-lg bg-muted/10">
+                      <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                        <Wallet className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-base font-semibold text-foreground mb-1">Sem dados de tráfego</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Este aluno ainda não preencheu o acompanhamento de tráfego.
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* Activation Plan - Below Traffic Data */}
                   <ActivationPlanReadOnly
                     activationPlan={selectedStudent.activationPlan}
                     studentName={selectedStudent.name}

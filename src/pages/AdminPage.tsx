@@ -3,16 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  getFromStorage, 
-  setToStorage, 
-  STORAGE_KEYS, 
   Course as StorageCourse, 
   Lesson as StorageLesson, 
   User, 
-  Progress, 
   Banner as StorageBanner, 
   Category as StorageCategory, 
-  generateId 
+  generateId,
+  ActivationTask,
+  UserStatus,
 } from '@/lib/storage';
 import { resetData } from '@/lib/seedData';
 import { Button } from '@/components/ui/button';
@@ -98,6 +96,7 @@ import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course }
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory, Category } from '@/hooks/useCategories';
 import { useLessons, useCreateLesson, useUpdateLesson, useDeleteLesson, useBulkCreateLessons, Lesson } from '@/hooks/useLessons';
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner, Banner } from '@/hooks/useBanners';
+import { useAdminUsers, useUpdateAdminUser, useUpdateUserRole, useDeleteAdminUser, AdminUser } from '@/hooks/useAdminUsers';
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
@@ -136,13 +135,15 @@ const AdminPage: React.FC = () => {
   const lessons = useMemo(() => dbLessons as unknown as StorageLesson[], [dbLessons]);
   const banners = useMemo(() => dbBanners as unknown as StorageBanner[], [dbBanners]);
 
-  // Users still use localStorage for now (will be migrated later)
-  const [users, setUsers] = useState(() => getFromStorage<User[]>(STORAGE_KEYS.USERS, []));
-  const swipeProcesses = useMemo(() => getFromStorage<any[]>(STORAGE_KEYS.SWIPEFILE_PROCESSES, []), []);
+  // Users from Supabase (fully migrated from localStorage)
+  const { data: adminUsers = [], isLoading: usersLoading, refetch: refetchUsers } = useAdminUsers();
+  const updateUserMutation = useUpdateAdminUser();
+  const updateRoleMutation = useUpdateUserRole();
+  const deleteUserMutation = useDeleteAdminUser();
 
   // Modal states
   const [userModalOpen, setUserModalOpen] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   
   const [courseModalOpen, setCourseModalOpen] = useState(false);
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
@@ -173,16 +174,16 @@ const AdminPage: React.FC = () => {
 
   // Filtered data - must be before early return
   const filteredUsers = useMemo(() => {
-    return users.filter(u => {
+    return adminUsers.filter(u => {
       const matchesSearch = 
         u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = userTypeFilter === 'all' || u.type === userTypeFilter;
+        (u.email || '').toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesType = userTypeFilter === 'all' || u.role === userTypeFilter;
       const matchesStatus = userStatusFilter === 'all' || 
         (userStatusFilter === 'active' ? u.active : !u.active);
       return matchesSearch && matchesType && matchesStatus;
     });
-  }, [users, searchQuery, userTypeFilter, userStatusFilter]);
+  }, [adminUsers, searchQuery, userTypeFilter, userStatusFilter]);
 
   const filteredCourses = useMemo(() => {
     return courses.filter(c => {
@@ -194,14 +195,14 @@ const AdminPage: React.FC = () => {
     });
   }, [courses, searchQuery, courseCategoryFilter, courseStatusFilter]);
 
-  const existingEmails = useMemo(() => users.map(u => u.email.toLowerCase()), [users]);
+  const existingEmails = useMemo(() => adminUsers.map(u => (u.email || '').toLowerCase()), [adminUsers]);
   const existingSlugs = useMemo(() => categories.map(c => c.slug), [categories]);
 
   // Stats
-  const totalUsers = users.length;
+  const totalUsers = adminUsers.length;
   const totalCourses = courses.length;
   const totalLessons = lessons.length;
-  const activeUsers = users.filter(u => u.active).length;
+  const activeUsers = adminUsers.filter(u => u.active).length;
   const publishedCourses = courses.filter(c => c.status === 'published').length;
   const activeBanners = banners.filter(b => b.active).length;
   const activeCategories = categories.filter(c => c.active).length;
@@ -217,85 +218,45 @@ const AdminPage: React.FC = () => {
   // ====================
   // USER FUNCTIONS
   // ====================
-  const openUserModal = (user?: User) => {
+  const openUserModal = (user?: AdminUser) => {
     setEditingUser(user || null);
     setUserModalOpen(true);
   };
 
   const saveUser = async (userData: Partial<User> & { password?: string }) => {
     if (editingUser) {
-      // Update existing user in localStorage
-      const updatedUsers = users.map(u => 
-        u.id === editingUser.id 
-          ? { ...u, ...userData, password: userData.password || u.password }
-          : u
-      );
-      setUsers(updatedUsers);
-      setToStorage(STORAGE_KEYS.USERS, updatedUsers);
-      
-      // CRITICAL: Also update profile in Supabase for prescription data
-      // Now we have email column in profiles, so we can search by email
+      // Update existing user in Supabase
       try {
-        const userEmail = userData.email || editingUser.email;
-        
-        // First try to find by email (most reliable)
-        let { data: matchingProfiles, error: findError } = await supabase
-          .from('profiles')
-          .select('id, user_id, name, email')
-          .eq('email', userEmail);
-        
-        // If not found by email, try by name as fallback
-        if ((!matchingProfiles || matchingProfiles.length === 0) && !findError) {
-          const { data: nameProfiles } = await supabase
-            .from('profiles')
-            .select('id, user_id, name, email')
-            .ilike('name', `%${editingUser.name?.split(' ')[0] || ''}%`);
-          
-          matchingProfiles = nameProfiles;
+        await updateUserMutation.mutateAsync({
+          profileId: editingUser.id,
+          userId: editingUser.user_id,
+          data: {
+            name: userData.name,
+            email: userData.email,
+            avatar: userData.avatar || null,
+            status: (userData.status as AdminUser['status']) || 'iniciante',
+            prescribed_map: userData.prescribedMap === 'none' ? null : userData.prescribedMap || null,
+            visible_challenges: userData.visibleChallenges || [],
+            activation_plan: userData.activationPlan || [],
+            unlocked_courses: userData.unlockedCourses || [],
+          },
+        });
+
+        // Update role if changed
+        const newRole = userData.type || 'user';
+        if (newRole !== editingUser.role) {
+          await updateRoleMutation.mutateAsync({
+            userId: editingUser.user_id,
+            role: newRole,
+          });
         }
-        
-        if (findError) {
-          console.error('Error finding profiles:', findError);
-          toast({ title: 'Usuário atualizado localmente' });
-        } else if (matchingProfiles && matchingProfiles.length > 0) {
-          // Use the first matching profile
-          const matchingProfile = matchingProfiles[0];
-          console.log('Found matching profile:', matchingProfile);
-          
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-              name: userData.name,
-              avatar: userData.avatar || null,
-              status: userData.status || 'iniciante',
-              prescribed_map: userData.prescribedMap === 'none' ? null : userData.prescribedMap,
-              visible_challenges: userData.visibleChallenges || [],
-              activation_plan: (userData.activationPlan || []) as unknown as any,
-              unlocked_courses: userData.unlockedCourses || [],
-            })
-            .eq('id', matchingProfile.id);
-          
-          if (profileError) {
-            console.error('Error updating profile in Supabase:', profileError);
-            toast({ 
-              title: 'Aviso', 
-              description: 'Dados locais salvos, mas houve erro ao sincronizar com o Cloud',
-              variant: 'destructive' 
-            });
-          } else {
-            toast({ title: 'Usuário atualizado!' });
-            // Refresh the current user's profile if they updated their own profile
-            if (userEmail === currentUser?.email) {
-              refreshProfile();
-            }
-          }
-        } else {
-          console.warn('No matching profile found for user:', editingUser.name, 'email:', userEmail);
-          toast({ title: 'Usuário atualizado localmente (perfil não encontrado no Cloud)' });
+
+        // Refresh profile if current user was updated
+        if (editingUser.user_id === currentUser?.id) {
+          refreshProfile();
         }
       } catch (err) {
-        console.error('Error syncing profile:', err);
-        toast({ title: 'Usuário atualizado localmente' });
+        console.error('Error updating user:', err);
       }
       
       setUserModalOpen(false);
@@ -323,21 +284,8 @@ const AdminPage: React.FC = () => {
         return;
       }
 
-      // Also save to localStorage for local display
-      const newUser: User = {
-        id: result.userId || generateId(),
-        name: userData.name || '',
-        email: userData.email || '',
-        password: '', // Don't store password locally
-        type: userData.type || 'user',
-        avatar: userData.avatar,
-        active: userData.active ?? true,
-        unlockedCourses: userData.unlockedCourses || [],
-        createdAt: new Date().toISOString(),
-      };
-      const updatedUsers = [...users, newUser];
-      setUsers(updatedUsers);
-      setToStorage(STORAGE_KEYS.USERS, updatedUsers);
+      // Refetch users to show the new one
+      refetchUsers();
       
       toast({ title: 'Usuário criado com sucesso!' });
       setUserModalOpen(false);
@@ -346,32 +294,45 @@ const AdminPage: React.FC = () => {
   };
 
   const toggleUserStatus = (userId: string) => {
-    const updatedUsers = users.map(u => 
-      u.id === userId ? { ...u, active: !u.active } : u
-    );
-    setUsers(updatedUsers);
-    setToStorage(STORAGE_KEYS.USERS, updatedUsers);
-    toast({ title: 'Status do usuário atualizado' });
+    // Note: Supabase auth doesn't have a direct "active" toggle
+    // We would need to implement this via Edge Function or custom field
+    toast({ 
+      title: 'Status não pode ser alterado diretamente',
+      description: 'Use as configurações do perfil para gerenciar acesso.',
+      variant: 'destructive' 
+    });
   };
 
-  const changeUserType = (userId: string, newType: 'admin' | 'instructor' | 'user') => {
-    const updatedUsers = users.map(u => 
-      u.id === userId ? { ...u, type: newType } : u
-    );
-    setUsers(updatedUsers);
-    setToStorage(STORAGE_KEYS.USERS, updatedUsers);
-    toast({ title: 'Tipo de usuário atualizado' });
+  const changeUserType = async (userId: string, newType: 'admin' | 'instructor' | 'user') => {
+    // Find the user to get their user_id
+    const user = adminUsers.find(u => u.id === userId);
+    if (!user) return;
+
+    try {
+      await updateRoleMutation.mutateAsync({
+        userId: user.user_id,
+        role: newType,
+      });
+    } catch (err) {
+      console.error('Error changing user role:', err);
+    }
   };
 
-  const deleteUser = (userId: string) => {
-    if (userId === currentUser?.id) {
+  const deleteUser = async (userId: string) => {
+    const user = adminUsers.find(u => u.id === userId);
+    if (!user) return;
+
+    if (user.user_id === currentUser?.id) {
       toast({ title: 'Você não pode excluir sua própria conta', variant: 'destructive' });
       return;
     }
-    const updatedUsers = users.filter(u => u.id !== userId);
-    setUsers(updatedUsers);
-    setToStorage(STORAGE_KEYS.USERS, updatedUsers);
-    toast({ title: 'Usuário excluído' });
+
+    try {
+      await deleteUserMutation.mutateAsync({ userId: user.user_id });
+    } catch (err) {
+      console.error('Error deleting user:', err);
+    }
+    
     setDeleteConfirm(null);
   };
 
@@ -791,8 +752,8 @@ const AdminPage: React.FC = () => {
               <div className="bg-card rounded-xl border border-border p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Swipe File</p>
-                    <p className="text-3xl font-bold text-foreground mt-2">{swipeProcesses.length}</p>
+                    <p className="text-sm text-muted-foreground">Categorias</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{categories.length}</p>
                   </div>
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                     <FileText className="w-6 h-6 text-primary" />
@@ -849,11 +810,11 @@ const AdminPage: React.FC = () => {
             <div className="bg-card rounded-xl border border-border p-6">
               <h3 className="font-semibold text-foreground mb-4">Últimos Usuários</h3>
               <div className="space-y-3">
-                {users.slice(0, 5).map(user => (
+                {adminUsers.slice(0, 5).map(user => (
                   <div key={user.id} className="flex items-center justify-between p-3 rounded-lg bg-accent/30">
                     <div className="flex items-center space-x-3">
                       <Avatar className="w-10 h-10">
-                        <AvatarImage src={user.avatar} />
+                        <AvatarImage src={user.avatar || undefined} />
                         <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>
@@ -863,11 +824,11 @@ const AdminPage: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <span className={`px-2 py-1 rounded-full text-xs ${
-                        user.type === 'admin' ? 'bg-destructive/20 text-destructive' :
-                        user.type === 'instructor' ? 'bg-warning/20 text-warning' :
+                        user.role === 'admin' ? 'bg-destructive/20 text-destructive' :
+                        user.role === 'instructor' ? 'bg-warning/20 text-warning' :
                         'bg-info/20 text-info'
                       }`}>
-                        {user.type === 'admin' ? 'Admin' : user.type === 'instructor' ? 'Instrutor' : 'Usuário'}
+                        {user.role === 'admin' ? 'Admin' : user.role === 'instructor' ? 'Instrutor' : 'Usuário'}
                       </span>
                       <span className={`w-2 h-2 rounded-full ${user.active ? 'bg-success' : 'bg-muted-foreground'}`} />
                     </div>
@@ -913,7 +874,6 @@ const AdminPage: React.FC = () => {
                 </Select>
               </div>
               <div className="flex items-center gap-3">
-                <ImportExportUsers users={users} onUsersChange={setUsers} />
                 <Button onClick={() => openUserModal()} className="gap-2">
                   <Plus className="w-4 h-4" />
                   Novo Usuário
@@ -952,12 +912,12 @@ const AdminPage: React.FC = () => {
                       <TableCell className="text-muted-foreground">{user.email}</TableCell>
                       <TableCell>
                         <Select 
-                          value={user.type} 
+                          value={user.role} 
                           onValueChange={(v) => changeUserType(user.id, v as any)}
                         >
                           <SelectTrigger className={`w-28 h-7 text-xs border-0 ${
-                            user.type === 'admin' ? 'bg-destructive/20 text-destructive' :
-                            user.type === 'instructor' ? 'bg-warning/20 text-warning' :
+                            user.role === 'admin' ? 'bg-destructive/20 text-destructive' :
+                            user.role === 'instructor' ? 'bg-warning/20 text-warning' :
                             'bg-info/20 text-info'
                           }`}>
                             <SelectValue />
@@ -973,10 +933,11 @@ const AdminPage: React.FC = () => {
                         <Switch
                           checked={user.active}
                           onCheckedChange={() => toggleUserStatus(user.id)}
+                          disabled
                         />
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {new Date(user.createdAt).toLocaleDateString('pt-BR')}
+                        {new Date(user.created_at).toLocaleDateString('pt-BR')}
                       </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
@@ -1375,9 +1336,23 @@ const AdminPage: React.FC = () => {
         isOpen={userModalOpen}
         onClose={() => { setUserModalOpen(false); setEditingUser(null); }}
         onSave={saveUser}
-        user={editingUser}
-        existingEmails={existingEmails.filter(e => e !== editingUser?.email.toLowerCase())}
-        isLoading={isCreatingUser}
+        user={editingUser ? {
+          id: editingUser.id,
+          name: editingUser.name,
+          email: editingUser.email || '',
+          password: '',
+          type: editingUser.role,
+          avatar: editingUser.avatar || undefined,
+          active: editingUser.active,
+          createdAt: editingUser.created_at,
+          unlockedCourses: editingUser.unlocked_courses,
+          status: editingUser.status,
+          prescribedMap: editingUser.prescribed_map || undefined,
+          visibleChallenges: editingUser.visible_challenges,
+          activationPlan: editingUser.activation_plan,
+        } : null}
+        existingEmails={existingEmails.filter(e => e !== (editingUser?.email || '').toLowerCase())}
+        isLoading={isCreatingUser || updateUserMutation.isPending}
       />
 
       {/* Course Form Modal */}

@@ -1353,6 +1353,7 @@ const AdminPage: React.FC = () => {
         } : null}
         existingEmails={existingEmails.filter(e => e !== (editingUser?.email || '').toLowerCase())}
         isLoading={isCreatingUser || updateUserMutation.isPending}
+        userId={editingUser?.user_id}
       />
 
       {/* Course Form Modal */}

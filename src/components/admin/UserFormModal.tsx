@@ -36,7 +36,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Trash2, Target, BookOpen, Settings, FileDown, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Target, BookOpen, Settings, FileDown, Loader2, Key } from 'lucide-react';
+import { useResetPassword } from '@/hooks/useResetPassword';
 
 // Cloud hooks
 import { useCourses, Course } from '@/hooks/useCourses';
@@ -51,6 +52,7 @@ interface UserFormModalProps {
   user?: User | null;
   existingEmails: string[];
   isLoading?: boolean;
+  userId?: string; // auth user id for password reset
 }
 
 const statusOptions: { value: UserStatus; label: string; icon: string }[] = [
@@ -68,8 +70,10 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
   user,
   existingEmails,
   isLoading = false,
+  userId,
 }) => {
   const { toast } = useToast();
+  const { resetPassword, isLoading: isResetting } = useResetPassword();
   
   // Cloud data hooks - always fresh from database
   const { data: courses = [], isLoading: coursesLoading } = useCourses();
@@ -81,6 +85,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('none');
   const [customTaskInput, setCustomTaskInput] = useState('');
   const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+  const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
   
   const [formData, setFormData] = useState({
     name: '',
@@ -330,6 +337,34 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     toast({ title: 'Plano de Ativação limpo' });
   };
 
+  const handleResetPassword = async () => {
+    if (!userId) {
+      toast({ title: 'ID do usuário não encontrado', variant: 'destructive' });
+      return;
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      toast({ title: 'Senha deve ter pelo menos 6 caracteres', variant: 'destructive' });
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      toast({ title: 'Senhas não conferem', variant: 'destructive' });
+      return;
+    }
+
+    const result = await resetPassword(userId, newPassword);
+
+    if (result.success) {
+      toast({ title: 'Senha redefinida com sucesso!' });
+      setResetPasswordOpen(false);
+      setNewPassword('');
+      setConfirmNewPassword('');
+    } else {
+      toast({ title: 'Erro ao redefinir senha', description: result.error, variant: 'destructive' });
+    }
+  };
+
   const renderCourseCheckboxes = (courseList: Course[], title: string, icon: string) => {
     if (courseList.length === 0) return null;
     
@@ -491,6 +526,29 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   </div>
                 </div>
               </div>
+
+              {/* Password Reset Button - Only for existing users */}
+              {user && userId && (
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-base">Redefinir Senha</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Defina uma nova senha para este usuário
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setResetPasswordOpen(true)}
+                      className="gap-2"
+                    >
+                      <Key className="w-4 h-4" />
+                      Redefinir Senha
+                    </Button>
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             {/* TAB 2: Courses */}
@@ -840,6 +898,65 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
           >
             Limpar Todas
           </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    {/* Reset Password Confirmation */}
+    <AlertDialog open={resetPasswordOpen} onOpenChange={(open) => {
+      setResetPasswordOpen(open);
+      if (!open) {
+        setNewPassword('');
+        setConfirmNewPassword('');
+      }
+    }}>
+      <AlertDialogContent className="bg-card border-border">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Key className="w-5 h-5" />
+            Redefinir Senha
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            Digite a nova senha para o usuário <strong>{user?.name}</strong>.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>Nova Senha</Label>
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Mínimo 6 caracteres"
+              className="bg-input border-border"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Confirmar Nova Senha</Label>
+            <Input
+              type="password"
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+              placeholder="Confirme a senha"
+              className="bg-input border-border"
+            />
+          </div>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isResetting}>Cancelar</AlertDialogCancel>
+          <Button
+            onClick={handleResetPassword}
+            disabled={isResetting || !newPassword || !confirmNewPassword}
+          >
+            {isResetting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Redefinindo...
+              </>
+            ) : (
+              'Redefinir Senha'
+            )}
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

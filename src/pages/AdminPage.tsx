@@ -89,7 +89,8 @@ import ActivationPlanTemplates from '@/components/admin/ActivationPlanTemplates'
 import AdminMapsManager from '@/components/admin/AdminMapsManager';
 import AdminChallengesManager from '@/components/admin/AdminChallengesManager';
 import AdminSwipeFileManager from '@/components/admin/AdminSwipeFileManager';
-import { ClipboardList, Map, Trophy } from 'lucide-react';
+import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
+import { ClipboardList, Map, Trophy, History } from 'lucide-react';
 
 // Import database hooks
 import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course } from '@/hooks/useCourses';
@@ -97,7 +98,8 @@ import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory,
 import { useLessons, useCreateLesson, useUpdateLesson, useDeleteLesson, useBulkCreateLessons, Lesson } from '@/hooks/useLessons';
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner, Banner } from '@/hooks/useBanners';
 import { useAdminUsers, useUpdateAdminUser, useUpdateUserRole, useDeleteAdminUser, AdminUser } from '@/hooks/useAdminUsers';
-
+import { useAuditLog } from '@/hooks/useAuditLog';
+import { enviarEmailBoasVindas } from '@/lib/emailService';
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
   const { user: currentUser, isAdmin, refreshProfile } = useAuth();
@@ -140,6 +142,7 @@ const AdminPage: React.FC = () => {
   const updateUserMutation = useUpdateAdminUser();
   const updateRoleMutation = useUpdateUserRole();
   const deleteUserMutation = useDeleteAdminUser();
+  const { logAction } = useAuditLog();
 
   // Modal states
   const [userModalOpen, setUserModalOpen] = useState(false);
@@ -282,6 +285,30 @@ const AdminPage: React.FC = () => {
           variant: 'destructive' 
         });
         return;
+      }
+
+      // Log the action
+      try {
+        await logAction({
+          action: 'user_created',
+          targetUserId: result.userId,
+          details: { email: userData.email, name: userData.name, role: userData.type },
+        });
+      } catch (e) {
+        console.error('Failed to log audit action:', e);
+      }
+
+      // Send welcome email
+      try {
+        await enviarEmailBoasVindas(
+          userData.email || '',
+          userData.name || '',
+          userData.password // Include temporary password in email
+        );
+        console.log('Welcome email sent to:', userData.email);
+      } catch (e) {
+        console.error('Failed to send welcome email:', e);
+        // Don't fail the operation if email fails
       }
 
       // Refetch users to show the new one
@@ -805,6 +832,9 @@ const AdminPage: React.FC = () => {
                 </p>
               </div>
             </div>
+
+            {/* Audit Log */}
+            <AuditLogViewer />
 
             {/* Recent Users */}
             <div className="bg-card rounded-xl border border-border p-6">

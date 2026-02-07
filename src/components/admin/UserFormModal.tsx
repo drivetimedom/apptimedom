@@ -353,7 +353,13 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
       return;
     }
 
-    const result = await resetPassword(userId, newPassword);
+    // Pass user email and name for notification email
+    const result = await resetPassword(
+      userId, 
+      newPassword,
+      formData.email,
+      formData.name
+    );
 
     if (result.success) {
       toast({ title: 'Senha redefinida com sucesso!' });

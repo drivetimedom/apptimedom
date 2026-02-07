@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuditLog } from '@/hooks/useAuditLog';
 
 // Types matching the database schema
 export interface AdminUser {
@@ -78,6 +79,7 @@ export function useAdminUsers() {
 export function useUpdateAdminUser() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
 
   return useMutation({
     mutationFn: async ({ 
@@ -119,11 +121,22 @@ export function useUpdateAdminUser() {
 
       if (profileError) throw profileError;
 
-      return { profileId, userId };
+      return { profileId, userId, data };
     },
-    onSuccess: () => {
+    onSuccess: async ({ userId, data }) => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       toast({ title: 'Usuário atualizado!' });
+      
+      // Log the action
+      try {
+        await logAction({
+          action: 'user_updated',
+          targetUserId: userId,
+          details: { updatedFields: Object.keys(data) },
+        });
+      } catch (e) {
+        console.error('Failed to log audit action:', e);
+      }
     },
     onError: (error: any) => {
       console.error('[useUpdateAdminUser] error:', error);
@@ -140,6 +153,7 @@ export function useUpdateAdminUser() {
 export function useUpdateUserRole() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
 
   return useMutation({
     mutationFn: async ({ 
@@ -152,11 +166,13 @@ export function useUpdateUserRole() {
       // First, check if role exists
       const { data: existingRole, error: fetchError } = await supabase
         .from('user_roles')
-        .select('id')
+        .select('id, role')
         .eq('user_id', userId)
         .maybeSingle();
 
       if (fetchError) throw fetchError;
+
+      const oldRole = existingRole?.role || 'user';
 
       if (existingRole) {
         // Update existing role
@@ -175,11 +191,22 @@ export function useUpdateUserRole() {
         if (error) throw error;
       }
 
-      return { userId, role };
+      return { userId, role, oldRole };
     },
-    onSuccess: () => {
+    onSuccess: async ({ userId, role, oldRole }) => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
       toast({ title: 'Permissão atualizada!' });
+      
+      // Log the action
+      try {
+        await logAction({
+          action: 'user_role_changed',
+          targetUserId: userId,
+          details: { oldRole, newRole: role },
+        });
+      } catch (e) {
+        console.error('Failed to log audit action:', e);
+      }
     },
     onError: (error: any) => {
       console.error('[useUpdateUserRole] error:', error);

@@ -86,6 +86,10 @@ serve(async (req) => {
               Qualquer dúvida, estamos à disposição!<br>
               <strong>Equipe HOF Circle</strong>
             </p>
+            
+            <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+              Este é um email automático, não responda a esta mensagem.
+            </p>
           </div>
         </body>
         </html>

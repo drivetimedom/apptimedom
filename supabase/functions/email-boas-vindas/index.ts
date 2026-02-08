@@ -51,7 +51,7 @@ serve(async (req) => {
       : "";
 
     const { data, error } = await resend.emails.send({
-      from: "HOF Circle <onboarding@resend.dev>",
+      from: "Time Dom <noreply@timedom.com.br>",
       to: email,
       subject: "Bem-vindo ao HOF Circle! 🚀",
       html: `

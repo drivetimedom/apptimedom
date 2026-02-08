@@ -41,7 +41,7 @@ serve(async (req) => {
     }
 
     const { data, error } = await resend.emails.send({
-      from: "HOF Circle <onboarding@resend.dev>",
+      from: "Time Dom <noreply@timedom.com.br>",
       to: email,
       subject: "Redefinição de Senha - HOF Circle",
       html: `
@@ -79,6 +79,10 @@ serve(async (req) => {
             <p style="font-size: 14px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; margin-bottom: 0;">
               Se você não solicitou esta redefinição, entre em contato conosco imediatamente.<br>
               <strong>Equipe HOF Circle</strong>
+            </p>
+            
+            <p style="font-size: 12px; color: #9ca3af; text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+              Este é um email automático, não responda a esta mensagem.
             </p>
           </div>
         </body>

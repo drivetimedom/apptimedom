@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronLeft, ChevronRight, X, Play, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useChallengeProgress, useUpdateChallengeProgress } from '@/hooks/useChallengeProgress';
 
 interface PlaylistVideo {
   id: string;
@@ -25,6 +26,7 @@ interface PlaylistPlayerModalProps {
   icon: string;
   videos: PlaylistVideo[];
   type: 'map' | 'challenge';
+  challengeId?: string;
 }
 
 const PlaylistPlayerModal: React.FC<PlaylistPlayerModalProps> = ({
@@ -34,12 +36,37 @@ const PlaylistPlayerModal: React.FC<PlaylistPlayerModalProps> = ({
   icon,
   videos,
   type,
+  challengeId,
 }) => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [watchedVideos, setWatchedVideos] = useState<Set<string>>(new Set());
+  const { data: progressList = [] } = useChallengeProgress();
+  const updateProgress = useUpdateChallengeProgress();
+
+  // Load existing watched videos from Supabase for challenges
+  useEffect(() => {
+    if (type === 'challenge' && challengeId && isOpen) {
+      const existing = progressList.find(p => p.challenge_id === challengeId);
+      if (existing?.watched_videos?.length) {
+        setWatchedVideos(new Set(existing.watched_videos));
+      }
+    }
+  }, [type, challengeId, isOpen, progressList]);
+
+  // Save progress to Supabase when watched videos change
+  const saveProgress = useCallback((newWatched: Set<string>) => {
+    if (type !== 'challenge' || !challengeId || newWatched.size === 0) return;
+    const totalVideos = videos.length;
+    const progress = Math.round((newWatched.size / totalVideos) * 100);
+    updateProgress.mutate({
+      challengeId,
+      progress,
+      watchedVideos: Array.from(newWatched),
+    });
+  }, [type, challengeId, videos.length, updateProgress]);
 
   const currentVideo = videos[currentVideoIndex];
-  
+
   const formatDuration = (minutes: number): string => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
@@ -51,10 +78,17 @@ const PlaylistPlayerModal: React.FC<PlaylistPlayerModalProps> = ({
 
   const totalDuration = videos.reduce((acc, v) => acc + v.duration, 0);
 
+  const markAsWatched = (videoId: string) => {
+    setWatchedVideos(prev => {
+      const newSet = new Set([...prev, videoId]);
+      saveProgress(newSet);
+      return newSet;
+    });
+  };
+
   const goToNext = () => {
     if (currentVideoIndex < videos.length - 1) {
-      // Mark current as watched
-      setWatchedVideos(prev => new Set([...prev, currentVideo.id]));
+      markAsWatched(currentVideo.id);
       setCurrentVideoIndex(currentVideoIndex + 1);
     }
   };
@@ -66,9 +100,8 @@ const PlaylistPlayerModal: React.FC<PlaylistPlayerModalProps> = ({
   };
 
   const selectVideo = (index: number) => {
-    // Mark current as watched when navigating away
     if (currentVideo) {
-      setWatchedVideos(prev => new Set([...prev, currentVideo.id]));
+      markAsWatched(currentVideo.id);
     }
     setCurrentVideoIndex(index);
   };

@@ -167,6 +167,44 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_progress: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          id: string
+          progress: number
+          updated_at: string
+          user_id: string
+          watched_videos: string[]
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          id?: string
+          progress?: number
+          updated_at?: string
+          user_id: string
+          watched_videos?: string[]
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          progress?: number
+          updated_at?: string
+          user_id?: string
+          watched_videos?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "hof_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comments: {
         Row: {
           created_at: string

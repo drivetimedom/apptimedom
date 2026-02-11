@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useHofMaps } from '@/hooks/useHofMaps';
 import { useHofChallenges } from '@/hooks/useHofChallenges';
-import { getFromStorage } from '@/lib/storage';
+import { useChallengeProgress } from '@/hooks/useChallengeProgress';
 import { 
   Target,
   Lock,
@@ -31,6 +31,7 @@ const ActionPlan: React.FC = () => {
   const { user, profile } = useAuth();
   const { data: allMaps = [], isLoading: mapsLoading } = useHofMaps();
   const { data: allChallenges = [], isLoading: challengesLoading } = useHofChallenges();
+  const { data: challengeProgressList = [] } = useChallengeProgress();
   
   const [playerOpen, setPlayerOpen] = useState(false);
   const [playerData, setPlayerData] = useState<{
@@ -38,6 +39,7 @@ const ActionPlan: React.FC = () => {
     icon: string;
     videos: MapVideo[];
     type: 'map' | 'challenge';
+    challengeId?: string;
   } | null>(null);
   
   // Get prescribed map ID and visible challenge IDs from profile (Supabase)
@@ -52,12 +54,10 @@ const ActionPlan: React.FC = () => {
     ? allChallenges.filter(c => visibleChallengeIds.includes(c.id))
     : [];
   
-  // Get user's progress for challenges from localStorage (can be migrated later)
+  // Get user's progress for challenges from Supabase
   const getChallengeProgress = (challengeId: string): number => {
-    if (!user) return 0;
-    const key = `challenge-progress-${user.id}`;
-    const progress = getFromStorage<Record<string, number>>(key as any, {});
-    return progress[challengeId] || 0;
+    const entry = challengeProgressList.find(p => p.challenge_id === challengeId);
+    return entry?.progress || 0;
   };
 
   const getChallengeStatus = (challengeId: string, index: number): 'completed' | 'current' | 'locked' | 'available' => {
@@ -105,6 +105,7 @@ const ActionPlan: React.FC = () => {
       icon: challenge.icon,
       videos: challenge.videos as MapVideo[],
       type: 'challenge',
+      challengeId: challenge.id,
     });
     setPlayerOpen(true);
   };
@@ -337,6 +338,7 @@ const ActionPlan: React.FC = () => {
           icon={playerData.icon}
           videos={playerData.videos}
           type={playerData.type}
+          challengeId={playerData.challengeId}
         />
       )}
     </>

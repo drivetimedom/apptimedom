@@ -113,6 +113,8 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
   const materiais = courses.filter(c => c.courseType === 'material' || c.subcategoryId?.includes('material'));
   const otherCourses = courses.filter(c => !trilhas.includes(c) && !desafios.includes(c) && !materiais.includes(c));
 
+  // Use user.id as stable dependency to avoid resetting form on every render
+  const userId_stable = user?.id;
   useEffect(() => {
     if (user) {
       setFormData({
@@ -152,7 +154,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     setActiveTab('basic');
     setSelectedTemplateId('none');
     setCustomTaskInput('');
-  }, [user, isOpen]);
+  }, [userId_stable, isOpen]);
 
   const handleSubmit = () => {
     // Validations

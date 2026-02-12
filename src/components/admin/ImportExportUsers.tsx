@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -91,34 +91,38 @@ const ImportExportUsers: React.FC<ImportExportUsersProps> = ({ users, onUsersCha
   };
 
   // Export to Excel
-  const exportExcel = () => {
+  const exportExcel = async () => {
     const students = users.filter(u => u.type !== 'admin');
     
-    const data = students.map(student => ({
-      'Nome': student.name,
-      'Email': student.email,
-      'Tipo': student.type === 'instructor' ? 'Instrutor' : 'Aluno',
-      'Status': student.active ? 'Ativo' : 'Inativo',
-      'Cursos Liberados': getCourseNames(student.unlockedCourses),
-      'Data de Cadastro': new Date(student.createdAt).toLocaleDateString('pt-BR'),
-    }));
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Alunos');
     
-    const ws = XLSX.utils.json_to_sheet(data);
-    
-    // Adjust column widths
-    ws['!cols'] = [
-      { wch: 25 }, // Nome
-      { wch: 30 }, // Email
-      { wch: 12 }, // Tipo
-      { wch: 10 }, // Status
-      { wch: 40 }, // Cursos
-      { wch: 15 }, // Data
+    ws.columns = [
+      { header: 'Nome', key: 'nome', width: 25 },
+      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Tipo', key: 'tipo', width: 12 },
+      { header: 'Status', key: 'status', width: 10 },
+      { header: 'Cursos Liberados', key: 'cursos', width: 40 },
+      { header: 'Data de Cadastro', key: 'data', width: 15 },
     ];
     
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Alunos');
+    students.forEach(student => {
+      ws.addRow({
+        nome: student.name,
+        email: student.email,
+        tipo: student.type === 'instructor' ? 'Instrutor' : 'Aluno',
+        status: student.active ? 'Ativo' : 'Inativo',
+        cursos: getCourseNames(student.unlockedCourses),
+        data: new Date(student.createdAt).toLocaleDateString('pt-BR'),
+      });
+    });
     
-    XLSX.writeFile(wb, `alunos-${new Date().toISOString().split('T')[0]}.xlsx`);
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `alunos-${new Date().toISOString().split('T')[0]}.xlsx`;
+    link.click();
     
     toast({ title: 'Excel exportado com sucesso!' });
   };
@@ -139,25 +143,27 @@ const ImportExportUsers: React.FC<ImportExportUsersProps> = ({ users, onUsersCha
   };
 
   // Download Excel template
-  const downloadExcelTemplate = () => {
-    const data = [
-      { 'Nome': 'João Silva', 'Email': 'joao@email.com', 'Tipo': 'user', 'Status': 'ativo', 'Cursos': '' },
-      { 'Nome': 'Maria Santos', 'Email': 'maria@email.com', 'Tipo': 'instrutor', 'Status': 'ativo', 'Cursos': '' },
+  const downloadExcelTemplate = async () => {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Template');
+    
+    ws.columns = [
+      { header: 'Nome', key: 'nome', width: 20 },
+      { header: 'Email', key: 'email', width: 25 },
+      { header: 'Tipo', key: 'tipo', width: 12 },
+      { header: 'Status', key: 'status', width: 10 },
+      { header: 'Cursos', key: 'cursos', width: 30 },
     ];
     
-    const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [
-      { wch: 20 },
-      { wch: 25 },
-      { wch: 12 },
-      { wch: 10 },
-      { wch: 30 },
-    ];
+    ws.addRow({ nome: 'João Silva', email: 'joao@email.com', tipo: 'user', status: 'ativo', cursos: '' });
+    ws.addRow({ nome: 'Maria Santos', email: 'maria@email.com', tipo: 'instrutor', status: 'ativo', cursos: '' });
     
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Template');
-    
-    XLSX.writeFile(wb, 'template-importacao-alunos.xlsx');
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'template-importacao-alunos.xlsx';
+    link.click();
     
     toast({ title: 'Template Excel baixado!' });
   };
@@ -226,29 +232,34 @@ const ImportExportUsers: React.FC<ImportExportUsersProps> = ({ users, onUsersCha
   };
 
   // Process Excel file
-  const processExcel = (file: File) => {
-    const reader = new FileReader();
+  const processExcel = async (file: File) => {
+    const buffer = await file.arrayBuffer();
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(buffer);
     
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const json = XLSX.utils.sheet_to_json<Record<string, string>>(worksheet);
-      
-      // Normalize keys to lowercase
-      const normalizedData = json.map(row => {
-        const normalized: Record<string, string> = {};
-        Object.keys(row).forEach(key => {
-          normalized[key.toLowerCase()] = String(row[key]);
-        });
-        return normalized;
+    const ws = wb.worksheets[0];
+    if (!ws) {
+      toast({ title: 'Planilha vazia', variant: 'destructive' });
+      return;
+    }
+    
+    const headers: string[] = [];
+    ws.getRow(1).eachCell((cell, colNumber) => {
+      headers[colNumber - 1] = String(cell.value || '').toLowerCase();
+    });
+    
+    const normalizedData: Record<string, string>[] = [];
+    ws.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // skip header
+      const record: Record<string, string> = {};
+      row.eachCell((cell, colNumber) => {
+        const key = headers[colNumber - 1];
+        if (key) record[key] = String(cell.value || '');
       });
-      
-      importStudents(normalizedData);
-    };
+      if (Object.keys(record).length > 0) normalizedData.push(record);
+    });
     
-    reader.readAsArrayBuffer(file);
+    importStudents(normalizedData);
   };
 
   // Import students

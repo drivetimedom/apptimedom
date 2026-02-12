@@ -171,6 +171,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error.message.includes('Email not confirmed')) {
           return { success: false, error: 'Email não confirmado. Verifique sua caixa de entrada.' };
         }
+        if (error.message.includes('password') && (error.message.includes('leaked') || error.message.includes('pwned') || error.message.includes('breached'))) {
+          return { success: false, error: 'Sua senha foi encontrada em vazamentos de dados. Por favor, redefina sua senha.' };
+        }
         return { success: false, error: error.message };
       }
 
@@ -196,6 +199,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         if (error.message.includes('already registered')) {
           return { success: false, error: 'Este email já está cadastrado' };
+        }
+        if (error.message.includes('password') && error.message.includes('leaked') || error.message.includes('pwned') || error.message.includes('breached')) {
+          return { success: false, error: 'Esta senha foi encontrada em vazamentos de dados conhecidos. Por favor, escolha uma senha mais segura.' };
+        }
+        if (error.message.includes('Password should be at least')) {
+          return { success: false, error: 'A senha deve ter no mínimo 8 caracteres, incluindo letras maiúsculas, minúsculas, números e caracteres especiais.' };
         }
         return { success: false, error: error.message };
       }

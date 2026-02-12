@@ -30,7 +30,7 @@ import {
   Wallet
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import ActivationPlanReadOnly from './ActivationPlanReadOnly';
 import { useAllCommercialTracking, CommercialTrackingWeek } from '@/hooks/useCommercialTracking';
 import { useAllTrafficTracking, TrafficTrackingWeek } from '@/hooks/useTrafficTracking';
@@ -221,48 +221,58 @@ const AdminCommercialTracking: React.FC = () => {
   }
 
   // Export function
-  function exportStudentData(student: StudentWithTracking) {
+  async function exportStudentData(student: StudentWithTracking) {
     if (!student.hasData) {
       toast({ title: 'Este aluno não possui dados para exportar', variant: 'destructive' });
       return;
     }
 
+    const wb = new ExcelJS.Workbook();
+    
     // Sheet 1: Weekly data
-    const ws1 = XLSX.utils.json_to_sheet(
-      student.tracking.map(week => ({
-        'Semana': formatDate(week.week_start),
-        'Agendamentos': week.appointments,
-        'Comparecimento': week.attendance,
-        'Fechamentos': week.deals,
-        'Faturamento': Number(week.revenue),
-        'Observações': week.observations || ''
-      }))
-    );
+    const ws1 = wb.addWorksheet('Acompanhamento Semanal');
+    ws1.columns = [
+      { header: 'Semana', key: 'semana', width: 12 },
+      { header: 'Agendamentos', key: 'agendamentos', width: 15 },
+      { header: 'Comparecimento', key: 'comparecimento', width: 15 },
+      { header: 'Fechamentos', key: 'fechamentos', width: 14 },
+      { header: 'Faturamento', key: 'faturamento', width: 14 },
+      { header: 'Observações', key: 'observacoes', width: 30 },
+    ];
+    student.tracking.forEach(week => {
+      ws1.addRow({
+        semana: formatDate(week.week_start),
+        agendamentos: week.appointments,
+        comparecimento: week.attendance,
+        fechamentos: week.deals,
+        faturamento: Number(week.revenue),
+        observacoes: week.observations || '',
+      });
+    });
 
     // Sheet 2: Summary
-    const ws2 = XLSX.utils.aoa_to_sheet([
-      [`RESUMO - ${student.name}`],
-      [''],
-      ['TOTAIS'],
-      ['Total de Agendamentos', student.totals.appointments],
-      ['Total Comparecimento', student.totals.attendance],
-      ['Total Fechamentos', student.totals.deals],
-      ['Faturamento Total', student.totals.revenue],
-      [''],
-      ['TAXAS'],
-      ['Taxa de Comparecimento', `${calculateRate(student.totals.attendance, student.totals.appointments)}%`],
-      ['Taxa de Conversão', `${calculateRate(student.totals.deals, student.totals.attendance)}%`],
-      ['Ticket Médio', student.totals.deals > 0 ? (student.totals.revenue / student.totals.deals).toFixed(2) : '0']
-    ]);
-
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws1, 'Acompanhamento Semanal');
-    XLSX.utils.book_append_sheet(wb, ws2, 'Resumo e Métricas');
+    const ws2 = wb.addWorksheet('Resumo e Métricas');
+    ws2.addRow([`RESUMO - ${student.name}`]);
+    ws2.addRow([]);
+    ws2.addRow(['TOTAIS']);
+    ws2.addRow(['Total de Agendamentos', student.totals.appointments]);
+    ws2.addRow(['Total Comparecimento', student.totals.attendance]);
+    ws2.addRow(['Total Fechamentos', student.totals.deals]);
+    ws2.addRow(['Faturamento Total', student.totals.revenue]);
+    ws2.addRow([]);
+    ws2.addRow(['TAXAS']);
+    ws2.addRow(['Taxa de Comparecimento', `${calculateRate(student.totals.attendance, student.totals.appointments)}%`]);
+    ws2.addRow(['Taxa de Conversão', `${calculateRate(student.totals.deals, student.totals.attendance)}%`]);
+    ws2.addRow(['Ticket Médio', student.totals.deals > 0 ? (student.totals.revenue / student.totals.deals).toFixed(2) : '0']);
 
     // Save
     const fileName = `acompanhamento-${student.name.replace(/\s+/g, '-').toLowerCase()}-${Date.now()}.xlsx`;
-    XLSX.writeFile(wb, fileName);
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
 
     toast({ title: 'Excel exportado com sucesso!' });
   }

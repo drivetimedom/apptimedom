@@ -842,7 +842,24 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          avatar: string | null
+          name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar?: string | null
+          name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar?: string | null
+          name?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_user_role: {

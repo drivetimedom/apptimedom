@@ -74,9 +74,12 @@ const SwipeFilePage: React.FC = () => {
       pdfs: m.pdfs || [],
       createdAt: m.created_at,
       updatedAt: m.updated_at,
-      // Store IDs for updates
       typeId: m.type_id,
       categoryId: m.category_id,
+      parentFolderIds: m.parent_folder_ids || [],
+      featuredFolderIds: m.featured_folder_ids || [],
+      relatedProcessIds: m.related_process_ids || [],
+      featuredProcessIds: m.featured_process_ids || [],
     }));
   }, [materials]);
 
@@ -189,6 +192,10 @@ const SwipeFilePage: React.FC = () => {
       content: updatedProcess.content || null,
       links: updatedProcess.links,
       pdfs: updatedProcess.pdfs,
+      parent_folder_ids: updatedProcess.parentFolderIds || [],
+      featured_folder_ids: updatedProcess.featuredFolderIds || [],
+      related_process_ids: updatedProcess.relatedProcessIds || [],
+      featured_process_ids: updatedProcess.featuredProcessIds || [],
     };
 
     try {

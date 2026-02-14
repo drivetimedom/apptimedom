@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MoreVertical, Edit, Copy, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit, Copy, Trash2, ArrowRightLeft } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Module, Course } from '@/hooks/useCourses';
 import ModuleEditDialog from './ModuleEditDialog';
 import DeleteConfirmDialog from './DeleteConfirmDialog';
+import MoveModuleDialog from './MoveModuleDialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -30,6 +31,7 @@ const ModuleContextMenu: React.FC<ModuleContextMenuProps> = ({
   const queryClient = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleDuplicate = async () => {
@@ -145,6 +147,11 @@ const ModuleContextMenu: React.FC<ModuleContextMenuProps> = ({
             Duplicar módulo
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setMoveOpen(true)}>
+            <ArrowRightLeft className="h-4 w-4 mr-2" />
+            Realocar para outro curso
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => setDeleteOpen(true)}
             className="text-destructive focus:text-destructive"
@@ -174,6 +181,18 @@ const ModuleContextMenu: React.FC<ModuleContextMenuProps> = ({
         description={`O módulo "${module.title}" e todas as suas aulas serão permanentemente removidos. Esta ação não pode ser desfeita.`}
         onConfirm={handleDelete}
         loading={loading}
+      />
+
+      <MoveModuleDialog
+        open={moveOpen}
+        onOpenChange={setMoveOpen}
+        module={module}
+        course={course}
+        onMoved={() => {
+          queryClient.invalidateQueries({ queryKey: ['courses'] });
+          queryClient.invalidateQueries({ queryKey: ['course', course.id] });
+          onUpdated();
+        }}
       />
     </>
   );

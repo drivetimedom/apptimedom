@@ -647,9 +647,13 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          featured_folder_ids: string[] | null
+          featured_process_ids: string[] | null
           id: string
           links: Json | null
+          parent_folder_ids: string[] | null
           pdfs: Json | null
+          related_process_ids: string[] | null
           tags: string[] | null
           title: string
           type_id: string | null
@@ -661,9 +665,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          featured_folder_ids?: string[] | null
+          featured_process_ids?: string[] | null
           id?: string
           links?: Json | null
+          parent_folder_ids?: string[] | null
           pdfs?: Json | null
+          related_process_ids?: string[] | null
           tags?: string[] | null
           title: string
           type_id?: string | null
@@ -675,9 +683,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          featured_folder_ids?: string[] | null
+          featured_process_ids?: string[] | null
           id?: string
           links?: Json | null
+          parent_folder_ids?: string[] | null
           pdfs?: Json | null
+          related_process_ids?: string[] | null
           tags?: string[] | null
           title?: string
           type_id?: string | null

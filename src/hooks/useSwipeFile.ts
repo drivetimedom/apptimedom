@@ -33,6 +33,10 @@ export interface SwipeFileMaterial {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  parent_folder_ids: string[];
+  featured_folder_ids: string[];
+  related_process_ids: string[];
+  featured_process_ids: string[];
   // Joined data
   type?: SwipeFileType | null;
   category?: SwipeFileCategory | null;
@@ -250,7 +254,11 @@ export function useSwipeFileMaterials() {
         links: Array.isArray(item.links) ? item.links : [],
         pdfs: Array.isArray(item.pdfs) ? item.pdfs : [],
         tags: item.tags || [],
-      })) as SwipeFileMaterial[];
+        parent_folder_ids: item.parent_folder_ids || [],
+        featured_folder_ids: item.featured_folder_ids || [],
+        related_process_ids: item.related_process_ids || [],
+        featured_process_ids: item.featured_process_ids || [],
+      })) as unknown as SwipeFileMaterial[];
     },
   });
 }

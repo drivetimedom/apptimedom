@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Edit2, MoreVertical, ExternalLink, Copy, Calendar, User, Tag, FolderOpen } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { X, Edit2, MoreVertical, ExternalLink, Copy, Calendar, User, Tag, FolderOpen, Link as LinkIcon, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useSwipeFileTypes, useSwipeFileCategories } from '@/hooks/useSwipeFile';
+import { useSwipeFileTypes, useSwipeFileCategories, useSwipeFileMaterials } from '@/hooks/useSwipeFile';
+import StarMultiSelect from './StarMultiSelect';
+import { Badge } from '@/components/ui/badge';
 
 export interface SwipeProcess {
   id: string;
@@ -29,6 +31,10 @@ export interface SwipeProcess {
   createdBy?: string;
   typeId?: string | null;
   categoryId?: string | null;
+  parentFolderIds?: string[];
+  featuredFolderIds?: string[];
+  relatedProcessIds?: string[];
+  featuredProcessIds?: string[];
 }
 
 interface SwipeProcessModalProps {
@@ -51,6 +57,65 @@ const fallbackTypes = [
   'Template',
   'Referência'
 ];
+// Sub-component to display featured relationships in view mode
+const FeaturedRelationships: React.FC<{
+  featuredFolderIds: string[];
+  featuredProcessIds: string[];
+  allMaterials: any[];
+}> = ({ featuredFolderIds, featuredProcessIds, allMaterials }) => {
+  const featuredFolders = useMemo(
+    () => allMaterials.filter(m => featuredFolderIds.includes(m.id)),
+    [allMaterials, featuredFolderIds]
+  );
+  const featuredProcesses = useMemo(
+    () => allMaterials.filter(m => featuredProcessIds.includes(m.id)),
+    [allMaterials, featuredProcessIds]
+  );
+
+  if (featuredFolders.length === 0 && featuredProcesses.length === 0) return null;
+
+  return (
+    <div className="mt-6 border-t border-border pt-6 space-y-5">
+      {featuredFolders.length > 0 && (
+        <div>
+          <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
+            <FolderOpen className="w-4 h-4" />
+            Metodologias
+          </Label>
+          <div className="flex flex-wrap gap-2">
+            {featuredFolders.map(folder => (
+              <span
+                key={folder.id}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-accent rounded-lg text-sm text-foreground"
+              >
+                📂 {folder.title}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {featuredProcesses.length > 0 && (
+        <div>
+          <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
+            <LinkIcon className="w-4 h-4" />
+            Processos Relacionados
+          </Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {featuredProcesses.map(related => (
+              <div
+                key={related.id}
+                className="flex items-center gap-3 p-3 border border-border rounded-lg"
+              >
+                <Badge variant="outline">{related.type?.name || 'Processo'}</Badge>
+                <span className="flex-1 text-sm text-foreground truncate">{related.title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
   process,
@@ -67,6 +132,32 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
   // Load dynamic types and categories from Supabase
   const { data: typesData = [] } = useSwipeFileTypes();
   const { data: categoriesData = [] } = useSwipeFileCategories();
+  const { data: allMaterials = [] } = useSwipeFileMaterials();
+
+  // Relationship state
+  const [parentFolderIds, setParentFolderIds] = useState<string[]>([]);
+  const [featuredFolderIds, setFeaturedFolderIds] = useState<string[]>([]);
+  const [relatedProcessIds, setRelatedProcessIds] = useState<string[]>([]);
+  const [featuredProcessIds, setFeaturedProcessIds] = useState<string[]>([]);
+  // Available folders (type = Pasta, excluding current)
+  const availableFolders = useMemo(() => {
+    return allMaterials
+      .filter(m => {
+        const typeName = m.type?.name || '';
+        return typeName === 'Pasta' && m.id !== process?.id;
+      })
+      .map(m => ({ id: m.id, name: m.title, icon: '📂' }));
+  }, [allMaterials, process?.id]);
+
+  // Available processes (type != Pasta, excluding current)
+  const availableProcesses = useMemo(() => {
+    return allMaterials
+      .filter(m => {
+        const typeName = m.type?.name || '';
+        return typeName !== 'Pasta' && m.id !== process?.id;
+      })
+      .map(m => ({ id: m.id, name: m.title, icon: m.type?.icon || '📄' }));
+  }, [allMaterials, process?.id]);
 
   // Get available types (from database or fallback)
   const availableTypes = typesData.length > 0 
@@ -89,6 +180,9 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
     pdfs: '',
   });
 
+  // Determine if current type is "Pasta"
+  const isFolderType = formData.type === 'Pasta';
+
   useEffect(() => {
     if (process && !isCreateMode) {
       setFormData({
@@ -101,6 +195,10 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
         links: process.links.map(l => `${l.label}|${l.url}`).join('\n'),
         pdfs: process.pdfs?.map(p => `${p.label}|${p.url}`).join('\n') || '',
       });
+      setParentFolderIds(process.parentFolderIds || []);
+      setFeaturedFolderIds(process.featuredFolderIds || []);
+      setRelatedProcessIds(process.relatedProcessIds || []);
+      setFeaturedProcessIds(process.featuredProcessIds || []);
       setIsEditing(false);
     } else if (isCreateMode) {
       setFormData({
@@ -113,6 +211,10 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
         links: '',
         pdfs: '',
       });
+      setParentFolderIds([]);
+      setFeaturedFolderIds([]);
+      setRelatedProcessIds([]);
+      setFeaturedProcessIds([]);
       setIsEditing(true);
     }
   }, [process, isCreateMode]);
@@ -158,6 +260,10 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
       createdAt: process?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       createdBy: process?.createdBy,
+      parentFolderIds: isFolderType ? [] : parentFolderIds,
+      featuredFolderIds: isFolderType ? [] : featuredFolderIds,
+      relatedProcessIds: isFolderType ? [] : relatedProcessIds,
+      featuredProcessIds: isFolderType ? [] : featuredProcessIds,
     };
 
     onSave?.(updatedProcess);
@@ -397,6 +503,39 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                   rows={3}
                 />
               </div>
+
+              {/* Relationship Fields (only for non-Pasta types) */}
+              {!isFolderType && (
+                <>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Metodologias (Pastas Pai) — ⭐ = Aparece publicamente
+                    </Label>
+                    <StarMultiSelect
+                      items={availableFolders}
+                      selectedIds={parentFolderIds}
+                      featuredIds={featuredFolderIds}
+                      onSelectionChange={setParentFolderIds}
+                      onFeaturedChange={setFeaturedFolderIds}
+                      emptyMessage="Nenhuma pasta disponível"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Processos Relacionados — ⭐ = Aparece publicamente
+                    </Label>
+                    <StarMultiSelect
+                      items={availableProcesses}
+                      selectedIds={relatedProcessIds}
+                      featuredIds={featuredProcessIds}
+                      onSelectionChange={setRelatedProcessIds}
+                      onFeaturedChange={setFeaturedProcessIds}
+                      emptyMessage="Nenhum processo disponível"
+                    />
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             /* View Mode */
@@ -534,6 +673,15 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                     {renderMarkdown(process.content)}
                   </div>
                 </div>
+              )}
+
+              {/* Featured Relationships */}
+              {process && !isFolderType && (
+                <FeaturedRelationships
+                  featuredFolderIds={process.featuredFolderIds || []}
+                  featuredProcessIds={process.featuredProcessIds || []}
+                  allMaterials={allMaterials}
+                />
               )}
             </>
           )}

@@ -14,8 +14,10 @@ import {
   FolderOpen,
   ArrowDown,
   List,
-  Folder
+  Folder,
+  Folder as FolderIcon
 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import SwipeTable from '@/components/swipefile/SwipeTable';
@@ -137,8 +139,28 @@ const SwipeFilePage: React.FC = () => {
     return typesData.find(t => t.id === selectedType);
   }, [typesData, selectedType]);
 
+  // Separate folders and non-folder processes
+  const folderProcesses = useMemo(() => {
+    return processes.filter(p => p.type === 'Pasta');
+  }, [processes]);
+
+  const nonFolderProcesses = useMemo(() => {
+    return processes.filter(p => p.type !== 'Pasta');
+  }, [processes]);
+
+  // Count processes per folder
+  const folderProcessCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    folderProcesses.forEach(folder => {
+      counts[folder.id] = nonFolderProcesses.filter(p => 
+        (p.parentFolderIds || []).includes(folder.id)
+      ).length;
+    });
+    return counts;
+  }, [folderProcesses, nonFolderProcesses]);
+
   const filteredProcesses = useMemo(() => {
-    return processes.filter(p => {
+    return nonFolderProcesses.filter(p => {
       const matchesSearch = 
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -151,7 +173,17 @@ const SwipeFilePage: React.FC = () => {
       
       return matchesSearch && matchesCategory && matchesType;
     });
-  }, [processes, searchQuery, selectedCategory, selectedType]);
+  }, [nonFolderProcesses, searchQuery, selectedCategory, selectedType]);
+
+  const filteredFolders = useMemo(() => {
+    return folderProcesses.filter(f => {
+      const matchesSearch = !searchQuery || 
+        f.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        f.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'all' || f.categoryId === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [folderProcesses, searchQuery, selectedCategory]);
 
   // Handle category change - reset type when changing category
   const handleCategoryChange = useCallback((categoryId: string) => {
@@ -490,45 +522,101 @@ const SwipeFilePage: React.FC = () => {
 
       {/* Content */}
       <div id="swipefile-content"></div>
-      <div className="container py-6 md:py-8 px-4 md:px-6">
+      <div className="container py-6 md:py-8 px-4 md:px-6 space-y-8">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
           </div>
-        ) : filteredProcesses.length > 0 ? (
-          <SwipeTable
-            processes={filteredProcesses}
-            isAdmin={isAdmin}
-            favorites={favorites}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDuplicate={handleDuplicate}
-            onCopyLink={handleCopyLink}
-            onToggleFavorite={handleToggleFavorite}
-            onDelete={handleDelete}
-          />
         ) : (
-          <div className="text-center py-16">
-            <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-2">
-              Nenhum material encontrado
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              {searchQuery 
-                ? `Nenhum resultado para "${searchQuery}"` 
-                : isAdmin 
-                  ? 'Comece adicionando seu primeiro material' 
-                  : 'Aguarde novos conteúdos'}
-            </p>
-            {isAdmin && !searchQuery && (
-              <Button onClick={handleCreate} className="gap-2">
-                <Plus className="w-4 h-4" />
-                Novo Material
-              </Button>
+          <>
+            {/* Folders Section */}
+            {filteredFolders.length > 0 && (
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <FolderIcon className="w-5 h-5 text-primary" />
+                  <h2 className="text-lg font-bold text-foreground">Metodologias</h2>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredFolders.map(folder => (
+                    <button
+                      key={folder.id}
+                      onClick={() => handleView(folder)}
+                      className="p-5 border border-border rounded-xl hover:bg-accent hover:border-primary transition-all cursor-pointer group text-left"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <FolderOpen className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-foreground truncate">{folder.title}</h3>
+                          {folder.description && (
+                            <p className="text-sm text-muted-foreground truncate mt-0.5">{folder.description}</p>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            📄 {folderProcessCounts[folder.id] || 0} processos
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
-          </div>
+
+            {/* Separator */}
+            {filteredFolders.length > 0 && filteredProcesses.length > 0 && (
+              <Separator />
+            )}
+
+            {/* Processes Section */}
+            {filteredProcesses.length > 0 ? (
+              <div>
+                {filteredFolders.length > 0 && (
+                  <div className="flex items-center gap-2 mb-4">
+                    <FileText className="w-5 h-5 text-primary" />
+                    <h2 className="text-lg font-bold text-foreground">Processos</h2>
+                    <span className="text-sm text-muted-foreground">
+                      {filteredProcesses.length} materiais
+                    </span>
+                  </div>
+                )}
+                <SwipeTable
+                  processes={filteredProcesses}
+                  isAdmin={isAdmin}
+                  favorites={favorites}
+                  onView={handleView}
+                  onEdit={handleEdit}
+                  onDuplicate={handleDuplicate}
+                  onCopyLink={handleCopyLink}
+                  onToggleFavorite={handleToggleFavorite}
+                  onDelete={handleDelete}
+                />
+              </div>
+            ) : filteredFolders.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-10 h-10 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">
+                  Nenhum material encontrado
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  {searchQuery 
+                    ? `Nenhum resultado para "${searchQuery}"` 
+                    : isAdmin 
+                      ? 'Comece adicionando seu primeiro material' 
+                      : 'Aguarde novos conteúdos'}
+                </p>
+                {isAdmin && !searchQuery && (
+                  <Button onClick={handleCreate} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Novo Material
+                  </Button>
+                )}
+              </div>
+            ) : null}
+          </>
         )}
       </div>
 

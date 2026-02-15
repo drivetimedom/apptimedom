@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { X, Edit2, MoreVertical, ExternalLink, Copy, Calendar, User, Tag, FolderOpen, Link as LinkIcon, Star } from 'lucide-react';
+import { X, Edit2, MoreVertical, ExternalLink, Copy, Calendar, User, Tag, FolderOpen, Link as LinkIcon, Star, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -63,6 +63,7 @@ const FeaturedRelationships: React.FC<{
   featuredProcessIds: string[];
   allMaterials: any[];
 }> = ({ featuredFolderIds, featuredProcessIds, allMaterials }) => {
+  const { toast } = useToast();
   const featuredFolders = useMemo(
     () => allMaterials.filter(m => featuredFolderIds.includes(m.id)),
     [allMaterials, featuredFolderIds]
@@ -84,12 +85,13 @@ const FeaturedRelationships: React.FC<{
           </Label>
           <div className="flex flex-wrap gap-2">
             {featuredFolders.map(folder => (
-              <span
+              <button
                 key={folder.id}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-accent rounded-lg text-sm text-foreground"
+                onClick={() => toast({ title: `📂 ${folder.title}` })}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-accent rounded-lg text-sm text-foreground hover:bg-accent/80 transition-colors cursor-pointer"
               >
                 📂 {folder.title}
-              </span>
+              </button>
             ))}
           </div>
         </div>
@@ -102,13 +104,15 @@ const FeaturedRelationships: React.FC<{
           </Label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {featuredProcesses.map(related => (
-              <div
+              <button
                 key={related.id}
-                className="flex items-center gap-3 p-3 border border-border rounded-lg"
+                onClick={() => toast({ title: `${related.type?.name || 'Processo'}: ${related.title}` })}
+                className="flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-accent hover:border-primary transition-all cursor-pointer group text-left"
               >
                 <Badge variant="outline">{related.type?.name || 'Processo'}</Badge>
                 <span className="flex-1 text-sm text-foreground truncate">{related.title}</span>
-              </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
             ))}
           </div>
         </div>
@@ -139,6 +143,11 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
   const [featuredFolderIds, setFeaturedFolderIds] = useState<string[]>([]);
   const [relatedProcessIds, setRelatedProcessIds] = useState<string[]>([]);
   const [featuredProcessIds, setFeaturedProcessIds] = useState<string[]>([]);
+  // Find the "Pasta" type ID for creating new folders
+  const pastaTypeId = useMemo(() => {
+    return typesData.find(t => t.name === 'Pasta')?.id || null;
+  }, [typesData]);
+
   // Available folders (type = Pasta, excluding current)
   const availableFolders = useMemo(() => {
     return allMaterials
@@ -518,6 +527,9 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                       onSelectionChange={setParentFolderIds}
                       onFeaturedChange={setFeaturedFolderIds}
                       emptyMessage="Nenhuma pasta disponível"
+                      allowCreate
+                      createLabel="Pasta"
+                      createTypeId={pastaTypeId}
                     />
                   </div>
 

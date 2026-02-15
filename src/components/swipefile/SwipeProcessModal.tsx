@@ -45,6 +45,7 @@ interface SwipeProcessModalProps {
   isAdmin: boolean;
   categories: string[];
   isCreateMode?: boolean;
+  onOpenProcess?: (process: SwipeProcess) => void;
 }
 
 // Fallback types if none are configured
@@ -62,8 +63,8 @@ const FeaturedRelationships: React.FC<{
   featuredFolderIds: string[];
   featuredProcessIds: string[];
   allMaterials: any[];
-}> = ({ featuredFolderIds, featuredProcessIds, allMaterials }) => {
-  const { toast } = useToast();
+  onOpenProcess?: (processId: string) => void;
+}> = ({ featuredFolderIds, featuredProcessIds, allMaterials, onOpenProcess }) => {
   const featuredFolders = useMemo(
     () => allMaterials.filter(m => featuredFolderIds.includes(m.id)),
     [allMaterials, featuredFolderIds]
@@ -87,7 +88,7 @@ const FeaturedRelationships: React.FC<{
             {featuredFolders.map(folder => (
               <button
                 key={folder.id}
-                onClick={() => toast({ title: `📂 ${folder.title}` })}
+                onClick={() => onOpenProcess?.(folder.id)}
                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-accent rounded-lg text-sm text-foreground hover:bg-accent/80 transition-colors cursor-pointer"
               >
                 📂 {folder.title}
@@ -106,7 +107,7 @@ const FeaturedRelationships: React.FC<{
             {featuredProcesses.map(related => (
               <button
                 key={related.id}
-                onClick={() => toast({ title: `${related.type?.name || 'Processo'}: ${related.title}` })}
+                onClick={() => onOpenProcess?.(related.id)}
                 className="flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-accent hover:border-primary transition-all cursor-pointer group text-left"
               >
                 <Badge variant="outline">{related.type?.name || 'Processo'}</Badge>
@@ -129,6 +130,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
   isAdmin,
   categories,
   isCreateMode = false,
+  onOpenProcess,
 }) => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(isCreateMode);
@@ -693,6 +695,32 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                   featuredFolderIds={process.featuredFolderIds || []}
                   featuredProcessIds={process.featuredProcessIds || []}
                   allMaterials={allMaterials}
+                  onOpenProcess={onOpenProcess ? (id) => {
+                    // Find the material and build a SwipeProcess to open
+                    const mat = allMaterials.find(m => m.id === id);
+                    if (mat) {
+                      const proc: SwipeProcess = {
+                        id: mat.id,
+                        title: mat.title,
+                        description: mat.description || '',
+                        category: mat.category?.name || 'Sem categoria',
+                        type: mat.type?.name || 'Processo',
+                        tags: mat.tags || [],
+                        content: mat.content || '',
+                        links: Array.isArray(mat.links) ? mat.links : [],
+                        pdfs: Array.isArray(mat.pdfs) ? mat.pdfs : [],
+                        createdAt: mat.created_at,
+                        updatedAt: mat.updated_at,
+                        typeId: mat.type_id,
+                        categoryId: mat.category_id,
+                        parentFolderIds: mat.parent_folder_ids || [],
+                        featuredFolderIds: mat.featured_folder_ids || [],
+                        relatedProcessIds: mat.related_process_ids || [],
+                        featuredProcessIds: mat.featured_process_ids || [],
+                      };
+                      onOpenProcess(proc);
+                    }
+                  } : undefined}
                 />
               )}
             </>

@@ -629,6 +629,10 @@ const SwipeFilePage: React.FC = () => {
         isAdmin={isAdmin}
         categories={categories}
         isCreateMode={isCreateMode}
+        onOpenProcess={(proc) => {
+          setSelectedProcess(proc);
+          setIsCreateMode(false);
+        }}
       />
 
       {/* Delete Confirmation */}

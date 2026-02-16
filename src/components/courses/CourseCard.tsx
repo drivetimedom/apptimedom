@@ -44,10 +44,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, instructor, progress, i
             )}
           </div>
 
-          {/* Category Badge */}
-          <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-background/80 backdrop-blur-sm text-xs font-medium text-foreground border border-border">
-            {course.category}
-          </div>
 
           {/* Title on Image */}
           <div className="absolute bottom-4 left-4 right-4">

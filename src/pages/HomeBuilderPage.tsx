@@ -15,7 +15,8 @@ import {
   Minus,
   ArrowLeft,
   Loader2,
-  Layers
+  Layers,
+  PlayCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -49,6 +50,7 @@ const blockTypes: { type: BlockType; icon: React.ElementType; name: string; desc
   { type: 'hero_carousel', icon: Layers, name: '🎠 Carrossel Hero', desc: 'Carrossel com banners do sistema' },
   { type: 'banner', icon: Image, name: '📸 Banner com Link', desc: 'Imagem clicável com redirecionamento' },
   { type: 'courses', icon: BookOpen, name: '🎓 Seção de Cursos', desc: 'Grid de cursos filtrados' },
+  { type: 'continue_watching', icon: PlayCircle, name: '🎬 Continuar Assistindo', desc: 'Última aula assistida pelo usuário' },
   { type: 'text', icon: Type, name: '📝 Texto/Título', desc: 'Título e subtítulo customizados' },
   { type: 'button', icon: Link2, name: '🔗 Botão', desc: 'Botão com link externo/interno' },
   { type: 'video', icon: Video, name: '📺 Vídeo', desc: 'Player embed (Vimeo/YouTube)' },
@@ -60,6 +62,7 @@ const getBlockIcon = (type: BlockType) => {
     case 'hero_carousel': return <Layers className="w-4 h-4" />;
     case 'banner': return <Image className="w-4 h-4" />;
     case 'courses': return <BookOpen className="w-4 h-4" />;
+    case 'continue_watching': return <PlayCircle className="w-4 h-4" />;
     case 'text': return <Type className="w-4 h-4" />;
     case 'button': return <Link2 className="w-4 h-4" />;
     case 'video': return <Video className="w-4 h-4" />;
@@ -73,6 +76,7 @@ const getBlockName = (type: BlockType): string => {
     case 'hero_carousel': return 'Carrossel Hero';
     case 'banner': return 'Banner com Link';
     case 'courses': return 'Seção de Cursos';
+    case 'continue_watching': return 'Continuar Assistindo';
     case 'text': return 'Texto/Título';
     case 'button': return 'Botão';
     case 'video': return 'Vídeo';

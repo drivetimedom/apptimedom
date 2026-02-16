@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Json } from '@/integrations/supabase/types';
 
-export type BlockType = 'banner' | 'courses' | 'text' | 'button' | 'video' | 'divider' | 'hero_carousel';
+export type BlockType = 'banner' | 'courses' | 'text' | 'button' | 'video' | 'divider' | 'hero_carousel' | 'continue_watching';
 
 export interface BannerBlockData {
   imageUrl: string;
@@ -49,7 +49,15 @@ export interface HeroCarouselBlockData {
   autoplayInterval: number;
 }
 
-export type BlockData = BannerBlockData | CoursesBlockData | TextBlockData | ButtonBlockData | VideoBlockData | DividerBlockData | HeroCarouselBlockData;
+export interface ContinueWatchingBlockData {
+  title: string;
+  subtitle: string;
+  showThumbnail: boolean;
+  showProgressBar: boolean;
+  buttonText: string;
+}
+
+export type BlockData = BannerBlockData | CoursesBlockData | TextBlockData | ButtonBlockData | VideoBlockData | DividerBlockData | HeroCarouselBlockData | ContinueWatchingBlockData;
 
 export interface HomeBlock {
   id: string;
@@ -122,6 +130,14 @@ export const getDefaultBlockData = (type: BlockType): BlockData => {
       return {
         height: '500px',
         autoplayInterval: 5000
+      };
+    case 'continue_watching':
+      return {
+        title: 'Continue Assistindo',
+        subtitle: 'Continue de onde você parou',
+        showThumbnail: true,
+        showProgressBar: true,
+        buttonText: 'Continuar',
       };
     default:
       return {} as BlockData;

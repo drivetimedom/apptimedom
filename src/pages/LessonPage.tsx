@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourse } from '@/hooks/useCourses';
@@ -38,6 +38,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useVimeoTracking } from '@/hooks/useVimeoTracking';
 
 const LessonPage: React.FC = () => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
@@ -46,6 +47,7 @@ const LessonPage: React.FC = () => {
   const { toast } = useToast();
   
   const [newComment, setNewComment] = useState('');
+  const vimeoIframeRef = useRef<HTMLIFrameElement>(null);
 
   // Backend data (source of truth)
   const {
@@ -112,6 +114,19 @@ const LessonPage: React.FC = () => {
       currentLessonFound: !!currentLesson,
     });
   }, [courseId, lessonId, course, lessonsFromDb.length, allLessons, currentLesson]);
+
+  // Vimeo tracking
+  useVimeoTracking({
+    vimeoId: currentLesson?.vimeoId,
+    lessonId: lessonId!,
+    userId: user?.id,
+    iframeRef: vimeoIframeRef,
+    onCompleted: () => {
+      if (!isCompleted) {
+        handleMarkComplete();
+      }
+    },
+  });
 
   if (courseLoading || lessonsLoading) {
     return (
@@ -266,7 +281,8 @@ const LessonPage: React.FC = () => {
             <div className="relative rounded-xl overflow-hidden bg-black shadow-elegant">
               <div className="relative" style={{ paddingBottom: '56.25%' }}>
                 <iframe
-                  src={`https://player.vimeo.com/video/${currentLesson.vimeoId}?byline=0&portrait=0&title=0`}
+                  ref={vimeoIframeRef}
+                  src={`https://player.vimeo.com/video/${currentLesson.vimeoId}?byline=0&portrait=0&title=0&api=1`}
                   className="absolute top-0 left-0 w-full h-full"
                   frameBorder="0"
                   allow="autoplay; fullscreen; picture-in-picture"

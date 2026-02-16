@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, MoreHorizontal, Edit, Copy, Trash2, Map, Search, GripVertical, Video, Loader2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Copy, Trash2, Map, Search, GripVertical, Video, Loader2, FileText } from 'lucide-react';
 import { 
   useHofMaps, 
   useCreateHofMap, 
@@ -56,6 +56,8 @@ const AdminMapsManager: React.FC = () => {
     description: '',
     icon: '🗺️',
     videos: [] as MapVideo[],
+    support_material_url: '',
+    support_material_title: '',
   });
 
   const filteredMaps = maps.filter(m => 
@@ -70,6 +72,8 @@ const AdminMapsManager: React.FC = () => {
         description: map.description || '',
         icon: map.icon,
         videos: [...map.videos],
+        support_material_url: map.support_material_url || '',
+        support_material_title: map.support_material_title || '',
       });
     } else {
       setEditingMap(null);
@@ -78,6 +82,8 @@ const AdminMapsManager: React.FC = () => {
         description: '',
         icon: '🗺️',
         videos: [],
+        support_material_url: '',
+        support_material_title: '',
       });
     }
     setIsModalOpen(true);
@@ -147,6 +153,8 @@ const AdminMapsManager: React.FC = () => {
         icon: formData.icon,
         videos: formData.videos,
         total_duration: totalDuration,
+        support_material_url: formData.support_material_url.trim(),
+        support_material_title: formData.support_material_title.trim(),
       });
     } else {
       await createMap.mutateAsync({
@@ -155,6 +163,8 @@ const AdminMapsManager: React.FC = () => {
         icon: formData.icon,
         videos: formData.videos,
         total_duration: totalDuration,
+        support_material_url: formData.support_material_url.trim(),
+        support_material_title: formData.support_material_title.trim(),
       });
     }
 
@@ -168,6 +178,8 @@ const AdminMapsManager: React.FC = () => {
       icon: map.icon,
       videos: map.videos.map(v => ({ ...v, id: generateId() })),
       total_duration: map.total_duration,
+      support_material_url: map.support_material_url || '',
+      support_material_title: map.support_material_title || '',
     });
   };
 
@@ -336,6 +348,34 @@ const AdminMapsManager: React.FC = () => {
                       {icon}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Support Material */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  📎 Material de Apoio (opcional)
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Título do material</Label>
+                    <Input
+                      value={formData.support_material_title}
+                      onChange={(e) => setFormData({ ...formData, support_material_title: e.target.value })}
+                      placeholder="Ex: PDF de Exercícios"
+                      className="bg-input border-border"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Link (URL)</Label>
+                    <Input
+                      value={formData.support_material_url}
+                      onChange={(e) => setFormData({ ...formData, support_material_url: e.target.value })}
+                      placeholder="https://drive.google.com/..."
+                      className="bg-input border-border"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -596,7 +596,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                     {/* Course Lists by Type */}
                     <div className="bg-background/50 rounded-lg p-4 max-h-[400px] overflow-y-auto">
                       {renderCourseCheckboxes(trilhas, 'Trilhas de Implementação', '🎯')}
-                      {renderCourseCheckboxes(desafios, 'Desafios', '🏆')}
+                      {renderCourseCheckboxes(desafios, 'Protocolos', '🎯')}
                       {renderCourseCheckboxes(materiais, 'Material Extra', '💾')}
                       {renderCourseCheckboxes(otherCourses, 'Outros Cursos', '📖')}
                     </div>
@@ -664,14 +664,14 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                 {/* Visible Challenges */}
                 <div className="space-y-3">
                   <div>
-                    <Label>🏆 Desafios Visíveis no Plano de Ação</Label>
+                    <Label>🎯 Protocolos Visíveis no Plano de Ação</Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Selecione quais desafios aparecerão no "Plano de Ação" do aluno
+                      Selecione quais protocolos aparecerão no "Plano de Ação" do aluno
                     </p>
                   </div>
                   {hofChallenges.length === 0 && !challengesLoading ? (
                     <p className="text-sm text-muted-foreground italic p-4 bg-muted/10 rounded-lg text-center">
-                      Nenhum desafio cadastrado. Crie desafios na aba "Desafios" do painel admin.
+                      Nenhum protocolo cadastrado. Crie protocolos na aba "Protocolos" do painel admin.
                     </p>
                   ) : (
                     <div className="space-y-2">

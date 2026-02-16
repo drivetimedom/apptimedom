@@ -147,7 +147,7 @@ const ActionPlan: React.FC = () => {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground text-center py-6">
-            Nenhum mapa ou desafio prescrito ainda.<br />
+            Nenhum mapa ou protocolo prescrito ainda.<br />
             Entre em contato com o administrador.
           </p>
         </CardContent>
@@ -217,7 +217,7 @@ const ActionPlan: React.FC = () => {
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
                 <ListChecks className="w-4 h-4 text-primary" />
-                Desafios
+                Protocolos
               </h4>
 
               <div className="space-y-2">
@@ -267,7 +267,7 @@ const ActionPlan: React.FC = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-muted-foreground">
-                            Desafio {index + 1}
+                            Protocolo {index + 1}
                           </span>
                           {isLocked && (
                             <span className="text-xs text-muted-foreground">(bloqueado)</span>

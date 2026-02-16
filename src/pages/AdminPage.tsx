@@ -719,7 +719,7 @@ const AdminPage: React.FC = () => {
             </TabsTrigger>
             <TabsTrigger value="challenges" className="data-[state=active]:bg-accent gap-2">
               <Trophy className="w-4 h-4" />
-              Desafios
+              Protocolos
             </TabsTrigger>
             <TabsTrigger value="swipefile" className="data-[state=active]:bg-accent gap-2">
               <FileText className="w-4 h-4" />

@@ -287,14 +287,14 @@ const AdminMapsManager: React.FC = () => {
 
       {/* Create/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-card border-border max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="bg-card border-border max-w-2xl h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-foreground">
               {editingMap ? 'Editar Mapa' : 'Criar Mapa'}
             </DialogTitle>
           </DialogHeader>
 
-          <ScrollArea className="flex-1 max-h-[60vh] pr-4">
+          <ScrollArea className="flex-1 pr-4">
             <div className="space-y-6">
               {/* Name */}
               <div className="space-y-2">

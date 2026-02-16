@@ -167,6 +167,41 @@ export type Database = {
         }
         Relationships: []
       }
+      certificates: {
+        Row: {
+          certificate_number: string | null
+          certificate_url: string | null
+          course_id: string | null
+          id: string
+          issued_at: string | null
+          user_id: string
+        }
+        Insert: {
+          certificate_number?: string | null
+          certificate_url?: string | null
+          course_id?: string | null
+          id?: string
+          issued_at?: string | null
+          user_id: string
+        }
+        Update: {
+          certificate_number?: string | null
+          certificate_url?: string | null
+          course_id?: string | null
+          id?: string
+          issued_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_progress: {
         Row: {
           challenge_id: string
@@ -278,6 +313,76 @@ export type Database = {
           week_start?: string
         }
         Relationships: []
+      }
+      course_completions: {
+        Row: {
+          completed_at: string | null
+          course_id: string | null
+          final_score: number | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id?: string | null
+          final_score?: number | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string | null
+          final_score?: number | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_completions_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      course_enrollments: {
+        Row: {
+          completed_at: string | null
+          course_id: string | null
+          enrolled_at: string | null
+          id: string
+          last_accessed_at: string | null
+          progress_percentage: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          course_id?: string | null
+          enrolled_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          progress_percentage?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          course_id?: string | null
+          enrolled_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          progress_percentage?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_enrollments_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       courses: {
         Row: {
@@ -482,6 +587,44 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      lesson_watch_progress: {
+        Row: {
+          completed: boolean | null
+          id: string
+          last_watched_at: string | null
+          lesson_id: string | null
+          total_duration: number | null
+          user_id: string
+          watched_seconds: number | null
+        }
+        Insert: {
+          completed?: boolean | null
+          id?: string
+          last_watched_at?: string | null
+          lesson_id?: string | null
+          total_duration?: number | null
+          user_id: string
+          watched_seconds?: number | null
+        }
+        Update: {
+          completed?: boolean | null
+          id?: string
+          last_watched_at?: string | null
+          lesson_id?: string | null
+          total_duration?: number | null
+          user_id?: string
+          watched_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_watch_progress_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lessons: {
         Row: {
@@ -778,6 +921,30 @@ export type Database = {
           updated_at?: string
           user_id?: string
           week_start?: string
+        }
+        Relationships: []
+      }
+      user_activity_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }

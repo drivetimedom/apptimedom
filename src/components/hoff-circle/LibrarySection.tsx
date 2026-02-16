@@ -7,7 +7,7 @@ import VerticalCourseCard from '@/components/courses/VerticalCourseCard';
 import { 
   BookOpen, 
   Library,
-  FileText
+  Package
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -74,8 +74,8 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
               onClick={() => navigate('/swipe-file')}
               className="px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 bg-muted text-muted-foreground hover:bg-muted/80"
             >
-              <FileText className="w-4 h-4" />
-              💾 Swipe File
+              <Package className="w-4 h-4" />
+              Swipe File
             </button>
           </div>
 

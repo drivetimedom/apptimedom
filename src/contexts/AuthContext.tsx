@@ -14,6 +14,7 @@ export interface Profile {
   visible_challenges: string[];
   activation_plan: any[];
   unlocked_courses: string[];
+  blocked: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -56,7 +57,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
-      return profileData as Profile | null;
+      if (profileData) {
+        return {
+          ...profileData,
+          blocked: (profileData as any).blocked || false,
+        } as Profile;
+      }
+      return null;
     } catch (error) {
       console.error('Error in fetchProfile:', error);
       return null;

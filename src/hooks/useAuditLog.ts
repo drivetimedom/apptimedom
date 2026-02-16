@@ -21,6 +21,8 @@ export type AuditAction =
   | 'user_created'
   | 'user_updated'
   | 'user_deleted'
+  | 'user_blocked'
+  | 'user_unblocked'
   | 'user_role_changed'
   | 'password_reset'
   | 'course_created'
@@ -130,6 +132,8 @@ export function getActionLabel(action: string): string {
     user_created: 'Usuário criado',
     user_updated: 'Usuário atualizado',
     user_deleted: 'Usuário excluído',
+    user_blocked: 'Usuário bloqueado',
+    user_unblocked: 'Usuário desbloqueado',
     user_role_changed: 'Permissão alterada',
     password_reset: 'Senha redefinida',
     course_created: 'Curso criado',

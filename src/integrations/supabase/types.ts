@@ -684,6 +684,7 @@ export type Database = {
           activation_plan: Json | null
           avatar: string | null
           bio: string | null
+          blocked: boolean
           created_at: string
           email: string | null
           id: string
@@ -700,6 +701,7 @@ export type Database = {
           activation_plan?: Json | null
           avatar?: string | null
           bio?: string | null
+          blocked?: boolean
           created_at?: string
           email?: string | null
           id?: string
@@ -716,6 +718,7 @@ export type Database = {
           activation_plan?: Json | null
           avatar?: string | null
           bio?: string | null
+          blocked?: boolean
           created_at?: string
           email?: string | null
           id?: string

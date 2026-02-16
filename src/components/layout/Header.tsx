@@ -165,7 +165,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
                 </div>
               </div>
               <DropdownMenuSeparator className="bg-border" />
-              <DropdownMenuItem className="cursor-pointer focus:bg-accent">
+              <DropdownMenuItem className="cursor-pointer focus:bg-accent" onClick={() => navigate('/perfil')}>
                 <User className="mr-2 h-4 w-4" />
                 <span>Meu Perfil</span>
               </DropdownMenuItem>

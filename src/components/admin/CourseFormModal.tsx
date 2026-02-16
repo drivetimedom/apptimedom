@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Course, Category, Lesson, Module, getFromStorage, setToStorage, STORAGE_KEYS, generateId } from '@/lib/storage';
+import { useAutosave } from '@/hooks/useAutosave';
+import { Save, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Trash2, Edit, ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface CourseFormModalProps {
   isOpen: boolean;
@@ -61,6 +64,7 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
 }) => {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('basic');
+  const [showDraftBanner, setShowDraftBanner] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -110,6 +114,60 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
   // Editing module modal
   const [editingModule, setEditingModule] = useState<ModuleFormData | null>(null);
   const [moduleForm, setModuleForm] = useState({ title: '', description: '' });
+
+  // Autosave draft key
+  const autosaveKey = course ? `course-draft-${course.id}` : 'course-draft-new';
+  
+  const autosaveData = useMemo(() => ({
+    formData,
+    modules: modules.map(m => ({ ...m, expanded: undefined })),
+    sequenceConfig,
+    roadmapConfig,
+    activeTab,
+  }), [formData, modules, sequenceConfig, roadmapConfig, activeTab]);
+
+  const { lastSavedAt, loadDraft, clearDraft, hasDraft } = useAutosave(autosaveData, {
+    key: autosaveKey,
+    enabled: isOpen && formData.title.trim().length > 0,
+  });
+
+  // Check for existing draft on open
+  useEffect(() => {
+    if (isOpen) {
+      const draft = loadDraft();
+      if (draft) {
+        const savedDate = new Date(draft.savedAt);
+        const minutesAgo = (Date.now() - savedDate.getTime()) / 1000 / 60;
+        // Only show banner if draft is less than 24 hours old
+        if (minutesAgo < 1440) {
+          setShowDraftBanner(true);
+        } else {
+          clearDraft();
+        }
+      } else {
+        setShowDraftBanner(false);
+      }
+    }
+  }, [isOpen]);
+
+  const restoreDraft = () => {
+    const draft = loadDraft();
+    if (draft?.data) {
+      const d = draft.data as any;
+      if (d.formData) setFormData(d.formData);
+      if (d.modules) setModules(d.modules.map((m: any) => ({ ...m, expanded: true })));
+      if (d.sequenceConfig) setSequenceConfig(d.sequenceConfig);
+      if (d.roadmapConfig) setRoadmapConfig(d.roadmapConfig);
+      if (d.activeTab) setActiveTab(d.activeTab);
+      toast({ title: '✅ Rascunho restaurado!' });
+    }
+    setShowDraftBanner(false);
+  };
+
+  const dismissDraft = () => {
+    clearDraft();
+    setShowDraftBanner(false);
+  };
 
   useEffect(() => {
     console.log('[CourseFormModal] useEffect triggered', { 
@@ -296,6 +354,7 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
       }))
     );
 
+    clearDraft();
     onSave(courseData, lessonsData);
   };
 
@@ -439,10 +498,33 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="bg-card border-border max-w-4xl h-[85vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-foreground text-xl">
+            <DialogTitle className="text-foreground text-xl flex items-center gap-3">
               {course ? 'Editar Curso' : 'Novo Curso'}
+              {lastSavedAt && (
+                <span className="text-xs font-normal text-muted-foreground flex items-center gap-1">
+                  <Save className="w-3 h-3" />
+                  Rascunho salvo às {lastSavedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
             </DialogTitle>
           </DialogHeader>
+
+          {showDraftBanner && (
+            <Alert className="bg-accent/50 border-accent flex-shrink-0">
+              <RotateCcw className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between w-full">
+                <span className="text-sm">Você tem um rascunho não salvo. Deseja restaurá-lo?</span>
+                <div className="flex gap-2 ml-4">
+                  <Button size="sm" variant="outline" onClick={dismissDraft}>
+                    Descartar
+                  </Button>
+                  <Button size="sm" onClick={restoreDraft}>
+                    Restaurar
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
             <TabsList className="bg-secondary border border-border w-full justify-start flex-shrink-0">

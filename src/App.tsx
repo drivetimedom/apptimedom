@@ -21,6 +21,7 @@ import HoffCirclePage from "@/pages/HoffCirclePage";
 import FinancialSystemPage from "@/pages/FinancialSystemPage";
 import HomeBuilderPage from "@/pages/HomeBuilderPage";
 import EmailPreviewPage from "@/pages/EmailPreviewPage";
+import ProfilePage from "@/pages/ProfilePage";
 import NotFound from "@/pages/NotFound";
 
 // Initialize seed data
@@ -48,6 +49,8 @@ const App = () => (
               <Route path="/swipe-file" element={<SwipeFilePage />} />
               <Route path="/hoff-circle" element={<HoffCirclePage />} />
               <Route path="/financial-system" element={<FinancialSystemPage />} />
+              <Route path="/perfil" element={<ProfilePage />} />
+              <Route path="/meu-perfil" element={<ProfilePage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/admin/home-builder" element={<HomeBuilderPage />} />
               <Route path="/admin/email-preview" element={<EmailPreviewPage />} />

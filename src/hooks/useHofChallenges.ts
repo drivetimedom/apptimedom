@@ -18,6 +18,8 @@ export interface HofChallenge {
   icon: string;
   videos: ChallengeVideo[];
   total_duration: number;
+  support_material_url: string | null;
+  support_material_title: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +30,8 @@ export interface HofChallengeInput {
   icon: string;
   videos: ChallengeVideo[];
   total_duration: number;
+  support_material_url?: string;
+  support_material_title?: string;
 }
 
 // Fetch all challenges
@@ -61,6 +65,8 @@ export function useCreateHofChallenge() {
           icon: input.icon,
           videos: input.videos as any,
           total_duration: input.total_duration,
+          support_material_url: input.support_material_url || null,
+          support_material_title: input.support_material_title || null,
         })
         .select()
         .single();
@@ -70,11 +76,11 @@ export function useCreateHofChallenge() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hof-challenges'] });
-      toast({ title: 'Desafio criado!' });
+      toast({ title: 'Protocolo criado!' });
     },
     onError: (error: any) => {
       console.error('[useCreateHofChallenge] error', error);
-      toast({ title: 'Erro ao criar desafio', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erro ao criar protocolo', description: error.message, variant: 'destructive' });
     },
   });
 }
@@ -94,6 +100,8 @@ export function useUpdateHofChallenge() {
           icon: input.icon,
           videos: input.videos as any,
           total_duration: input.total_duration,
+          support_material_url: input.support_material_url || null,
+          support_material_title: input.support_material_title || null,
         })
         .eq('id', id)
         .select()
@@ -104,11 +112,11 @@ export function useUpdateHofChallenge() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hof-challenges'] });
-      toast({ title: 'Desafio atualizado!' });
+      toast({ title: 'Protocolo atualizado!' });
     },
     onError: (error: any) => {
       console.error('[useUpdateHofChallenge] error', error);
-      toast({ title: 'Erro ao atualizar desafio', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erro ao atualizar protocolo', description: error.message, variant: 'destructive' });
     },
   });
 }
@@ -129,11 +137,11 @@ export function useDeleteHofChallenge() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hof-challenges'] });
-      toast({ title: 'Desafio excluído' });
+      toast({ title: 'Protocolo excluído' });
     },
     onError: (error: any) => {
       console.error('[useDeleteHofChallenge] error', error);
-      toast({ title: 'Erro ao excluir desafio', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erro ao excluir protocolo', description: error.message, variant: 'destructive' });
     },
   });
 }

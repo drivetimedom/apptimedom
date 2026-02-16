@@ -18,6 +18,8 @@ export interface HofMap {
   icon: string;
   videos: MapVideo[];
   total_duration: number;
+  support_material_url: string | null;
+  support_material_title: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +30,8 @@ export interface HofMapInput {
   icon: string;
   videos: MapVideo[];
   total_duration: number;
+  support_material_url?: string;
+  support_material_title?: string;
 }
 
 // Fetch all maps
@@ -61,6 +65,8 @@ export function useCreateHofMap() {
           icon: input.icon,
           videos: input.videos as any,
           total_duration: input.total_duration,
+          support_material_url: input.support_material_url || null,
+          support_material_title: input.support_material_title || null,
         })
         .select()
         .single();
@@ -94,6 +100,8 @@ export function useUpdateHofMap() {
           icon: input.icon,
           videos: input.videos as any,
           total_duration: input.total_duration,
+          support_material_url: input.support_material_url || null,
+          support_material_title: input.support_material_title || null,
         })
         .eq('id', id)
         .select()

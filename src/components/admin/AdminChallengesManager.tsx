@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, MoreHorizontal, Edit, Copy, Trash2, Trophy, Search, GripVertical, Video, Loader2 } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Copy, Trash2, Trophy, Search, GripVertical, Video, Loader2, FileText } from 'lucide-react';
 import { 
   useHofChallenges, 
   useCreateHofChallenge, 
@@ -56,6 +56,8 @@ const AdminChallengesManager: React.FC = () => {
     description: '',
     icon: '🎯',
     videos: [] as ChallengeVideo[],
+    support_material_url: '',
+    support_material_title: '',
   });
 
   const filteredChallenges = challenges.filter(c => 
@@ -70,6 +72,8 @@ const AdminChallengesManager: React.FC = () => {
         description: challenge.description || '',
         icon: challenge.icon,
         videos: [...challenge.videos],
+        support_material_url: challenge.support_material_url || '',
+        support_material_title: challenge.support_material_title || '',
       });
     } else {
       setEditingChallenge(null);
@@ -78,6 +82,8 @@ const AdminChallengesManager: React.FC = () => {
         description: '',
         icon: '🎯',
         videos: [],
+        support_material_url: '',
+        support_material_title: '',
       });
     }
     setIsModalOpen(true);
@@ -147,6 +153,8 @@ const AdminChallengesManager: React.FC = () => {
         icon: formData.icon,
         videos: formData.videos,
         total_duration: totalDuration,
+        support_material_url: formData.support_material_url.trim(),
+        support_material_title: formData.support_material_title.trim(),
       });
     } else {
       await createChallenge.mutateAsync({
@@ -155,6 +163,8 @@ const AdminChallengesManager: React.FC = () => {
         icon: formData.icon,
         videos: formData.videos,
         total_duration: totalDuration,
+        support_material_url: formData.support_material_url.trim(),
+        support_material_title: formData.support_material_title.trim(),
       });
     }
 
@@ -168,6 +178,8 @@ const AdminChallengesManager: React.FC = () => {
       icon: challenge.icon,
       videos: challenge.videos.map(v => ({ ...v, id: generateId() })),
       total_duration: challenge.total_duration,
+      support_material_url: challenge.support_material_url || '',
+      support_material_title: challenge.support_material_title || '',
     });
   };
 
@@ -331,6 +343,34 @@ const AdminChallengesManager: React.FC = () => {
                       {icon}
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Support Material */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-warning" />
+                  📎 Material de Apoio (opcional)
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Título do material</Label>
+                    <Input
+                      value={formData.support_material_title}
+                      onChange={(e) => setFormData({ ...formData, support_material_title: e.target.value })}
+                      placeholder="Ex: PDF de Exercícios"
+                      className="bg-input border-border"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Link (URL)</Label>
+                    <Input
+                      value={formData.support_material_url}
+                      onChange={(e) => setFormData({ ...formData, support_material_url: e.target.value })}
+                      placeholder="https://drive.google.com/..."
+                      className="bg-input border-border"
+                    />
+                  </div>
                 </div>
               </div>
 

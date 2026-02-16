@@ -502,6 +502,8 @@ export type Database = {
           icon: string
           id: string
           name: string
+          support_material_title: string | null
+          support_material_url: string | null
           total_duration: number
           updated_at: string
           videos: Json
@@ -512,6 +514,8 @@ export type Database = {
           icon?: string
           id?: string
           name: string
+          support_material_title?: string | null
+          support_material_url?: string | null
           total_duration?: number
           updated_at?: string
           videos?: Json
@@ -522,6 +526,8 @@ export type Database = {
           icon?: string
           id?: string
           name?: string
+          support_material_title?: string | null
+          support_material_url?: string | null
           total_duration?: number
           updated_at?: string
           videos?: Json
@@ -535,6 +541,8 @@ export type Database = {
           icon: string
           id: string
           name: string
+          support_material_title: string | null
+          support_material_url: string | null
           total_duration: number
           updated_at: string
           videos: Json
@@ -545,6 +553,8 @@ export type Database = {
           icon?: string
           id?: string
           name: string
+          support_material_title?: string | null
+          support_material_url?: string | null
           total_duration?: number
           updated_at?: string
           videos?: Json
@@ -555,6 +565,8 @@ export type Database = {
           icon?: string
           id?: string
           name?: string
+          support_material_title?: string | null
+          support_material_url?: string | null
           total_duration?: number
           updated_at?: string
           videos?: Json

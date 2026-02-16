@@ -21,11 +21,16 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
   // Fetch courses from Supabase
   const { data: allCourses = [], isLoading } = useCourses();
   
-  // Get courses for this category
+  // Get courses for this category - check both categoryIds array and legacy category field
   const categoryCourses = allCourses.filter(
-    course => 
-      (course.categoryIds?.includes(categoryId) || course.category === categoryId) && 
-      course.status === 'published'
+    course => {
+      const matchesCategory = 
+        course.categoryIds?.includes(categoryId) || 
+        course.category === categoryId ||
+        course.category === 'cat-hoff-circle' ||
+        course.category === 'cat-hof-circle';
+      return matchesCategory && course.status === 'published';
+    }
   );
 
   // Sort by sequence position

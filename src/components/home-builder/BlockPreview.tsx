@@ -7,7 +7,8 @@ import {
   ButtonBlockData, 
   VideoBlockData, 
   DividerBlockData,
-  HeroCarouselBlockData
+  HeroCarouselBlockData,
+  ContinueWatchingBlockData,
 } from '@/hooks/useHomeBlocks';
 
 interface BlockPreviewProps {
@@ -118,6 +119,28 @@ const BlockPreview: React.FC<BlockPreviewProps> = ({ block }) => {
             Espaçamento: {data.spacing}
           </span>
           <div className="w-full h-px bg-border" />
+        </div>
+      );
+    }
+
+    case 'continue_watching': {
+      const data = block.data as ContinueWatchingBlockData;
+      return (
+        <div className="space-y-2">
+          <p className="font-medium text-foreground">{data.title || 'Continue Assistindo'}</p>
+          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+            <div className="w-16 h-10 bg-primary/20 rounded flex items-center justify-center text-xs">▶</div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground">Exemplo de Aula</p>
+              <p className="text-xs text-muted-foreground">Módulo 1 • 52% concluído</p>
+              {data.showProgressBar && (
+                <div className="h-1 bg-muted rounded mt-1 w-full">
+                  <div className="h-full bg-success rounded" style={{ width: '52%' }} />
+                </div>
+              )}
+            </div>
+            <span className="text-xs font-medium text-primary">{data.buttonText || 'Continuar'}</span>
+          </div>
         </div>
       );
     }

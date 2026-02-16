@@ -27,9 +27,10 @@ import {
   VideoBlockData,
   DividerBlockData,
   HeroCarouselBlockData,
+  ContinueWatchingBlockData,
   BlockType
 } from '@/hooks/useHomeBlocks';
-import { Image, BookOpen, Type, Link2, Video, Minus, Layers } from 'lucide-react';
+import { Image, BookOpen, Type, Link2, Video, Minus, Layers, PlayCircle } from 'lucide-react';
 
 interface EditBlockModalProps {
   block: HomeBlock;
@@ -42,6 +43,7 @@ const getBlockName = (type: BlockType): string => {
     case 'hero_carousel': return 'Carrossel Hero';
     case 'banner': return 'Banner com Link';
     case 'courses': return 'Seção de Cursos';
+    case 'continue_watching': return 'Continuar Assistindo';
     case 'text': return 'Texto/Título';
     case 'button': return 'Botão';
     case 'video': return 'Vídeo';
@@ -55,6 +57,7 @@ const getBlockIcon = (type: BlockType) => {
     case 'hero_carousel': return <Layers className="w-5 h-5" />;
     case 'banner': return <Image className="w-5 h-5" />;
     case 'courses': return <BookOpen className="w-5 h-5" />;
+    case 'continue_watching': return <PlayCircle className="w-5 h-5" />;
     case 'text': return <Type className="w-5 h-5" />;
     case 'button': return <Link2 className="w-5 h-5" />;
     case 'video': return <Video className="w-5 h-5" />;
@@ -506,11 +509,64 @@ const EditBlockModal: React.FC<EditBlockModalProps> = ({ block, onSave, onCancel
     );
   };
 
+  const renderContinueWatchingForm = () => {
+    const data = formData as ContinueWatchingBlockData;
+    return (
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>Título</Label>
+          <Input
+            value={data.title}
+            onChange={(e) => setFormData({ ...data, title: e.target.value })}
+            placeholder="Continue Assistindo"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Subtítulo (opcional)</Label>
+          <Input
+            value={data.subtitle}
+            onChange={(e) => setFormData({ ...data, subtitle: e.target.value })}
+            placeholder="Continue de onde você parou"
+          />
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="showThumbnail"
+            checked={data.showThumbnail}
+            onCheckedChange={(checked) => setFormData({ ...data, showThumbnail: !!checked })}
+          />
+          <Label htmlFor="showThumbnail">Mostrar thumbnail do curso</Label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="showProgressBar"
+            checked={data.showProgressBar}
+            onCheckedChange={(checked) => setFormData({ ...data, showProgressBar: !!checked })}
+          />
+          <Label htmlFor="showProgressBar">Mostrar barra de progresso</Label>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Texto do Botão</Label>
+          <Input
+            value={data.buttonText}
+            onChange={(e) => setFormData({ ...data, buttonText: e.target.value })}
+            placeholder="Continuar"
+          />
+        </div>
+      </div>
+    );
+  };
+
   const renderForm = () => {
     switch (block.type) {
       case 'hero_carousel': return renderHeroCarouselForm();
       case 'banner': return renderBannerForm();
       case 'courses': return renderCoursesForm();
+      case 'continue_watching': return renderContinueWatchingForm();
       case 'text': return renderTextForm();
       case 'button': return renderButtonForm();
       case 'video': return renderVideoForm();

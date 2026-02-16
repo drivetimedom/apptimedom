@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Loader2 } from 'lucide-react';
 import {
   HomeBlock,
   BannerBlockData,
@@ -11,13 +11,16 @@ import {
   ButtonBlockData,
   VideoBlockData,
   DividerBlockData,
-  HeroCarouselBlockData
+  HeroCarouselBlockData,
+  ContinueWatchingBlockData,
 } from '@/hooks/useHomeBlocks';
 import VerticalCourseCard from '@/components/courses/VerticalCourseCard';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBanners } from '@/hooks/useBanners';
 import HeroBannerCarousel from '@/components/home/HeroBannerCarousel';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 interface BlockRendererProps {
   block: HomeBlock;
@@ -303,6 +306,129 @@ const DividerBlock: React.FC<{ data: DividerBlockData }> = ({ data }) => {
   );
 };
 
+// Continue Watching Block Component
+const ContinueWatchingBlock: React.FC<{ data: ContinueWatchingBlockData }> = ({ data }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const { data: lastLesson, isLoading } = useQuery({
+    queryKey: ['continue-watching', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+
+      const { data: watchData } = await supabase
+        .from('lesson_watch_progress')
+        .select('*, lesson_id, watched_seconds, total_duration')
+        .eq('user_id', user.id)
+        .eq('completed', false)
+        .order('last_watched_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!watchData) return null;
+
+      // Get lesson details
+      const { data: lesson } = await supabase
+        .from('lessons')
+        .select('id, title, module_id, course_id, vimeo_id')
+        .eq('id', watchData.lesson_id)
+        .single();
+
+      if (!lesson || !lesson.course_id) return null;
+
+      // Get course details
+      const { data: course } = await supabase
+        .from('courses')
+        .select('id, title, thumbnail')
+        .eq('id', lesson.course_id)
+        .single();
+
+      return {
+        ...watchData,
+        lesson,
+        course,
+      };
+    },
+    enabled: !!user,
+    staleTime: 30000,
+  });
+
+  if (isLoading) {
+    return (
+      <section className="py-8 px-4 md:px-8 lg:px-12">
+        <h2 className="text-2xl font-bold text-foreground mb-4">{data.title}</h2>
+        <div className="h-24 bg-card rounded-xl border border-border animate-pulse" />
+      </section>
+    );
+  }
+
+  if (!lastLesson) return null;
+
+  const progressPercent = lastLesson.total_duration
+    ? Math.round((lastLesson.watched_seconds / lastLesson.total_duration) * 100)
+    : 0;
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <section className="py-8 px-4 md:px-8 lg:px-12">
+      <div className="max-w-4xl">
+        <h2 className="text-2xl font-bold text-foreground mb-1">{data.title}</h2>
+        {data.subtitle && <p className="text-muted-foreground mb-4">{data.subtitle}</p>}
+
+        <div
+          className="flex items-center gap-4 p-4 bg-card rounded-xl border border-border hover:border-border-hover transition-all cursor-pointer group"
+          onClick={() => navigate(`/course/${lastLesson.course?.id}/lesson/${lastLesson.lesson?.id}`)}
+        >
+          {/* Thumbnail */}
+          {data.showThumbnail && lastLesson.course?.thumbnail && (
+            <div className="relative w-32 h-20 rounded-lg overflow-hidden flex-shrink-0">
+              <img
+                src={lastLesson.course.thumbnail}
+                alt={lastLesson.course.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-background/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Play className="w-8 h-8 text-foreground fill-foreground" />
+              </div>
+            </div>
+          )}
+
+          {/* Info */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-muted-foreground truncate">
+              {lastLesson.course?.title}
+            </p>
+            <p className="font-semibold text-foreground truncate">
+              {lastLesson.lesson?.title}
+            </p>
+
+            {data.showProgressBar && (
+              <div className="mt-2 space-y-1">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{formatTime(lastLesson.watched_seconds)} / {formatTime(lastLesson.total_duration || 0)}</span>
+                  <span>{progressPercent}%</span>
+                </div>
+                <Progress value={progressPercent} className="h-1.5" />
+              </div>
+            )}
+          </div>
+
+          {/* Button */}
+          <Button size="sm" className="flex-shrink-0 gap-2">
+            <Play className="w-4 h-4" />
+            {data.buttonText || 'Continuar'}
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 // Main Block Renderer
 const BlockRenderer: React.FC<BlockRendererProps> = ({ block }) => {
   switch (block.type) {
@@ -312,6 +438,8 @@ const BlockRenderer: React.FC<BlockRendererProps> = ({ block }) => {
       return <BannerBlock data={block.data as BannerBlockData} />;
     case 'courses':
       return <CoursesBlock data={block.data as CoursesBlockData} />;
+    case 'continue_watching':
+      return <ContinueWatchingBlock data={block.data as ContinueWatchingBlockData} />;
     case 'text':
       return <TextBlock data={block.data as TextBlockData} />;
     case 'button':

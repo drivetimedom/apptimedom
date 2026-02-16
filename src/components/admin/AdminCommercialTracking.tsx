@@ -32,6 +32,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import ExcelJS from 'exceljs';
 import ActivationPlanReadOnly from './ActivationPlanReadOnly';
+import EducationalDataSection from './EducationalDataSection';
 import { useAllCommercialTracking, CommercialTrackingWeek } from '@/hooks/useCommercialTracking';
 import { useAllTrafficTracking, TrafficTrackingWeek } from '@/hooks/useTrafficTracking';
 import { supabase } from '@/integrations/supabase/client';
@@ -735,6 +736,12 @@ const AdminCommercialTracking: React.FC = () => {
                     activationPlan={selectedStudent.activationPlan}
                     studentName={selectedStudent.name}
                     studentId={selectedStudent.user_id}
+                  />
+
+                  {/* Educational Data Section */}
+                  <EducationalDataSection
+                    userId={selectedStudent.user_id}
+                    studentName={selectedStudent.name}
                   />
                 </div>
               </CardContent>

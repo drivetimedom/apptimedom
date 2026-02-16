@@ -49,6 +49,7 @@ interface Profile {
   id: string;
   user_id: string;
   name: string;
+  email: string | null;
   avatar: string | null;
   bio: string | null;
   instagram: string | null;
@@ -99,6 +100,7 @@ function useProfiles() {
         id: row.id,
         user_id: row.user_id,
         name: row.name,
+        email: row.email,
         avatar: row.avatar,
         bio: row.bio,
         instagram: row.instagram,
@@ -133,7 +135,7 @@ const AdminCommercialTracking: React.FC = () => {
         id: profile.id,
         user_id: profile.user_id,
         name: profile.name,
-        email: profile.user_id,
+        email: profile.email || '',
         tracking,
         trafficTracking,
         totals,
@@ -148,7 +150,8 @@ const AdminCommercialTracking: React.FC = () => {
   // Filter students
   const filteredStudents = useMemo(() => {
     return studentsWithTracking.filter(student => {
-      const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const term = searchTerm.toLowerCase();
+      const matchesSearch = student.name.toLowerCase().includes(term) || student.email.toLowerCase().includes(term);
       
       const matchesFilter = 
         filterStatus === 'all' || 
@@ -443,6 +446,9 @@ const AdminCommercialTracking: React.FC = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-foreground truncate">{student.name}</h3>
+                          {student.email && (
+                            <p className="text-xs text-muted-foreground truncate">{student.email}</p>
+                          )}
                         </div>
                       </div>
                       
@@ -478,6 +484,9 @@ const AdminCommercialTracking: React.FC = () => {
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold text-foreground">{selectedStudent.name}</h2>
+                      {selectedStudent.email && (
+                        <p className="text-sm text-muted-foreground">{selectedStudent.email}</p>
+                      )}
                     </div>
                   </div>
                   

@@ -103,7 +103,7 @@ const ActivationPlan: React.FC = () => {
             <div className="p-2 rounded-lg bg-accent/10">
               <CheckSquare className="w-5 h-5 text-accent" />
             </div>
-            Plano de Ativação
+            Implementação
           </CardTitle>
           <div className="flex items-center gap-2">
             {allCompleted && (

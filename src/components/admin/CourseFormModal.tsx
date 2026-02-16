@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Course, Category, Lesson, Module, getFromStorage, setToStorage, STORAGE_KEYS, generateId } from '@/lib/storage';
 import { useAutosave } from '@/hooks/useAutosave';
-import { Save, RotateCcw } from 'lucide-react';
+import { Save, RotateCcw, Copy, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -114,6 +114,84 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
   // Editing module modal
   const [editingModule, setEditingModule] = useState<ModuleFormData | null>(null);
   const [moduleForm, setModuleForm] = useState({ title: '', description: '' });
+
+  // Bulk selection
+  const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
+  const [movingToModuleId, setMovingToModuleId] = useState<string | null>(null);
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
+
+  const totalSelectedCount = selectedLessons.size;
+
+  const toggleLessonSelection = (lessonId: string) => {
+    setSelectedLessons(prev => {
+      const next = new Set(prev);
+      if (next.has(lessonId)) next.delete(lessonId);
+      else next.add(lessonId);
+      return next;
+    });
+  };
+
+  const toggleModuleLessonsSelection = (moduleId: string) => {
+    const mod = modules.find(m => m.id === moduleId);
+    if (!mod) return;
+    const allSelected = mod.lessons.every(l => selectedLessons.has(l.id));
+    setSelectedLessons(prev => {
+      const next = new Set(prev);
+      mod.lessons.forEach(l => {
+        if (allSelected) next.delete(l.id);
+        else next.add(l.id);
+      });
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedLessons(new Set());
+
+  const bulkDuplicate = () => {
+    setModules(modules.map(m => {
+      const toDuplicate = m.lessons.filter(l => selectedLessons.has(l.id));
+      if (toDuplicate.length === 0) return m;
+      const duplicated = toDuplicate.map(l => ({
+        ...l,
+        id: generateId(),
+        title: `${l.title} (cópia)`,
+        order: m.lessons.length + 1,
+      }));
+      return { ...m, lessons: [...m.lessons, ...duplicated] };
+    }));
+    toast({ title: `${totalSelectedCount} aula(s) duplicada(s)` });
+    clearSelection();
+  };
+
+  const bulkDelete = () => {
+    setModules(modules.map(m => ({
+      ...m,
+      lessons: m.lessons.filter(l => !selectedLessons.has(l.id)),
+    })));
+    toast({ title: `${totalSelectedCount} aula(s) excluída(s)` });
+    clearSelection();
+  };
+
+  const bulkMove = (targetModuleId: string) => {
+    let movedLessons: LessonFormData[] = [];
+    // Remove from source modules
+    const updatedModules = modules.map(m => {
+      const kept = m.lessons.filter(l => !selectedLessons.has(l.id));
+      const moved = m.lessons.filter(l => selectedLessons.has(l.id));
+      movedLessons = [...movedLessons, ...moved];
+      return { ...m, lessons: kept };
+    });
+    // Add to target module
+    const finalModules = updatedModules.map(m => {
+      if (m.id !== targetModuleId) return m;
+      const reordered = movedLessons.map((l, i) => ({ ...l, order: m.lessons.length + i + 1 }));
+      return { ...m, lessons: [...m.lessons, ...reordered] };
+    });
+    setModules(finalModules);
+    toast({ title: `${totalSelectedCount} aula(s) movida(s)` });
+    clearSelection();
+    setShowMoveDialog(false);
+  };
 
   // Autosave draft key
   const autosaveKey = course ? `course-draft-${course.id}` : 'course-draft-new';
@@ -661,6 +739,30 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
                   </Button>
                 </div>
 
+                {/* Bulk Action Bar */}
+                {totalSelectedCount > 0 && (
+                  <div className="flex items-center gap-2 bg-accent/30 border border-accent rounded-lg px-4 py-2">
+                    <span className="text-sm font-medium text-foreground">
+                      {totalSelectedCount} aula(s) selecionada(s)
+                    </span>
+                    <div className="flex-1" />
+                    <Button size="sm" variant="outline" className="gap-1" onClick={bulkDuplicate}>
+                      <Copy className="w-3.5 h-3.5" /> Duplicar
+                    </Button>
+                    {modules.length > 1 && (
+                      <Button size="sm" variant="outline" className="gap-1" onClick={() => setShowMoveDialog(true)}>
+                        <ArrowRightLeft className="w-3.5 h-3.5" /> Mover
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" className="gap-1 text-destructive border-destructive/50 hover:bg-destructive/10" onClick={bulkDelete}>
+                      <Trash2 className="w-3.5 h-3.5" /> Excluir
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={clearSelection} className="text-xs">
+                      Limpar
+                    </Button>
+                  </div>
+                )}
+
                 {modules.length === 0 ? (
                   <div className="text-center py-8 border border-dashed border-border rounded-lg">
                     <p className="text-muted-foreground mb-4">Nenhum módulo criado</p>
@@ -670,11 +772,22 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {modules.map((module, mIndex) => (
+                    {modules.map((module, mIndex) => {
+                      const allModuleLessonsSelected = module.lessons.length > 0 && module.lessons.every(l => selectedLessons.has(l.id));
+                      const someModuleLessonsSelected = module.lessons.some(l => selectedLessons.has(l.id));
+                      
+                      return (
                       <div key={module.id} className="border border-border rounded-lg overflow-hidden">
                         {/* Module Header */}
                         <div className="bg-secondary/50 px-4 py-3 flex items-center justify-between">
                           <div className="flex items-center gap-3">
+                            {module.lessons.length > 0 && (
+                              <Checkbox
+                                checked={allModuleLessonsSelected}
+                                className={someModuleLessonsSelected && !allModuleLessonsSelected ? 'opacity-50' : ''}
+                                onCheckedChange={() => toggleModuleLessonsSelection(module.id)}
+                              />
+                            )}
                             <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
                             <button onClick={() => toggleModuleExpanded(module.id)}>
                               {module.expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -713,12 +826,16 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
                               </p>
                             ) : (
                               module.lessons.map((lesson, lIndex) => (
-                                <div key={lesson.id} className="flex items-center justify-between bg-background/50 p-3 rounded-lg">
+                                <div key={lesson.id} className={`flex items-center justify-between p-3 rounded-lg ${selectedLessons.has(lesson.id) ? 'bg-accent/20 border border-accent/40' : 'bg-background/50'}`}>
                                   <div className="flex items-center gap-3">
+                                    <Checkbox
+                                      checked={selectedLessons.has(lesson.id)}
+                                      onCheckedChange={() => toggleLessonSelection(lesson.id)}
+                                    />
                                     <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab" />
                                     <span className="text-sm">📹 {lesson.title}</span>
-                                    <span className="text-xs text-muted-foreground">ID: {lesson.vimeoId}</span>
-                                    <span className="text-xs text-muted-foreground">{lesson.duration}</span>
+                                    {lesson.vimeoId && <span className="text-xs text-muted-foreground">ID: {lesson.vimeoId}</span>}
+                                    {lesson.duration && <span className="text-xs text-muted-foreground">{lesson.duration}</span>}
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <Button
@@ -751,7 +868,9 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
                           </div>
                         )}
                       </div>
-                    ))}
+                      );
+                    })}
+
                   </div>
                 )}
               </TabsContent>
@@ -1056,6 +1175,28 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
             }}>
               Salvar
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Move to Module Dialog */}
+      <Dialog open={showMoveDialog} onOpenChange={setShowMoveDialog}>
+        <DialogContent className="bg-card border-border max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Mover {totalSelectedCount} aula(s) para...</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 py-4">
+            {modules.map(m => (
+              <Button
+                key={m.id}
+                variant="outline"
+                className="w-full justify-start gap-2"
+                onClick={() => bulkMove(m.id)}
+              >
+                📂 {m.title}
+                <span className="text-xs text-muted-foreground ml-auto">({m.lessons.length} aulas)</span>
+              </Button>
+            ))}
           </div>
         </DialogContent>
       </Dialog>

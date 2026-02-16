@@ -689,6 +689,77 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                 </div>
               )}
 
+              {/* Processes inside this folder */}
+              {process && isFolderType && (() => {
+                const folderProcesses = allMaterials.filter(m => 
+                  (m.parent_folder_ids || []).includes(process.id) && m.id !== process.id
+                );
+                return (
+                  <div className="border-t border-border pt-6">
+                    <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1 flex items-center gap-2">
+                      <FolderOpen className="w-4 h-4" />
+                      Processos desta Metodologia
+                    </Label>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      📊 {folderProcesses.length} processo{folderProcesses.length !== 1 ? 's' : ''} nesta metodologia
+                    </p>
+                    {folderProcesses.length > 0 ? (
+                      <div className="space-y-2">
+                        {folderProcesses.map((mat, index) => (
+                          <button
+                            key={mat.id}
+                            onClick={() => {
+                              if (onOpenProcess) {
+                                const proc: SwipeProcess = {
+                                  id: mat.id,
+                                  title: mat.title,
+                                  description: mat.description || '',
+                                  category: mat.category?.name || 'Sem categoria',
+                                  type: mat.type?.name || 'Processo',
+                                  tags: mat.tags || [],
+                                  content: mat.content || '',
+                                  links: Array.isArray(mat.links) ? mat.links : [],
+                                  pdfs: Array.isArray(mat.pdfs) ? mat.pdfs : [],
+                                  createdAt: mat.created_at,
+                                  updatedAt: mat.updated_at,
+                                  typeId: mat.type_id,
+                                  categoryId: mat.category_id,
+                                  parentFolderIds: mat.parent_folder_ids || [],
+                                  featuredFolderIds: mat.featured_folder_ids || [],
+                                  relatedProcessIds: mat.related_process_ids || [],
+                                  featuredProcessIds: mat.featured_process_ids || [],
+                                };
+                                onOpenProcess(proc);
+                              }
+                            }}
+                            className="flex items-center gap-3 w-full p-4 border border-border rounded-lg hover:bg-accent hover:border-primary transition-all cursor-pointer group text-left"
+                          >
+                            <span className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary flex-shrink-0">
+                              {index + 1}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">{mat.type?.name || 'Processo'}</Badge>
+                                <span className="text-sm font-medium text-foreground truncate">{mat.title}</span>
+                              </div>
+                              {mat.description && (
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{mat.description}</p>
+                              )}
+                            </div>
+                            <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <FolderOpen className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">Nenhum processo nesta metodologia ainda</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* Featured Relationships */}
               {process && !isFolderType && (
                 <FeaturedRelationships
@@ -696,7 +767,6 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                   featuredProcessIds={process.featuredProcessIds || []}
                   allMaterials={allMaterials}
                   onOpenProcess={onOpenProcess ? (id) => {
-                    // Find the material and build a SwipeProcess to open
                     const mat = allMaterials.find(m => m.id === id);
                     if (mat) {
                       const proc: SwipeProcess = {

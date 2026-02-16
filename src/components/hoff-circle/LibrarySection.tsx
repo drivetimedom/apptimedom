@@ -23,7 +23,9 @@ const LibrarySection: React.FC<LibrarySectionProps> = ({ categoryId }) => {
   
   // Get courses for this category
   const categoryCourses = allCourses.filter(
-    course => course.categoryIds?.includes(categoryId) && course.status === 'published'
+    course => 
+      (course.categoryIds?.includes(categoryId) || course.category === categoryId) && 
+      course.status === 'published'
   );
 
   // Sort by sequence position

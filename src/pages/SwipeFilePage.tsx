@@ -553,7 +553,7 @@ const SwipeFilePage: React.FC = () => {
                             <p className="text-sm text-muted-foreground truncate mt-0.5">{folder.description}</p>
                           )}
                           <p className="text-xs text-muted-foreground mt-1">
-                            📄 {folderProcessCounts[folder.id] || 0} processos
+                            {folderProcessCounts[folder.id] || 0} processos
                           </p>
                         </div>
                         <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />

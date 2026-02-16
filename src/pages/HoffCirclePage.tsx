@@ -1,12 +1,8 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Category,
-  Course, 
-  STORAGE_KEYS, 
-  getFromStorage 
-} from '@/lib/storage';
+import { useCategories } from '@/hooks/useCategories';
+import { useCourses } from '@/hooks/useCourses';
 import { Button } from '@/components/ui/button';
 import { 
   Target, 
@@ -33,11 +29,11 @@ const HoffCirclePage: React.FC = () => {
     refreshProfile();
   }, []);
 
-  const categories = getFromStorage<Category[]>(STORAGE_KEYS.CATEGORIES, []);
-  const allCourses = getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []);
+  const { data: categories = [] } = useCategories();
+  const { data: allCourses = [] } = useCourses();
 
   // Find Hoff Circle category
-  const hoffCircle = categories.find(c => c.slug === 'hof-circle' || c.slug === 'hoff-circle');
+  const hoffCircle = categories.find(c => c.slug === 'hof-circle' || c.slug === 'hoff-circle' || c.name === 'HOF CIRCLE');
 
   if (!hoffCircle) {
     return (
@@ -54,7 +50,9 @@ const HoffCirclePage: React.FC = () => {
 
   // Get courses for this category
   const categoryCourses = allCourses.filter(
-    course => course.categoryIds?.includes(hoffCircle.id) && course.status === 'published'
+    course => 
+      (course.categoryIds?.includes(hoffCircle.id) || course.category === hoffCircle.id) && 
+      course.status === 'published'
   );
 
   const pageConfig = hoffCircle.pageConfig;

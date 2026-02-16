@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { User as UserIcon, Star, TrendingUp, Zap, Crown, Flame } from 'lucide-react';
+import { useHofMaps } from '@/hooks/useHofMaps';
 
 type UserStatus = 'iniciante' | 'primeiras-vendas' | 'intermediario' | 'avancado' | 'elite';
 
@@ -34,15 +35,9 @@ const levelConfig: Record<UserStatus, { label: string; color: string; icon: Reac
   },
 };
 
-const mapLabels: Record<string, string> = {
-  'mapa-10k': '🗺️ MAPA 10K',
-  'mapa-30k': '🗺️ MAPA 30K',
-  'mapa-50k': '🗺️ MAPA 50K',
-  'mapa-100k': '🗺️ MAPA 100K',
-};
-
 const IndividualPanel: React.FC = () => {
   const { profile } = useAuth();
+  const { data: maps } = useHofMaps();
   
   // Get status from profile data (set by admin) or default
   const userStatus: UserStatus = profile?.status || 'iniciante';
@@ -50,6 +45,11 @@ const IndividualPanel: React.FC = () => {
   const config = levelConfig[userStatus];
   
   const firstName = profile?.name?.split(' ')[0] || 'Aluno';
+
+  // Find the map name dynamically from hof_maps
+  const mapName = prescribedMap 
+    ? maps?.find(m => m.id === prescribedMap)?.name || prescribedMap
+    : '';
 
   return (
     <Card className="bg-card border-border">
@@ -94,7 +94,7 @@ const IndividualPanel: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Mapa:</span>
               <Badge variant="outline" className="border-accent/30 text-accent">
-                {mapLabels[prescribedMap] || prescribedMap}
+                🗺️ {mapName}
               </Badge>
             </div>
           )}

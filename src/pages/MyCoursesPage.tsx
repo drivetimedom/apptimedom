@@ -1,28 +1,24 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourses } from '@/hooks/useCourses';
 import { useUserProgress } from '@/hooks/useUserProgress';
-import { getCustomization } from '@/lib/customization';
 import CourseCard from '@/components/courses/CourseCard';
-import { BookOpen, Clock, Trophy, Filter, Home, ChevronRight, GraduationCap, ArrowDown, Loader2 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BookOpen, Clock, Trophy, Home, ChevronRight, GraduationCap, ArrowDown, Loader2, CheckCircle2, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 const MyCoursesPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, profile, isAdmin, isInstructor } = useAuth();
-  const [activeTab, setActiveTab] = useState('all');
-  const customization = getCustomization();
 
-  // Fetch data from database
   const { data: courses = [], isLoading: coursesLoading } = useCourses();
   const { data: userProgressList = [], isLoading: progressLoading } = useUserProgress();
 
   const isLoading = coursesLoading || progressLoading;
 
-  const publishedCourses = useMemo(() => 
-    courses.filter(c => c.status === 'published'), 
+  const publishedCourses = useMemo(() =>
+    courses.filter(c => c.status === 'published'),
     [courses]
   );
 
@@ -34,49 +30,31 @@ const MyCoursesPage: React.FC = () => {
 
   const unlockedCourses = publishedCourses.filter(c => isCourseUnlocked(c));
 
+  const getCourseProgress = (course: any) => {
+    const progress = userProgressList.find(p => p.courseId === course.id);
+    const totalLessons = course.modules.reduce((acc: number, m: any) => acc + m.lessonIds.length, 0);
+    const completedLessons = progress?.completedLessons.length || 0;
+    const percent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+    return { progress, totalLessons, completedLessons, percent };
+  };
+
   const inProgressCourses = unlockedCourses.filter(c => {
-    const progress = userProgressList.find(p => p.courseId === c.id);
-    if (!progress) return false;
-    const totalLessons = c.modules.reduce((acc, m) => acc + m.lessonIds.length, 0);
-    return progress.completedLessons.length > 0 && progress.completedLessons.length < totalLessons;
+    const { completedLessons, totalLessons } = getCourseProgress(c);
+    return completedLessons > 0 && completedLessons < totalLessons;
   });
 
   const completedCourses = unlockedCourses.filter(c => {
-    const progress = userProgressList.find(p => p.courseId === c.id);
-    if (!progress) return false;
-    const totalLessons = c.modules.reduce((acc, m) => acc + m.lessonIds.length, 0);
-    return progress.completedLessons.length === totalLessons && totalLessons > 0;
+    const { completedLessons, totalLessons } = getCourseProgress(c);
+    return completedLessons === totalLessons && totalLessons > 0;
   });
 
-  const favoriteCourses = unlockedCourses.filter(c => {
-    const progress = userProgressList.find(p => p.courseId === c.id);
-    return progress?.favorites && progress.favorites.length > 0;
+  const notStartedCourses = unlockedCourses.filter(c => {
+    const { completedLessons } = getCourseProgress(c);
+    return completedLessons === 0;
   });
 
-  const getProgress = (courseId: string) => 
+  const getProgress = (courseId: string) =>
     userProgressList.find(p => p.courseId === courseId);
-
-  const getFilteredCourses = () => {
-    switch (activeTab) {
-      case 'in-progress':
-        return inProgressCourses;
-      case 'completed':
-        return completedCourses;
-      case 'favorites':
-        return favoriteCourses;
-      default:
-        return unlockedCourses;
-    }
-  };
-
-  const filteredCourses = getFilteredCourses();
-
-  // Stats
-  const totalHours = unlockedCourses.reduce((acc, c) => {
-    const duration = c.totalDuration || '0:0';
-    const [h, m] = duration.split(':').map(Number);
-    return acc + (h || 0) + (m || 0) / 60;
-  }, 0);
 
   const totalLessonsCompleted = userProgressList.reduce((acc, p) => acc + p.completedLessons.length, 0);
 
@@ -92,21 +70,28 @@ const MyCoursesPage: React.FC = () => {
     );
   }
 
+  const CourseGrid = ({ children }: { children: React.ReactNode }) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {children}
+    </div>
+  );
+
+  const EmptyState = ({ message }: { message: string }) => (
+    <div className="text-center py-12 rounded-xl border border-dashed border-border bg-card/30">
+      <BookOpen className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
+      <p className="text-muted-foreground">{message}</p>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Banner */}
-      <section 
-        className="relative h-[350px] md:h-[400px] w-full bg-cover bg-center"
-        style={{
-          backgroundImage: `url(/images/banner-secoes.png)`
-        }}
+      <section
+        className="relative h-[300px] md:h-[380px] w-full bg-cover bg-center"
+        style={{ backgroundImage: `url(/images/banner-secoes.png)` }}
       >
-        {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background" />
-        
-        {/* Content */}
         <div className="relative z-10 container h-full flex flex-col justify-center">
-          {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
             <button onClick={() => navigate('/')} className="hover:text-foreground transition-colors flex items-center gap-1">
               <Home className="w-4 h-4" />
@@ -116,30 +101,21 @@ const MyCoursesPage: React.FC = () => {
             <span className="text-foreground">Meus Cursos</span>
           </div>
 
-          {/* Title */}
           <div className="flex items-center gap-4 mb-4">
             <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
               <GraduationCap className="w-10 h-10 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                Meus Cursos
-              </h1>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">Meus Cursos</h1>
             </div>
           </div>
 
-          {/* Subtitle */}
           <p className="text-lg text-muted-foreground max-w-2xl mb-6">
             Acompanhe seu progresso e continue aprendendo
           </p>
 
-          {/* CTA Button */}
           <div className="flex items-center gap-4">
-            <Button 
-              size="lg" 
-              onClick={scrollToContent}
-              className="bg-accent text-accent-foreground hover:bg-accent/90"
-            >
+            <Button size="lg" onClick={scrollToContent} className="bg-accent text-accent-foreground hover:bg-accent/90">
               Ver Cursos
               <ArrowDown className="w-4 h-4 ml-2" />
             </Button>
@@ -161,7 +137,7 @@ const MyCoursesPage: React.FC = () => {
               </div>
               <div>
                 <div className="text-2xl font-bold text-foreground">{unlockedCourses.length}</div>
-                <p className="text-sm text-muted-foreground">Cursos Disponíveis</p>
+                <p className="text-sm text-muted-foreground">Disponíveis</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -184,7 +160,7 @@ const MyCoursesPage: React.FC = () => {
             </div>
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Filter className="w-6 h-6 text-primary" />
+                <CheckCircle2 className="w-6 h-6 text-primary" />
               </div>
               <div>
                 <div className="text-2xl font-bold text-foreground">{totalLessonsCompleted}</div>
@@ -195,54 +171,102 @@ const MyCoursesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Content */}
-      <div className="container py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="bg-card border border-border">
-            <TabsTrigger value="all" className="data-[state=active]:bg-accent">
-              Todos ({unlockedCourses.length})
-            </TabsTrigger>
-            <TabsTrigger value="in-progress" className="data-[state=active]:bg-accent">
-              Em Andamento ({inProgressCourses.length})
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-accent">
-              Concluídos ({completedCourses.length})
-            </TabsTrigger>
-            <TabsTrigger value="favorites" className="data-[state=active]:bg-accent">
-              Favoritos ({favoriteCourses.length})
-            </TabsTrigger>
-          </TabsList>
+      {/* Sections */}
+      <div className="container py-8 space-y-12">
+        {/* In Progress Section */}
+        {inProgressCourses.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-lg bg-warning/10">
+                <Play className="w-5 h-5 text-warning" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-foreground">Em Andamento</h2>
+                <p className="text-sm text-muted-foreground">Continue de onde parou</p>
+              </div>
+            </div>
+            <CourseGrid>
+              {inProgressCourses.map(course => {
+                const { percent, completedLessons, totalLessons } = getCourseProgress(course);
+                return (
+                  <div key={course.id} className="space-y-0">
+                    <CourseCard
+                      course={course as any}
+                      progress={getProgress(course.id) as any}
+                      isLocked={false}
+                    />
+                    <div className="px-1 pt-2 space-y-1">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{completedLessons}/{totalLessons} aulas</span>
+                        <span className="font-medium text-foreground">{percent}%</span>
+                      </div>
+                      <Progress value={percent} className="h-1.5" />
+                    </div>
+                  </div>
+                );
+              })}
+            </CourseGrid>
+          </section>
+        )}
 
-          <TabsContent value={activeTab} className="mt-0">
-            {filteredCourses.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredCourses.map(course => (
+        {/* Completed Section */}
+        {completedCourses.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-lg bg-success/10">
+                <Trophy className="w-5 h-5 text-success" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-foreground">Concluídos</h2>
+                <p className="text-sm text-muted-foreground">Parabéns pelo progresso!</p>
+              </div>
+            </div>
+            <CourseGrid>
+              {completedCourses.map(course => (
+                <div key={course.id} className="relative">
                   <CourseCard
-                    key={course.id}
                     course={course as any}
                     progress={getProgress(course.id) as any}
                     isLocked={false}
                   />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-16">
-                <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="w-8 h-8 text-muted-foreground" />
+                  <div className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-success flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-success-foreground" />
+                  </div>
                 </div>
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Nenhum curso encontrado
-                </h3>
-                <p className="text-muted-foreground">
-                  {activeTab === 'in-progress' && 'Comece um curso para ver seu progresso aqui.'}
-                  {activeTab === 'completed' && 'Complete um curso para vê-lo aqui.'}
-                  {activeTab === 'favorites' && 'Adicione cursos aos favoritos para vê-los aqui.'}
-                  {activeTab === 'all' && 'Você ainda não tem cursos desbloqueados.'}
-                </p>
+              ))}
+            </CourseGrid>
+          </section>
+        )}
+
+        {/* Not Started Section */}
+        {notStartedCourses.length > 0 && (
+          <section>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 rounded-lg bg-info/10">
+                <BookOpen className="w-5 h-5 text-info" />
               </div>
-            )}
-          </TabsContent>
-        </Tabs>
+              <div>
+                <h2 className="text-xl font-bold text-foreground">Não Iniciados</h2>
+                <p className="text-sm text-muted-foreground">Explore novos conteúdos</p>
+              </div>
+            </div>
+            <CourseGrid>
+              {notStartedCourses.map(course => (
+                <CourseCard
+                  key={course.id}
+                  course={course as any}
+                  progress={getProgress(course.id) as any}
+                  isLocked={false}
+                />
+              ))}
+            </CourseGrid>
+          </section>
+        )}
+
+        {/* Empty state */}
+        {unlockedCourses.length === 0 && (
+          <EmptyState message="Você ainda não tem cursos desbloqueados." />
+        )}
       </div>
     </div>
   );

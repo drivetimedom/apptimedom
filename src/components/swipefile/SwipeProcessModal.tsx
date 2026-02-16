@@ -701,7 +701,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                       Processos desta Metodologia
                     </Label>
                     <p className="text-sm text-muted-foreground mb-4">
-                      📊 {folderProcesses.length} processo{folderProcesses.length !== 1 ? 's' : ''} nesta metodologia
+                      📄 {folderProcesses.length} processo{folderProcesses.length !== 1 ? 's' : ''} nesta metodologia
                     </p>
                     {folderProcesses.length > 0 ? (
                       <div className="space-y-2">

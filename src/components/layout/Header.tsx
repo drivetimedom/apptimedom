@@ -169,10 +169,6 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
                 <User className="mr-2 h-4 w-4" />
                 <span>Meu Perfil</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer focus:bg-accent">
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Configurações</span>
-              </DropdownMenuItem>
               {isInstructor && (
                 <>
                   <DropdownMenuSeparator className="bg-border" />

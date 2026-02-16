@@ -10,7 +10,7 @@ import {
   Lock,
   CheckCircle,
   Play,
-  Trophy,
+  ListChecks,
   Clock,
   Video,
   Loader2
@@ -216,7 +216,7 @@ const ActionPlan: React.FC = () => {
           {visibleChallenges.length > 0 && (
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-warning" />
+                <ListChecks className="w-4 h-4 text-primary" />
                 Desafios
               </h4>
 

@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Course, Category, Lesson, Module, getFromStorage, setToStorage, STORAGE_KEYS, generateId } from '@/lib/storage';
 import { useAutosave } from '@/hooks/useAutosave';
-import { Save, RotateCcw, Copy, ArrowRightLeft } from 'lucide-react';
+import { useSupabaseAutosave } from '@/hooks/useSupabaseAutosave';
+import { supabase } from '@/integrations/supabase/client';
+import { Save, RotateCcw, Copy, ArrowRightLeft, Cloud, Loader2 as Loader2Icon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -209,7 +211,54 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
     enabled: isOpen && formData.title.trim().length > 0,
   });
 
-  // Check for existing draft on open
+  // Supabase autosave (only for editing existing courses, every 30s)
+  const supabaseSaveFunction = useCallback(async (data: typeof autosaveData) => {
+    if (!course?.id || !data.formData.title || data.formData.title.trim().length < 3) return;
+
+    const modulesPayload = data.modules.map(m => ({
+      id: m.id,
+      title: m.title,
+      description: m.description,
+      order: m.order,
+      lessonIds: m.lessons.map((l: any) => l.id),
+    }));
+
+    const { error } = await supabase
+      .from('courses')
+      .update({
+        title: data.formData.title.trim(),
+        subtitle: data.formData.subtitle?.trim() || '',
+        description: data.formData.description?.trim() || '',
+        thumbnail: data.formData.thumbnail || null,
+        category_ids: data.formData.categoryIds,
+        subcategory_id: data.formData.subcategoryId || null,
+        category: data.formData.categoryIds?.[0] || null,
+        level: data.formData.level,
+        status: data.formData.status,
+        total_duration: data.formData.totalDuration || null,
+        modules: JSON.parse(JSON.stringify(modulesPayload)),
+        sequence_config: data.sequenceConfig?.isSequential
+          ? JSON.parse(JSON.stringify(data.sequenceConfig))
+          : null,
+        roadmap_config: data.roadmapConfig?.showInRoadmap
+          ? JSON.parse(JSON.stringify({
+              showInRoadmap: data.roadmapConfig.showInRoadmap,
+              roadmapPosition: { x: data.roadmapConfig.roadmapPositionX, y: data.roadmapConfig.roadmapPositionY },
+              roadmapIcon: data.roadmapConfig.roadmapIcon,
+              roadmapLabel: data.roadmapConfig.roadmapLabel,
+            }))
+          : null,
+      })
+      .eq('id', course.id);
+
+    if (error) throw error;
+  }, [course?.id]);
+
+  const { isSaving: isAutoSaving, lastServerSave } = useSupabaseAutosave(autosaveData, supabaseSaveFunction, {
+    enabled: isOpen && !!course?.id && formData.title.trim().length >= 3,
+    intervalMs: 30000,
+  });
+
   useEffect(() => {
     if (isOpen) {
       const draft = loadDraft();
@@ -576,14 +625,28 @@ const CourseFormModal: React.FC<CourseFormModalProps> = ({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="bg-card border-border max-w-4xl h-[85vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-foreground text-xl flex items-center gap-3">
+            <DialogTitle className="text-foreground text-xl flex items-center gap-3 flex-wrap">
               {course ? 'Editar Curso' : 'Novo Curso'}
-              {lastSavedAt && (
-                <span className="text-xs font-normal text-muted-foreground flex items-center gap-1">
-                  <Save className="w-3 h-3" />
-                  Rascunho salvo às {lastSavedAt.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              )}
+              <div className="flex items-center gap-3">
+                {isAutoSaving && (
+                  <span className="text-xs font-normal text-muted-foreground flex items-center gap-1">
+                    <Loader2Icon className="w-3 h-3 animate-spin" />
+                    Salvando...
+                  </span>
+                )}
+                {!isAutoSaving && lastServerSave && (
+                  <span className="text-xs font-normal text-accent-foreground flex items-center gap-1">
+                    <Cloud className="w-3 h-3" />
+                    Salvo às {lastServerSave.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  </span>
+                )}
+                {!isAutoSaving && !lastServerSave && lastSavedAt && (
+                  <span className="text-xs font-normal text-muted-foreground flex items-center gap-1">
+                    <Save className="w-3 h-3" />
+                    Rascunho local salvo
+                  </span>
+                )}
+              </div>
             </DialogTitle>
           </DialogHeader>
 

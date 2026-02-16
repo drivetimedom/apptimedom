@@ -37,7 +37,7 @@ const ActivationPlanReadOnly: React.FC<ActivationPlanReadOnlyProps> = ({
         <CardHeader className="pb-4">
           <CardTitle className="text-lg flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-success" />
-            Plano de Ativação
+            Implementação
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -45,7 +45,7 @@ const ActivationPlanReadOnly: React.FC<ActivationPlanReadOnlyProps> = ({
             <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
               <ClipboardList className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">Sem Plano de Ativação</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Sem Implementação</h3>
             <p className="text-muted-foreground text-sm mb-4">
               Este aluno ainda não tem tarefas prescritas
             </p>
@@ -70,7 +70,7 @@ const ActivationPlanReadOnly: React.FC<ActivationPlanReadOnlyProps> = ({
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-success" />
-            Plano de Ativação
+            Implementação
           </CardTitle>
           <Badge variant="outline" className="bg-success/10 text-success border-success/30">
             {completedCount}/{totalCount}
@@ -134,7 +134,7 @@ const ActivationPlanReadOnly: React.FC<ActivationPlanReadOnlyProps> = ({
         <div className="flex items-start gap-2 p-3 bg-info/10 border border-info/20 rounded-lg">
           <Info className="w-4 h-4 text-info flex-shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground">
-            Para editar o Plano de Ativação, vá em{' '}
+            Para editar a Implementação, vá em{' '}
             <span className="text-foreground font-medium">Usuários → Editar → Prescrição</span>
           </p>
         </div>

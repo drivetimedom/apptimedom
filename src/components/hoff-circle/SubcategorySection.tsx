@@ -36,7 +36,7 @@ const SubcategorySection: React.FC<SubcategorySectionProps> = ({
       return `Pilar ${course.sequenceConfig?.position}`;
     }
     if (subcategory.slug === 'desafios') {
-      return 'Desafio';
+      return 'Protocolo';
     }
     if (subcategory.slug === 'material-extra') {
       return undefined;

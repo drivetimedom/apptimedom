@@ -37,7 +37,7 @@ import {
   HofChallenge,
 } from '@/hooks/useHofChallenges';
 
-const iconOptions = ['🏆', '🎯', '🚀', '⚡', '💪', '🔥', '💎', '📈', '🛡️', '⭐'];
+const iconOptions = ['🎯', '🚀', '⚡', '💪', '🔥', '💎', '📈', '🛡️', '⭐', '🏆'];
 
 const AdminChallengesManager: React.FC = () => {
   const { data: challenges = [], isLoading } = useHofChallenges();
@@ -54,7 +54,7 @@ const AdminChallengesManager: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    icon: '🏆',
+    icon: '🎯',
     videos: [] as ChallengeVideo[],
   });
 
@@ -76,7 +76,7 @@ const AdminChallengesManager: React.FC = () => {
       setFormData({
         name: '',
         description: '',
-        icon: '🏆',
+        icon: '🎯',
         videos: [],
       });
     }
@@ -191,15 +191,15 @@ const AdminChallengesManager: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Trophy className="w-6 h-6 text-warning" />
-            Desafios (Playlists Curtas)
+            Protocolos (Playlists Curtas)
           </h2>
           <p className="text-muted-foreground mt-1">
-            Crie e gerencie desafios com vídeos curtos para os alunos
+            Crie e gerencie protocolos com vídeos curtos para os alunos
           </p>
         </div>
         <Button onClick={() => openModal()} className="gap-2">
           <Plus className="w-4 h-4" />
-          Novo Desafio
+          Novo Protocolo
         </Button>
       </div>
 
@@ -209,7 +209,7 @@ const AdminChallengesManager: React.FC = () => {
         <Input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Buscar desafio..."
+          placeholder="Buscar protocolo..."
           className="pl-9 bg-input border-border"
         />
       </div>
@@ -220,11 +220,11 @@ const AdminChallengesManager: React.FC = () => {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Trophy className="w-12 h-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground text-center">
-              {searchQuery ? 'Nenhum desafio encontrado' : 'Nenhum desafio cadastrado'}
+              {searchQuery ? 'Nenhum protocolo encontrado' : 'Nenhum protocolo cadastrado'}
             </p>
             <Button onClick={() => openModal()} className="mt-4 gap-2">
               <Plus className="w-4 h-4" />
-              Criar primeiro desafio
+              Criar primeiro protocolo
             </Button>
           </CardContent>
         </Card>
@@ -282,22 +282,22 @@ const AdminChallengesManager: React.FC = () => {
 
       {/* Create/Edit Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-card border-border max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="bg-card border-border max-w-2xl h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-foreground">
-              {editingChallenge ? 'Editar Desafio' : 'Criar Desafio'}
+              {editingChallenge ? 'Editar Protocolo' : 'Criar Protocolo'}
             </DialogTitle>
           </DialogHeader>
 
-          <ScrollArea className="flex-1 max-h-[60vh] pr-4">
+          <ScrollArea className="flex-1 pr-4">
             <div className="space-y-6">
               {/* Name */}
               <div className="space-y-2">
-                <Label>Nome do Desafio *</Label>
+                <Label>Nome do Protocolo *</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Desafio 1 - Primeiros 30 Leads"
+                  placeholder="Protocolo 1 - Primeiros 30 Leads"
                   className="bg-input border-border"
                 />
               </div>
@@ -308,7 +308,7 @@ const AdminChallengesManager: React.FC = () => {
                 <Textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Descreva o objetivo do desafio..."
+                  placeholder="Descreva o objetivo do protocolo..."
                   className="bg-input border-border"
                 />
               </div>
@@ -337,7 +337,7 @@ const AdminChallengesManager: React.FC = () => {
               {/* Videos */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label>📹 Vídeos do Desafio</Label>
+                  <Label>📹 Vídeos do Protocolo</Label>
                   <p className="text-sm text-muted-foreground">
                     Total: {formatDuration(calculateTotalDuration(formData.videos))}
                   </p>
@@ -415,7 +415,7 @@ const AdminChallengesManager: React.FC = () => {
               {(createChallenge.isPending || updateChallenge.isPending) && (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               )}
-              {editingChallenge ? 'Salvar Alterações' : 'Criar Desafio'}
+              {editingChallenge ? 'Salvar Alterações' : 'Criar Protocolo'}
             </Button>
           </div>
         </DialogContent>
@@ -425,9 +425,9 @@ const AdminChallengesManager: React.FC = () => {
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Desafio?</AlertDialogTitle>
+            <AlertDialogTitle>Excluir Protocolo?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. O desafio será removido permanentemente.
+              Esta ação não pode ser desfeita. O protocolo será removido permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

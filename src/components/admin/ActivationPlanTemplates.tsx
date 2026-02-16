@@ -211,10 +211,10 @@ const ActivationPlanTemplates: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <ClipboardList className="w-6 h-6" />
-            Templates de Planos de Ativação
+            Templates de Implementação
           </h2>
           <p className="text-muted-foreground text-sm mt-1">
-            Crie e gerencie templates reutilizáveis para planos de ativação
+            Crie e gerencie templates reutilizáveis para implementação
           </p>
         </div>
         <Button onClick={() => openModal()} className="gap-2">
@@ -322,7 +322,7 @@ const ActivationPlanTemplates: React.FC = () => {
         <DialogContent className="bg-card border-border max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-foreground">
-              {editingTemplate ? 'Editar Template' : 'Criar Template de Plano de Ativação'}
+              {editingTemplate ? 'Editar Template' : 'Criar Template de Implementação'}
             </DialogTitle>
           </DialogHeader>
 

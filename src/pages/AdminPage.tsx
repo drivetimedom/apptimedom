@@ -97,7 +97,7 @@ import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course }
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory, Category } from '@/hooks/useCategories';
 import { useLessons, useCreateLesson, useUpdateLesson, useDeleteLesson, useBulkCreateLessons, Lesson } from '@/hooks/useLessons';
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner, Banner } from '@/hooks/useBanners';
-import { useAdminUsers, useUpdateAdminUser, useUpdateUserRole, useDeleteAdminUser, AdminUser } from '@/hooks/useAdminUsers';
+import { useAdminUsers, useUpdateAdminUser, useUpdateUserRole, useDeleteAdminUser, useToggleUserBlocked, AdminUser } from '@/hooks/useAdminUsers';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import { enviarEmailBoasVindas } from '@/lib/emailService';
 const AdminPage: React.FC = () => {
@@ -142,6 +142,7 @@ const AdminPage: React.FC = () => {
   const updateUserMutation = useUpdateAdminUser();
   const updateRoleMutation = useUpdateUserRole();
   const deleteUserMutation = useDeleteAdminUser();
+  const toggleBlockedMutation = useToggleUserBlocked();
   const { logAction } = useAuditLog();
 
   // Modal states
@@ -183,7 +184,7 @@ const AdminPage: React.FC = () => {
         (u.email || '').toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = userTypeFilter === 'all' || u.role === userTypeFilter;
       const matchesStatus = userStatusFilter === 'all' || 
-        (userStatusFilter === 'active' ? u.active : !u.active);
+        (userStatusFilter === 'active' ? !u.blocked : u.blocked);
       return matchesSearch && matchesType && matchesStatus;
     });
   }, [adminUsers, searchQuery, userTypeFilter, userStatusFilter]);
@@ -320,14 +321,19 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  const toggleUserStatus = (userId: string) => {
-    // Note: Supabase auth doesn't have a direct "active" toggle
-    // We would need to implement this via Edge Function or custom field
-    toast({ 
-      title: 'Status não pode ser alterado diretamente',
-      description: 'Use as configurações do perfil para gerenciar acesso.',
-      variant: 'destructive' 
-    });
+  const toggleUserStatus = async (userId: string) => {
+    const user = adminUsers.find(u => u.id === userId);
+    if (!user) return;
+    
+    try {
+      await toggleBlockedMutation.mutateAsync({
+        profileId: user.id,
+        userId: user.user_id,
+        blocked: !user.blocked,
+      });
+    } catch (err) {
+      console.error('Error toggling user blocked status:', err);
+    }
   };
 
   const changeUserType = async (userId: string, newType: 'admin' | 'instructor' | 'user') => {
@@ -899,7 +905,7 @@ const AdminPage: React.FC = () => {
                   <SelectContent className="bg-popover border-border">
                     <SelectItem value="all">Todos</SelectItem>
                     <SelectItem value="active">Ativos</SelectItem>
-                    <SelectItem value="inactive">Inativos</SelectItem>
+                    <SelectItem value="inactive">Bloqueados</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -960,11 +966,14 @@ const AdminPage: React.FC = () => {
                         </Select>
                       </TableCell>
                       <TableCell>
-                        <Switch
-                          checked={user.active}
-                          onCheckedChange={() => toggleUserStatus(user.id)}
-                          disabled
-                        />
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+                          user.blocked 
+                            ? 'bg-destructive/20 text-destructive' 
+                            : 'bg-success/20 text-success'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${user.blocked ? 'bg-destructive' : 'bg-success'}`} />
+                          {user.blocked ? 'Bloqueado' : 'Ativo'}
+                        </span>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
                         {new Date(user.created_at).toLocaleDateString('pt-BR')}
@@ -987,11 +996,27 @@ const AdminPage: React.FC = () => {
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="bg-border" />
                             <DropdownMenuItem 
+                              className="cursor-pointer"
+                              onClick={() => toggleUserStatus(user.id)}
+                            >
+                              {user.blocked ? (
+                                <>
+                                  <CheckCircle className="w-4 h-4 mr-2 text-success" />
+                                  Desbloquear
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle className="w-4 h-4 mr-2 text-warning" />
+                                  Bloquear Acesso
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
                               className="cursor-pointer text-destructive focus:text-destructive"
                               onClick={() => setDeleteConfirm({ type: 'user', id: user.id, name: user.name })}
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
-                              Excluir
+                              Excluir Permanentemente
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -1511,10 +1536,15 @@ const AdminPage: React.FC = () => {
       <AlertDialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogTitle>
+              {deleteConfirm?.type === 'user' ? 'Excluir usuário permanentemente' : 'Confirmar exclusão'}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir <strong>"{deleteConfirm?.name}"</strong>? 
-              Esta ação não pode ser desfeita.
+              {deleteConfirm?.type === 'user' ? (
+                <>Tem certeza que deseja excluir permanentemente <strong>"{deleteConfirm?.name}"</strong>? Todos os dados, progresso, certificados e histórico serão removidos. Esta ação é <strong>irreversível</strong>.</>
+              ) : (
+                <>Tem certeza que deseja excluir <strong>"{deleteConfirm?.name}"</strong>? Esta ação não pode ser desfeita.</>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

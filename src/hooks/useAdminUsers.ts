@@ -19,9 +19,10 @@ export interface AdminUser {
   unlocked_courses: string[];
   created_at: string;
   updated_at: string;
+  blocked: boolean;
   // Joined from user_roles
   role: 'admin' | 'instructor' | 'user';
-  active: boolean; // We'll consider all Supabase users as active
+  active: boolean;
 }
 
 // Fetch all users (profiles with roles)
@@ -66,8 +67,9 @@ export function useAdminUsers() {
         unlocked_courses: profile.unlocked_courses || [],
         created_at: profile.created_at,
         updated_at: profile.updated_at,
+        blocked: (profile as any).blocked || false,
         role: roleMap.get(profile.user_id) || 'user',
-        active: true, // All Supabase users are considered active
+        active: !(profile as any).blocked,
       }));
 
       return users;
@@ -219,36 +221,77 @@ export function useUpdateUserRole() {
   });
 }
 
-// Delete user (note: this only deletes from profiles, auth deletion needs admin API)
+// Toggle user blocked status
+export function useToggleUserBlocked() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { logAction } = useAuditLog();
+
+  return useMutation({
+    mutationFn: async ({ profileId, userId, blocked }: { profileId: string; userId: string; blocked: boolean }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ blocked } as any)
+        .eq('id', profileId);
+
+      if (error) throw error;
+      return { userId, blocked };
+    },
+    onSuccess: async ({ userId, blocked }) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      toast({ title: blocked ? 'Usuário bloqueado' : 'Usuário desbloqueado' });
+      
+      try {
+        await logAction({
+          action: blocked ? 'user_blocked' : 'user_unblocked',
+          targetUserId: userId,
+        });
+      } catch (e) {
+        console.error('Failed to log audit action:', e);
+      }
+    },
+    onError: (error: any) => {
+      toast({ title: 'Erro ao alterar status', description: error.message, variant: 'destructive' });
+    },
+  });
+}
+
+// Delete user completely (auth + all data)
 export function useDeleteAdminUser() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
 
   return useMutation({
     mutationFn: async ({ userId }: { userId: string }) => {
-      // Delete user role first
-      await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await supabase.functions.invoke('delete-user', {
+        body: { userId },
+      });
 
-      // Note: We cannot delete from auth.users directly without admin privileges
-      // The profile will remain but we could mark it as inactive if needed
-      // For now, we'll just notify the admin
+      if (response.error) throw new Error(response.error.message);
+      if (response.data?.error) throw new Error(response.data.error);
 
       return { userId };
     },
-    onSuccess: () => {
+    onSuccess: async ({ userId }) => {
       queryClient.invalidateQueries({ queryKey: ['admin-users'] });
-      toast({ 
-        title: 'Permissões do usuário removidas',
-        description: 'Para excluir completamente, acesse o painel do Supabase.'
-      });
+      toast({ title: 'Usuário excluído permanentemente' });
+
+      try {
+        await logAction({
+          action: 'user_deleted',
+          targetUserId: userId,
+        });
+      } catch (e) {
+        console.error('Failed to log audit action:', e);
+      }
     },
     onError: (error: any) => {
       console.error('[useDeleteAdminUser] error:', error);
       toast({ 
-        title: 'Erro ao remover usuário', 
+        title: 'Erro ao excluir usuário', 
         description: error.message, 
         variant: 'destructive' 
       });

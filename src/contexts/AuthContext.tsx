@@ -184,6 +184,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: error.message };
       }
 
+      // Log login activity
+      if (data.user) {
+        supabase.from('user_activity_log').insert({
+          user_id: data.user.id,
+          action: 'login',
+          details: { timestamp: new Date().toISOString() },
+        }).then();
+      }
+
       return { success: true };
     } catch (error: any) {
       return { success: false, error: 'Erro ao fazer login' };

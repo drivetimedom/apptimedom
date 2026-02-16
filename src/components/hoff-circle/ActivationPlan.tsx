@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { CheckSquare, Sparkles, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useActivityLog } from '@/hooks/useActivityLog';
 
 interface ActivationTask {
   id: string;
@@ -29,6 +30,7 @@ const defaultChecklist: ActivationTask[] = [
 const ActivationPlan: React.FC = () => {
   const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
+  const { logActivity } = useActivityLog();
 
   // Get activation plan from profile (Supabase) or use default
   const activationPlan: ActivationTask[] = 
@@ -66,6 +68,7 @@ const ActivationPlan: React.FC = () => {
     const task = updatedPlan.find(t => t.id === taskId);
     if (task?.done) {
       toast({ title: 'Tarefa concluída! 🎉' });
+      logActivity('activation_task_completed', { taskText: task.text });
     }
   };
 

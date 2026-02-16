@@ -37,7 +37,7 @@ const HoffCirclePage: React.FC = () => {
   const allCourses = getFromStorage<Course[]>(STORAGE_KEYS.COURSES, []);
 
   // Find Hoff Circle category
-  const hoffCircle = categories.find(c => c.slug === 'hoff-circle');
+  const hoffCircle = categories.find(c => c.slug === 'hof-circle' || c.slug === 'hoff-circle');
 
   if (!hoffCircle) {
     return (

@@ -7,9 +7,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronLeft, ChevronRight, X, Play, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Play, Check, FileText, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChallengeProgress, useUpdateChallengeProgress } from '@/hooks/useChallengeProgress';
+
+interface VideoResource {
+  title: string;
+  url: string;
+}
 
 interface PlaylistVideo {
   id: string;
@@ -17,6 +22,7 @@ interface PlaylistVideo {
   vimeoId: string;
   duration: number;
   order: number;
+  resources?: VideoResource[];
 }
 
 interface PlaylistPlayerModalProps {
@@ -155,6 +161,26 @@ const PlaylistPlayerModal: React.FC<PlaylistPlayerModalProps> = ({
               <p className="text-sm text-muted-foreground mt-1">
                 {currentVideo.duration} minutos
               </p>
+              {/* Per-video resources */}
+              {currentVideo.resources && currentVideo.resources.length > 0 && (
+                <div className="mt-3 space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                    <FileText className="w-3 h-3" /> Materiais de Apoio
+                  </p>
+                  {currentVideo.resources.map((res, i) => (
+                    <a
+                      key={i}
+                      href={res.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm text-primary hover:underline"
+                    >
+                      <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                      {res.title || res.url}
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Navigation */}

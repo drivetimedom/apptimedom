@@ -10,7 +10,6 @@ import { Monitor, Smartphone } from 'lucide-react';
 
 const EmailPreviewPage: React.FC = () => {
   const [width, setWidth] = useState<'desktop' | 'mobile'>('desktop');
-
   const frameWidth = width === 'mobile' ? '375px' : '700px';
 
   return (
@@ -22,26 +21,19 @@ const EmailPreviewPage: React.FC = () => {
             <p className="text-muted-foreground mt-1">Visualize os templates de email antes de enviar</p>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant={width === 'desktop' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setWidth('desktop')}
-            >
+            <Button variant={width === 'desktop' ? 'default' : 'outline'} size="sm" onClick={() => setWidth('desktop')}>
               <Monitor className="h-4 w-4 mr-1" /> Desktop
             </Button>
-            <Button
-              variant={width === 'mobile' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setWidth('mobile')}
-            >
+            <Button variant={width === 'mobile' ? 'default' : 'outline'} size="sm" onClick={() => setWidth('mobile')}>
               <Smartphone className="h-4 w-4 mr-1" /> Mobile
             </Button>
           </div>
         </div>
 
         <Tabs defaultValue="welcome">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="welcome">Boas-vindas</TabsTrigger>
+            <TabsTrigger value="welcome-pwd">Boas-vindas + Senha</TabsTrigger>
             <TabsTrigger value="reset">Redefinir Senha</TabsTrigger>
             <TabsTrigger value="verify">Verificação</TabsTrigger>
             <TabsTrigger value="course">Curso</TabsTrigger>
@@ -49,9 +41,18 @@ const EmailPreviewPage: React.FC = () => {
 
           <TabsContent value="welcome">
             <Card>
-              <CardHeader>
-                <CardTitle>Email de Boas-vindas</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Email de Boas-vindas (sem senha)</CardTitle></CardHeader>
+              <CardContent className="flex justify-center">
+                <div style={{ width: frameWidth, transition: 'width 0.3s' }} className="border rounded-lg overflow-hidden">
+                  <WelcomeEmail nome="João Silva" />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="welcome-pwd">
+            <Card>
+              <CardHeader><CardTitle>Email de Boas-vindas (com senha temporária)</CardTitle></CardHeader>
               <CardContent className="flex justify-center">
                 <div style={{ width: frameWidth, transition: 'width 0.3s' }} className="border rounded-lg overflow-hidden">
                   <WelcomeEmail nome="João Silva" senhaTemporaria="Abc@12345" />
@@ -62,9 +63,7 @@ const EmailPreviewPage: React.FC = () => {
 
           <TabsContent value="reset">
             <Card>
-              <CardHeader>
-                <CardTitle>Email de Redefinição de Senha</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Email de Redefinição de Senha</CardTitle></CardHeader>
               <CardContent className="flex justify-center">
                 <div style={{ width: frameWidth, transition: 'width 0.3s' }} className="border rounded-lg overflow-hidden">
                   <PasswordResetEmail nome="Maria Santos" />
@@ -75,9 +74,7 @@ const EmailPreviewPage: React.FC = () => {
 
           <TabsContent value="verify">
             <Card>
-              <CardHeader>
-                <CardTitle>Email de Verificação</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>Email de Verificação</CardTitle></CardHeader>
               <CardContent className="flex justify-center">
                 <div style={{ width: frameWidth, transition: 'width 0.3s' }} className="border rounded-lg overflow-hidden">
                   <EmailVerificationEmail nome="Carlos Oliveira" />
@@ -88,25 +85,17 @@ const EmailPreviewPage: React.FC = () => {
 
           <TabsContent value="course">
             <Card>
-              <CardHeader>
-                <CardTitle>Notificação de Curso</CardTitle>
-              </CardHeader>
-              <CardContent className="flex justify-center space-y-6">
-                <div className="space-y-6 w-full flex flex-col items-center">
+              <CardHeader><CardTitle>Notificações de Curso</CardTitle></CardHeader>
+              <CardContent>
+                <div className="space-y-6 flex flex-col items-center">
                   <div style={{ width: frameWidth, transition: 'width 0.3s' }} className="border rounded-lg overflow-hidden">
-                    <CourseNotificationEmail
-                      nome="Ana Costa"
-                      courseName="Harmonização Facial Avançada"
-                      courseDescription="Aprenda técnicas avançadas de harmonização com os melhores profissionais."
-                      action="unlocked"
-                    />
+                    <CourseNotificationEmail nome="Ana Costa" courseName="Harmonização Facial Avançada" courseDescription="Aprenda técnicas avançadas de harmonização." action="unlocked" />
                   </div>
                   <div style={{ width: frameWidth, transition: 'width 0.3s' }} className="border rounded-lg overflow-hidden">
-                    <CourseNotificationEmail
-                      nome="Ana Costa"
-                      courseName="Harmonização Facial Avançada"
-                      action="completed"
-                    />
+                    <CourseNotificationEmail nome="Ana Costa" courseName="Harmonização Facial Avançada" action="new_lesson" />
+                  </div>
+                  <div style={{ width: frameWidth, transition: 'width 0.3s' }} className="border rounded-lg overflow-hidden">
+                    <CourseNotificationEmail nome="Ana Costa" courseName="Harmonização Facial Avançada" action="completed" />
                   </div>
                 </div>
               </CardContent>

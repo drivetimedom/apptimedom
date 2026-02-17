@@ -35,6 +35,7 @@ import {
   useDeleteHofChallenge,
   ChallengeVideo,
   HofChallenge,
+  VideoResource,
 } from '@/hooks/useHofChallenges';
 
 const iconOptions = ['🎯', '🚀', '⚡', '💪', '🔥', '💎', '📈', '🛡️', '⭐', '🏆'];
@@ -98,10 +99,44 @@ const AdminChallengesManager: React.FC = () => {
       vimeoId: '',
       duration: 0,
       order: formData.videos.length,
+      resources: [],
     };
     setFormData(prev => ({
       ...prev,
       videos: [...prev.videos, newVideo],
+    }));
+  };
+
+  const addResourceToVideo = (videoIndex: number) => {
+    setFormData(prev => ({
+      ...prev,
+      videos: prev.videos.map((v, i) => 
+        i === videoIndex 
+          ? { ...v, resources: [...(v.resources || []), { title: '', url: '' }] }
+          : v
+      ),
+    }));
+  };
+
+  const updateVideoResource = (videoIndex: number, resIndex: number, field: keyof VideoResource, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      videos: prev.videos.map((v, i) => 
+        i === videoIndex 
+          ? { ...v, resources: (v.resources || []).map((r, ri) => ri === resIndex ? { ...r, [field]: value } : r) }
+          : v
+      ),
+    }));
+  };
+
+  const removeVideoResource = (videoIndex: number, resIndex: number) => {
+    setFormData(prev => ({
+      ...prev,
+      videos: prev.videos.map((v, i) => 
+        i === videoIndex 
+          ? { ...v, resources: (v.resources || []).filter((_, ri) => ri !== resIndex) }
+          : v
+      ),
     }));
   };
 
@@ -430,6 +465,36 @@ const AdminChallengesManager: React.FC = () => {
                               className="bg-input border-border"
                             />
                           </div>
+                        </div>
+                        {/* Per-video resources */}
+                        <div className="ml-6 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                              <FileText className="w-3 h-3" /> Materiais de Apoio
+                            </Label>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => addResourceToVideo(index)} className="h-6 text-xs gap-1">
+                              <Plus className="w-3 h-3" /> Material
+                            </Button>
+                          </div>
+                          {(video.resources || []).map((res, ri) => (
+                            <div key={ri} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
+                              <Input
+                                value={res.title}
+                                onChange={(e) => updateVideoResource(index, ri, 'title', e.target.value)}
+                                placeholder="Título"
+                                className="bg-input border-border h-8 text-xs"
+                              />
+                              <Input
+                                value={res.url}
+                                onChange={(e) => updateVideoResource(index, ri, 'url', e.target.value)}
+                                placeholder="https://..."
+                                className="bg-input border-border h-8 text-xs"
+                              />
+                              <Button type="button" variant="ghost" size="icon" onClick={() => removeVideoResource(index, ri)} className="h-6 w-6 text-destructive">
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}

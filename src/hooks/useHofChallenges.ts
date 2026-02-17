@@ -3,12 +3,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 // Types
+export interface VideoResource {
+  title: string;
+  url: string;
+}
+
 export interface ChallengeVideo {
   id: string;
   title: string;
   vimeoId: string;
   duration: number;
   order: number;
+  resources?: VideoResource[];
 }
 
 export interface HofChallenge {

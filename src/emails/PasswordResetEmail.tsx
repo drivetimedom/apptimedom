@@ -3,42 +3,31 @@ import { EmailLayout, EmailHeader, EmailBody, EmailButton, EmailAlert, EmailSign
 
 interface PasswordResetEmailProps {
   nome: string;
-  novaSenha?: string;
 }
 
-export const PasswordResetEmail: React.FC<PasswordResetEmailProps> = ({
-  nome,
-  novaSenha,
-}) => (
-  <EmailLayout previewText={`🔐 Sua senha foi redefinida, ${nome}`}>
-    <EmailHeader
-      title="Senha Redefinida"
-      emoji="🔐"
-      gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-    />
+export const PasswordResetEmail: React.FC<PasswordResetEmailProps> = ({ nome }) => (
+  <EmailLayout previewText={`Sua senha foi redefinida, ${nome}`}>
+    <EmailHeader title="Redefinição de Senha" />
     <EmailBody>
       <h2 style={{ color: '#1f2937', marginTop: 0 }}>Olá {nome}!</h2>
       <p style={{ fontSize: '16px' }}>
-        Sua senha foi redefinida com sucesso pelo administrador.
+        Sua senha no <strong>HOF Circle</strong> foi redefinida por um administrador.
       </p>
-
-      {novaSenha && (
-        <EmailAlert variant="warning">
-          <p style={{ margin: 0, fontWeight: 'bold' }}>🔑 Nova senha temporária: {novaSenha}</p>
-          <p style={{ margin: '8px 0 0 0', fontSize: '14px' }}>
-            Por segurança, redefina sua senha no primeiro acesso.
-          </p>
-        </EmailAlert>
-      )}
-
-      <EmailButton
-        href="https://apptimedom.lovable.app"
-        gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-      >
+      <EmailAlert variant="danger">
+        <p style={{ margin: 0 }}>
+          <strong>⚠️ Ação necessária:</strong> Entre em contato com o administrador para obter sua nova senha temporária.
+        </p>
+      </EmailAlert>
+      <p style={{ fontSize: '16px' }}>
+        Após fazer login com a nova senha, recomendamos que você a altere imediatamente para uma senha de sua preferência.
+      </p>
+      <EmailButton href="https://apptimedom.lovable.app/login">
         Acessar Plataforma
       </EmailButton>
-
-      <EmailSignature />
+      <p style={{ fontSize: '14px', color: '#6b7280', borderTop: '1px solid #e5e7eb', paddingTop: '20px', marginBottom: 0 }}>
+        Se você não solicitou esta redefinição, entre em contato conosco imediatamente.<br />
+        <strong>Equipe HOF Circle</strong>
+      </p>
     </EmailBody>
   </EmailLayout>
 );

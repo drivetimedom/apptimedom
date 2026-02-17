@@ -1,74 +1,107 @@
 import React from 'react';
 
 interface EmailLayoutProps {
-  previewText?: string;
   children: React.ReactNode;
+  previewText?: string;
 }
 
-export const EmailLayout: React.FC<EmailLayoutProps> = ({ previewText, children }) => (
-  <div style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", backgroundColor: '#f4f4f5', padding: '40px 20px' }}>
+const emailStyles = {
+  body: {
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    lineHeight: '1.6',
+    color: '#333',
+    maxWidth: '600px',
+    margin: '0 auto',
+    padding: '20px',
+    backgroundColor: '#f9fafb',
+  },
+  container: {
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    overflow: 'hidden' as const,
+    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+  },
+  footer: {
+    fontSize: '12px',
+    color: '#9ca3af',
+    textAlign: 'center' as const,
+    marginTop: '20px',
+    paddingTop: '15px',
+    borderTop: '1px solid #e5e7eb',
+  },
+};
+
+export const EmailLayout: React.FC<EmailLayoutProps> = ({ children, previewText }) => (
+  <div style={emailStyles.body}>
     {previewText && (
-      <div style={{ display: 'none', maxHeight: 0, overflow: 'hidden' }}>{previewText}</div>
+      <div style={{ display: 'none', maxHeight: 0, overflow: 'hidden' }}>
+        {previewText}
+      </div>
     )}
-    <div style={{ maxWidth: '600px', margin: '0 auto', backgroundColor: '#ffffff', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+    <div style={emailStyles.container}>
       {children}
     </div>
-    <p style={{ textAlign: 'center', fontSize: '12px', color: '#9ca3af', marginTop: '24px' }}>
-      © {new Date().getFullYear()} HOF Circle. Todos os direitos reservados.
+    <p style={emailStyles.footer}>
+      Este é um email automático, não responda a esta mensagem.<br />
+      © {new Date().getFullYear()} Time Dom. Todos os direitos reservados.
     </p>
   </div>
 );
 
-interface EmailHeaderProps {
+export const EmailHeader: React.FC<{
   title: string;
   emoji?: string;
   gradient?: string;
-}
-
-export const EmailHeader: React.FC<EmailHeaderProps> = ({
-  title,
-  emoji = '✨',
-  gradient = 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-}) => (
-  <div style={{ background: gradient, padding: '32px 24px', textAlign: 'center' }}>
-    <div style={{ fontSize: '40px', marginBottom: '12px' }}>{emoji}</div>
-    <h1 style={{ color: '#ffffff', fontSize: '24px', fontWeight: 700, margin: 0 }}>{title}</h1>
+}> = ({ title }) => (
+  <div style={{
+    background: '#000000',
+    padding: '30px',
+    textAlign: 'center' as const,
+  }}>
+    <img
+      src="http://timedom.com.br/wp-content/uploads/2026/02/LOGO_TIME_DOM.png"
+      alt="TIME DOM"
+      style={{
+        maxWidth: '180px',
+        height: 'auto',
+        display: 'block',
+        margin: '0 auto 15px auto',
+      }}
+    />
+    <h1 style={{
+      color: 'white',
+      margin: 0,
+      fontSize: '24px',
+      fontWeight: '600',
+    }}>
+      {title}
+    </h1>
   </div>
 );
 
-interface EmailBodyProps {
-  children: React.ReactNode;
-}
-
-export const EmailBody: React.FC<EmailBodyProps> = ({ children }) => (
-  <div style={{ padding: '32px 24px', color: '#374151', lineHeight: 1.6 }}>
+export const EmailBody: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div style={{ padding: '30px' }}>
     {children}
   </div>
 );
 
-interface EmailButtonProps {
+export const EmailButton: React.FC<{
   href: string;
-  gradient?: string;
   children: React.ReactNode;
-}
-
-export const EmailButton: React.FC<EmailButtonProps> = ({
-  href,
-  gradient = 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-  children,
-}) => (
-  <div style={{ textAlign: 'center', margin: '28px 0' }}>
+  gradient?: string;
+}> = ({ href, children }) => (
+  <div style={{ textAlign: 'center' as const, margin: '30px 0' }}>
     <a
       href={href}
       style={{
-        display: 'inline-block',
-        background: gradient,
-        color: '#ffffff',
+        background: '#000000',
+        color: 'white',
         padding: '14px 32px',
-        borderRadius: '8px',
         textDecoration: 'none',
-        fontWeight: 600,
+        borderRadius: '8px',
+        fontWeight: 'bold',
         fontSize: '16px',
+        display: 'inline-block',
       }}
     >
       {children}
@@ -76,31 +109,41 @@ export const EmailButton: React.FC<EmailButtonProps> = ({
   </div>
 );
 
-interface EmailAlertProps {
-  variant?: 'info' | 'warning' | 'success';
+export const EmailAlert: React.FC<{
   children: React.ReactNode;
-}
-
-const alertColors: Record<string, { bg: string; border: string }> = {
-  info: { bg: '#eff6ff', border: '#3b82f6' },
-  warning: { bg: '#fffbeb', border: '#f59e0b' },
-  success: { bg: '#f0fdf4', border: '#10b981' },
-};
-
-export const EmailAlert: React.FC<EmailAlertProps> = ({ variant = 'info', children }) => {
-  const colors = alertColors[variant] || alertColors.info;
+  variant?: 'warning' | 'danger' | 'success' | 'info';
+}> = ({ children, variant = 'warning' }) => {
+  const colors = {
+    warning: { bg: '#F9FAFB', border: '#10B981', text: '#1f2937' },
+    danger: { bg: '#fef2f2', border: '#fecaca', text: '#991b1b' },
+    success: { bg: '#f0fdf4', border: '#86efac', text: '#166534' },
+    info: { bg: '#eff6ff', border: '#93c5fd', text: '#1e40af' },
+  };
+  const c = colors[variant];
   return (
-    <div style={{ backgroundColor: colors.bg, borderLeft: `4px solid ${colors.border}`, padding: '16px', borderRadius: '6px', margin: '20px 0' }}>
+    <div style={{
+      backgroundColor: c.bg,
+      border: `1px solid ${c.border}`,
+      borderLeft: `4px solid ${c.border}`,
+      borderRadius: '8px',
+      padding: '16px',
+      margin: '20px 0',
+      color: c.text,
+    }}>
       {children}
     </div>
   );
 };
 
 export const EmailSignature: React.FC = () => (
-  <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '24px', paddingTop: '20px', textAlign: 'center' }}>
-    <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
-      Com carinho,<br />
-      <strong>Equipe HOF Circle</strong>
-    </p>
-  </div>
+  <p style={{
+    fontSize: '14px',
+    color: '#6b7280',
+    borderTop: '1px solid #e5e7eb',
+    paddingTop: '20px',
+    marginBottom: 0,
+  }}>
+    Qualquer dúvida, estamos à disposição!<br />
+    <strong>Equipe HOF Circle</strong>
+  </p>
 );

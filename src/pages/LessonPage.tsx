@@ -222,7 +222,7 @@ const LessonPage: React.FC = () => {
               <div className="relative" style={{ paddingBottom: '56.25%' }}>
                 <iframe
                   ref={vimeoIframeRef}
-                  src={`https://player.vimeo.com/video/${currentLesson.vimeoId}?byline=0&portrait=0&title=0&api=1&player_id=vimeo_${lessonId}`}
+                  src={`https://player.vimeo.com/video/${currentLesson.vimeoId}?byline=0&portrait=0&title=0`}
                   className="absolute top-0 left-0 w-full h-full"
                   frameBorder="0"
                   allow="autoplay; fullscreen; picture-in-picture"

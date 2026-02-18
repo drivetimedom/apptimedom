@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import Player from '@vimeo/player';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UseVimeoTrackingProps {
@@ -16,17 +17,16 @@ export const useVimeoTracking = ({
   iframeRef,
   onCompleted,
 }: UseVimeoTrackingProps) => {
+  const playerRef = useRef<Player | null>(null);
   const saveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const currentTimeRef = useRef(0);
-  const durationRef = useRef(0);
-  const hasResumedRef = useRef(false);
   const isSavingRef = useRef(false);
 
   const saveProgress = useCallback(async (currentTime: number, duration: number) => {
     if (!userId || !lessonId || isSavingRef.current || duration === 0) return;
-    
+
     isSavingRef.current = true;
-    console.log('💾 Saving progress:', currentTime, '/', duration);
+    console.log('💾 Saving progress:', Math.floor(currentTime), '/', Math.floor(duration));
+
     try {
       const completed = currentTime >= duration * 0.9;
 
@@ -45,21 +45,27 @@ export const useVimeoTracking = ({
         onCompleted();
       }
     } catch (error) {
-      console.error('Error saving watch progress:', error);
+      console.error('❌ Error saving progress:', error);
     } finally {
       isSavingRef.current = false;
     }
   }, [userId, lessonId, onCompleted]);
 
   useEffect(() => {
-    if (!vimeoId || !lessonId || !userId) return;
+    if (!vimeoId || !lessonId || !userId || !iframeRef.current) return;
 
-    const iframe = iframeRef.current;
-    if (!iframe) return;
+    console.log('🎬 Initializing Vimeo player for lesson:', lessonId);
 
-    hasResumedRef.current = false;
+    const player = new Player(iframeRef.current);
+    playerRef.current = player;
 
-    // Load saved progress
+    let duration = 0;
+
+    player.getDuration().then((d) => {
+      duration = d;
+      console.log('📏 Video duration:', duration);
+    });
+
     const loadProgress = async () => {
       try {
         const { data } = await supabase
@@ -70,97 +76,50 @@ export const useVimeoTracking = ({
           .maybeSingle();
 
         if (data && data.watched_seconds && data.watched_seconds > 10) {
-          // Wait for iframe to load, then seek
-          const seekInterval = setInterval(() => {
-            if (iframe.contentWindow && !hasResumedRef.current) {
-              iframe.contentWindow.postMessage(
-                JSON.stringify({ method: 'setCurrentTime', value: data.watched_seconds }),
-                '*'
-              );
-              hasResumedRef.current = true;
-              clearInterval(seekInterval);
-            }
-          }, 1000);
-
-          // Clear after 10 seconds if it doesn't work
-          setTimeout(() => clearInterval(seekInterval), 10000);
+          console.log('⏩ Resuming from:', data.watched_seconds);
+          await player.setCurrentTime(data.watched_seconds);
         }
       } catch (error) {
         console.log('No saved progress found');
       }
     };
 
-    // Listen for Vimeo postMessage events
-    const handleMessage = (event: MessageEvent) => {
-      if (typeof event.data !== 'string') return;
-      
+    player.ready().then(() => {
+      console.log('✅ Vimeo player ready!');
+      loadProgress();
+    });
+
+    player.on('timeupdate', (data: { seconds: number; duration: number }) => {
+      if (data.duration) duration = data.duration;
+    });
+
+    player.on('pause', async () => {
       try {
-        const data = JSON.parse(event.data);
-        console.log('📩 Vimeo event:', data.event || data.method, data);
-        
-        if (data.event === 'ready') {
-          console.log('✅ Vimeo player ready!');
-          iframe.contentWindow?.postMessage(
-            JSON.stringify({ method: 'addEventListener', value: 'timeupdate' }),
-            '*'
-          );
-          iframe.contentWindow?.postMessage(
-            JSON.stringify({ method: 'addEventListener', value: 'pause' }),
-            '*'
-          );
-          iframe.contentWindow?.postMessage(
-            JSON.stringify({ method: 'addEventListener', value: 'ended' }),
-            '*'
-          );
-          iframe.contentWindow?.postMessage(
-            JSON.stringify({ method: 'getDuration' }),
-            '*'
-          );
-          
-          loadProgress();
+        const currentTime = await player.getCurrentTime();
+        saveProgress(currentTime, duration);
+      } catch { /* ignore */ }
+    });
+
+    player.on('ended', () => {
+      saveProgress(duration, duration);
+    });
+
+    saveIntervalRef.current = setInterval(async () => {
+      try {
+        const currentTime = await player.getCurrentTime();
+        if (currentTime > 0 && duration > 0) {
+          saveProgress(currentTime, duration);
         }
-
-        if (data.method === 'getDuration') {
-          durationRef.current = data.value || 0;
-        }
-
-        if (data.event === 'timeupdate' && data.data) {
-          currentTimeRef.current = data.data.seconds || 0;
-          console.log('⏱️ Time update:', data.data.seconds);
-          if (data.data.duration) {
-            durationRef.current = data.data.duration;
-          }
-        }
-
-        if (data.event === 'pause') {
-          saveProgress(currentTimeRef.current, durationRef.current);
-        }
-
-        if (data.event === 'ended') {
-          saveProgress(durationRef.current, durationRef.current);
-        }
-      } catch {
-        // Not a JSON message, ignore
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-
-    // Periodic save every 15 seconds
-    saveIntervalRef.current = setInterval(() => {
-      if (currentTimeRef.current > 0 && durationRef.current > 0) {
-        saveProgress(currentTimeRef.current, durationRef.current);
-      }
+      } catch { /* ignore */ }
     }, 15000);
 
     return () => {
-      window.removeEventListener('message', handleMessage);
       if (saveIntervalRef.current) {
         clearInterval(saveIntervalRef.current);
       }
-      // Save on unmount
-      if (currentTimeRef.current > 0 && durationRef.current > 0) {
-        saveProgress(currentTimeRef.current, durationRef.current);
+      if (playerRef.current) {
+        playerRef.current.destroy().catch(() => {});
+        playerRef.current = null;
       }
     };
   }, [vimeoId, lessonId, userId, iframeRef, saveProgress]);

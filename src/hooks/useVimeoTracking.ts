@@ -26,6 +26,7 @@ export const useVimeoTracking = ({
     if (!userId || !lessonId || isSavingRef.current || duration === 0) return;
     
     isSavingRef.current = true;
+    console.log('💾 Saving progress:', currentTime, '/', duration);
     try {
       const completed = currentTime >= duration * 0.9;
 
@@ -95,9 +96,10 @@ export const useVimeoTracking = ({
       
       try {
         const data = JSON.parse(event.data);
+        console.log('📩 Vimeo event:', data.event || data.method, data);
         
         if (data.event === 'ready') {
-          // Enable events
+          console.log('✅ Vimeo player ready!');
           iframe.contentWindow?.postMessage(
             JSON.stringify({ method: 'addEventListener', value: 'timeupdate' }),
             '*'
@@ -124,6 +126,7 @@ export const useVimeoTracking = ({
 
         if (data.event === 'timeupdate' && data.data) {
           currentTimeRef.current = data.data.seconds || 0;
+          console.log('⏱️ Time update:', data.data.seconds);
           if (data.data.duration) {
             durationRef.current = data.data.duration;
           }

@@ -9,15 +9,34 @@ import { Activity, Clock, ChevronDown } from 'lucide-react';
 
 const PAGE_SIZE = 15;
 
-const actionIcons: Record<string, string> = {
-  login: '🔑',
-  lesson_watched: '▶️',
-  course_enrolled: '📚',
-  course_completed: '🏆',
-  certificate_issued: '🎓',
-  profile_updated: '✏️',
-  password_changed: '🔒',
-};
+function formatActivity(action: string, details: any) {
+  const d = typeof details === 'string' ? (() => { try { return JSON.parse(details); } catch { return {}; } })() : (details || {});
+
+  switch (action) {
+    case 'login':
+      return { icon: '🔑', title: 'Fez login', description: '' };
+    case 'lesson_watched':
+      return { icon: '▶️', title: 'Assistiu aula', description: [d.lessonTitle, d.courseTitle].filter(Boolean).join(' — ') };
+    case 'lesson_completed':
+      return { icon: '✅', title: 'Concluiu aula', description: [d.lessonTitle, d.courseTitle].filter(Boolean).join(' — ') };
+    case 'course_enrolled':
+      return { icon: '📚', title: 'Matriculou-se em curso', description: d.courseTitle || '' };
+    case 'course_completed':
+      return { icon: '🏆', title: 'Concluiu curso', description: d.courseTitle || '' };
+    case 'certificate_issued':
+      return { icon: '🎓', title: 'Certificado emitido', description: d.courseTitle || '' };
+    case 'profile_updated':
+      return { icon: '✏️', title: 'Atualizou perfil', description: '' };
+    case 'password_changed':
+      return { icon: '🔒', title: 'Alterou senha', description: '' };
+    case 'comment_added':
+      return { icon: '💬', title: 'Comentou', description: d.lessonTitle || '' };
+    case 'activation_task_completed':
+      return { icon: '🚀', title: 'Concluiu tarefa de implementação', description: d.taskText || '' };
+    default:
+      return { icon: '📌', title: action.replace(/_/g, ' '), description: '' };
+  }
+}
 
 const ActivityTab: React.FC = () => {
   const { user } = useAuth();
@@ -73,21 +92,21 @@ const ActivityTab: React.FC = () => {
           <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
 
           <div className="space-y-0">
-            {displayedActivities.map((activity: any, index: number) => {
-              const icon = actionIcons[activity.action] || '📌';
+            {displayedActivities.map((activity: any) => {
+              const formatted = formatActivity(activity.action, activity.details);
               const date = new Date(activity.created_at);
               const isToday = new Date().toDateString() === date.toDateString();
 
               return (
                 <div key={activity.id} className="relative flex items-start gap-4 py-3 pl-1">
                   <div className="relative z-10 flex items-center justify-center w-7 h-7 rounded-full bg-card border border-border text-sm">
-                    {icon}
+                    {formatted.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground">{activity.action}</p>
-                    {activity.details && (
+                    <p className="text-sm font-medium text-foreground">{formatted.title}</p>
+                    {formatted.description && (
                       <p className="text-xs text-muted-foreground truncate mt-0.5">
-                        {typeof activity.details === 'object' ? JSON.stringify(activity.details) : String(activity.details)}
+                        {formatted.description}
                       </p>
                     )}
                     <p className="text-[11px] text-muted-foreground mt-0.5">

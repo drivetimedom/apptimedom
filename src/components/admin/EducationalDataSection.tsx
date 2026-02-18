@@ -52,6 +52,19 @@ function useEducationalData(userId: string) {
     enabled: !!userId,
   });
 
+  const watchProgress = useQuery({
+    queryKey: ['watch-progress', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('lesson_watch_progress')
+        .select('*, lessons(id, title, course_id, courses(id, title, thumbnail))')
+        .eq('user_id', userId);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
   const lastActivity = useQuery({
     queryKey: ['last-activity', userId],
     queryFn: async () => {
@@ -72,13 +85,14 @@ function useEducationalData(userId: string) {
     enrollments: enrollments.data || [],
     completions: completions.data || [],
     certificates: certificates.data || [],
+    watchProgress: watchProgress.data || [],
     lastActivity: lastActivity.data,
-    isLoading: enrollments.isLoading || completions.isLoading || certificates.isLoading || lastActivity.isLoading,
+    isLoading: enrollments.isLoading || completions.isLoading || certificates.isLoading || lastActivity.isLoading || watchProgress.isLoading,
   };
 }
 
 const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId, studentName }) => {
-  const { enrollments, completions, certificates, lastActivity, isLoading } = useEducationalData(userId);
+  const { enrollments, completions, certificates, watchProgress, lastActivity, isLoading } = useEducationalData(userId);
 
   if (isLoading) {
     return (
@@ -89,12 +103,26 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
     );
   }
 
-  const totalEnrollments = enrollments.length;
-  const totalCompletions = completions.length;
-  const averageProgress = totalEnrollments > 0
-    ? Math.round(enrollments.reduce((sum: number, e: any) => sum + (e.progress_percentage || 0), 0) / totalEnrollments)
-    : 0;
-  const totalCertificates = certificates.length;
+  // Calculate watch time stats
+  const totalWatchedSeconds = watchProgress.reduce((sum: number, p: any) => sum + (p.watched_seconds || 0), 0);
+  const totalHours = Math.floor(totalWatchedSeconds / 3600);
+  const totalMinutes = Math.floor((totalWatchedSeconds % 3600) / 60);
+  const completedLessonsCount = watchProgress.filter((p: any) => p.completed).length;
+
+  // Group watch progress by course
+  const courseProgressMap: Record<string, { course: any; totalLessons: number; completedLessons: number; watchedSeconds: number }> = {};
+  watchProgress.forEach((wp: any) => {
+    const course = wp.lessons?.courses;
+    if (course) {
+      if (!courseProgressMap[course.id]) {
+        courseProgressMap[course.id] = { course, totalLessons: 0, completedLessons: 0, watchedSeconds: 0 };
+      }
+      courseProgressMap[course.id].totalLessons++;
+      if (wp.completed) courseProgressMap[course.id].completedLessons++;
+      courseProgressMap[course.id].watchedSeconds += (wp.watched_seconds || 0);
+    }
+  });
+  const coursesWithProgress = Object.values(courseProgressMap);
 
   return (
     <div className="space-y-4 mt-6">
@@ -110,9 +138,9 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 mb-1">
               <BookOpen className="w-4 h-4 text-primary" />
-              <p className="text-xs text-muted-foreground">Matriculados</p>
+              <p className="text-xs text-muted-foreground">Aulas Assistidas</p>
             </div>
-            <p className="text-2xl font-bold text-foreground">{totalEnrollments}</p>
+            <p className="text-2xl font-bold text-foreground">{watchProgress.length}</p>
           </CardContent>
         </Card>
 
@@ -120,9 +148,9 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 mb-1">
               <CheckCircle className="w-4 h-4 text-success" />
-              <p className="text-xs text-muted-foreground">Concluídos</p>
+              <p className="text-xs text-muted-foreground">Aulas Concluídas</p>
             </div>
-            <p className="text-2xl font-bold text-foreground">{totalCompletions}</p>
+            <p className="text-2xl font-bold text-foreground">{completedLessonsCount}</p>
           </CardContent>
         </Card>
 
@@ -130,9 +158,9 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
           <CardContent className="pt-4">
             <div className="flex items-center gap-2 mb-1">
               <Clock className="w-4 h-4 text-warning" />
-              <p className="text-xs text-muted-foreground">Progresso Médio</p>
+              <p className="text-xs text-muted-foreground">Tempo Assistido</p>
             </div>
-            <p className="text-2xl font-bold text-foreground">{averageProgress}%</p>
+            <p className="text-2xl font-bold text-foreground">{totalHours}h{totalMinutes > 0 ? ` ${totalMinutes}m` : ''}</p>
           </CardContent>
         </Card>
 
@@ -142,7 +170,7 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
               <Award className="w-4 h-4 text-accent" />
               <p className="text-xs text-muted-foreground">Certificados</p>
             </div>
-            <p className="text-2xl font-bold text-foreground">{totalCertificates}</p>
+            <p className="text-2xl font-bold text-foreground">{certificates.length}</p>
           </CardContent>
         </Card>
       </div>
@@ -159,42 +187,44 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
             })}
           </span>
           <span>•</span>
-          <span>{lastActivity.action}</span>
+          <span>{lastActivity.action.replace(/_/g, ' ')}</span>
         </div>
       )}
 
-      {/* Enrolled Courses List */}
+      {/* Courses with Watch Progress */}
       <Card className="bg-card border-border">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold">
-            Cursos Matriculados ({totalEnrollments})
+            Cursos com Progresso ({coursesWithProgress.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {enrollments.length === 0 ? (
+          {coursesWithProgress.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Nenhum curso matriculado ainda
+              Nenhum progresso registrado ainda
             </p>
           ) : (
             <div className="space-y-3">
-              {enrollments.map((enrollment: any) => {
-                const isCompleted = completions.some((c: any) => c.course_id === enrollment.course_id);
+              {coursesWithProgress.map((cp) => {
+                const progressPct = cp.totalLessons > 0 ? Math.round((cp.completedLessons / cp.totalLessons) * 100) : 0;
+                const hours = Math.floor(cp.watchedSeconds / 3600);
+                const mins = Math.floor((cp.watchedSeconds % 3600) / 60);
 
                 return (
-                  <div key={enrollment.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
-                    {enrollment.courses?.thumbnail && (
+                  <div key={cp.course.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
+                    {cp.course.thumbnail && (
                       <img
-                        src={enrollment.courses.thumbnail}
-                        alt={enrollment.courses?.title}
+                        src={cp.course.thumbnail}
+                        alt={cp.course.title}
                         className="w-16 h-10 rounded object-cover flex-shrink-0"
                       />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-sm font-medium text-foreground truncate">
-                          {enrollment.courses?.title || 'Curso'}
+                          {cp.course.title}
                         </span>
-                        {isCompleted && (
+                        {progressPct === 100 && (
                           <Badge variant="default" className="text-[10px] px-1.5 py-0 bg-success text-success-foreground">
                             <CheckCircle className="w-3 h-3 mr-0.5" />
                             Concluído
@@ -202,19 +232,14 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
                         )}
                       </div>
                       <div className="flex items-center gap-2 mb-1">
-                        <Progress value={enrollment.progress_percentage || 0} className="h-2 flex-1" />
+                        <Progress value={progressPct} className="h-2 flex-1" />
                         <span className="text-xs font-medium text-muted-foreground">
-                          {enrollment.progress_percentage || 0}%
+                          {progressPct}%
                         </span>
                       </div>
                       <div className="flex flex-wrap gap-3 text-[11px] text-muted-foreground">
-                        <span>Matrícula: {new Date(enrollment.enrolled_at).toLocaleDateString('pt-BR')}</span>
-                        {enrollment.last_accessed_at && (
-                          <span>Último acesso: {new Date(enrollment.last_accessed_at).toLocaleDateString('pt-BR')}</span>
-                        )}
-                        {enrollment.completed_at && (
-                          <span>Concluído: {new Date(enrollment.completed_at).toLocaleDateString('pt-BR')}</span>
-                        )}
+                        <span>{cp.completedLessons}/{cp.totalLessons} aulas concluídas</span>
+                        <span>Tempo: {hours > 0 ? `${hours}h ` : ''}{mins}min</span>
                       </div>
                     </div>
                   </div>
@@ -231,7 +256,7 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Award className="w-4 h-4 text-accent" />
-              Certificados Emitidos ({totalCertificates})
+              Certificados Emitidos ({certificates.length})
             </CardTitle>
           </CardHeader>
           <CardContent>

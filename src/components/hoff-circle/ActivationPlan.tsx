@@ -32,11 +32,11 @@ const ActivationPlan: React.FC = () => {
   const { toast } = useToast();
   const { logActivity } = useActivityLog();
 
-  // Get activation plan from profile (Supabase) or use default
+  // Only show if user has a custom activation plan prescribed by admin
   const activationPlan: ActivationTask[] = 
-    (profile?.activation_plan && profile.activation_plan.length > 0)
-      ? profile.activation_plan
-      : defaultChecklist;
+    (profile?.activation_plan && (profile.activation_plan as ActivationTask[]).length > 0)
+      ? profile.activation_plan as ActivationTask[]
+      : [];
 
   const toggleItem = async (taskId: string) => {
     if (!user || !profile) return;

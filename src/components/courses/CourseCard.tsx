@@ -54,17 +54,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, instructor, progress, i
 
         {/* Content */}
         <div className="p-5 space-y-4">
-          {/* Instructor & Duration */}
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <div className="flex items-center space-x-2">
-              <UserIcon className="w-4 h-4" />
-              <span>{instructor?.name || 'Instrutor'}</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Clock className="w-4 h-4" />
-              <span>{course.totalDuration}</span>
-            </div>
-          </div>
 
           {/* Progress Bar */}
           {hasStarted && !isLocked && (

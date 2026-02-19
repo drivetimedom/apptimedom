@@ -258,7 +258,6 @@ const LessonPage: React.FC = () => {
                       <Clock className="w-4 h-4" />
                       <span>{currentLesson.duration}</span>
                     </span>
-                    <span>Módulo {currentLesson.order}</span>
                   </div>
                 </div>
               </div>

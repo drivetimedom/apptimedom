@@ -61,6 +61,7 @@ import {
   Settings,
   Loader2,
   LayoutDashboard,
+  Upload,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -808,6 +809,9 @@ const AdminPage: React.FC = () => {
                 </Button>
                 <Button onClick={() => openUserModal()} variant="outline" className="gap-2">
                   <Plus className="w-4 h-4" /> Novo Usuário
+                </Button>
+                <Button onClick={() => navigate('/admin/import-users')} variant="outline" className="gap-2">
+                  <Upload className="w-4 h-4" /> Importar Alunos
                 </Button>
                 <Button onClick={() => openCategoryModal()} variant="outline" className="gap-2">
                   <Plus className="w-4 h-4" /> Nova Categoria

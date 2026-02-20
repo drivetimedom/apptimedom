@@ -27,6 +27,8 @@ import {
   Send,
   Instagram,
   Loader2,
+  AlertTriangle,
+  RefreshCw,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useVimeoTracking } from '@/hooks/useVimeoTracking';
@@ -90,8 +92,8 @@ const LessonPage: React.FC = () => {
   const isDisliked = disliked.includes(lessonId!);
   const isFavorite = favorites.includes(lessonId!);
 
-  // Vimeo tracking
-  useVimeoTracking({
+  // Vimeo tracking — returns player state for error/loading UI
+  const { isLoading: videoLoading, hasError: videoError, retry: retryVideo } = useVimeoTracking({
     vimeoId: currentLesson?.vimeoId,
     lessonId: lessonId!,
     userId: user?.id,
@@ -220,6 +222,27 @@ const LessonPage: React.FC = () => {
             {/* Video Player */}
             <div className="relative rounded-xl overflow-hidden bg-black shadow-elegant">
               <div className="relative" style={{ paddingBottom: '56.25%' }}>
+                {/* Loading overlay */}
+                {videoLoading && !videoError && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70">
+                    <Loader2 className="w-10 h-10 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+
+                {/* Error fallback */}
+                {videoError && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black/80 px-6 text-center">
+                    <AlertTriangle className="w-10 h-10 text-destructive" />
+                    <p className="text-sm text-muted-foreground">
+                      Não foi possível carregar o vídeo. Verifique sua conexão e tente novamente.
+                    </p>
+                    <Button size="sm" variant="outline" onClick={retryVideo}>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Tentar novamente
+                    </Button>
+                  </div>
+                )}
+
                 <iframe
                   key={`vimeo-${lessonId}`}
                   ref={vimeoIframeRef}

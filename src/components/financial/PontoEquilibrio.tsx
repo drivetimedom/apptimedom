@@ -116,7 +116,7 @@ const PontoEquilibrio: React.FC = () => {
         {/* PE com Meta % */}
         <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-6">
           <div className="flex items-start gap-4">
-            <div className="text-3xl">2️⃣</div>
+            
             <div className="flex-1">
               <h4 className="text-white font-bold text-lg mb-4">COM META DE LUCRO (%)</h4>
               

@@ -221,6 +221,7 @@ const LessonPage: React.FC = () => {
             <div className="relative rounded-xl overflow-hidden bg-black shadow-elegant">
               <div className="relative" style={{ paddingBottom: '56.25%' }}>
                 <iframe
+                  key={`vimeo-${lessonId}`}
                   ref={vimeoIframeRef}
                   src={`https://player.vimeo.com/video/${currentLesson.vimeoId}?byline=0&portrait=0&title=0`}
                   className="absolute top-0 left-0 w-full h-full"

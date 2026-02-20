@@ -20,6 +20,7 @@ export const useVimeoTracking = ({
   const playerRef = useRef<Player | null>(null);
   const saveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isSavingRef = useRef(false);
+  const isInitializedRef = useRef(false);
 
   const saveProgress = useCallback(async (currentTime: number, duration: number) => {
     if (!userId || !lessonId || isSavingRef.current || duration === 0) return;
@@ -54,7 +55,13 @@ export const useVimeoTracking = ({
   useEffect(() => {
     if (!vimeoId || !lessonId || !userId || !iframeRef.current) return;
 
+    if (isInitializedRef.current) {
+      console.log('⚠️ Player already initialized for lesson:', lessonId);
+      return;
+    }
+
     console.log('🎬 Initializing Vimeo player for lesson:', lessonId);
+    isInitializedRef.current = true;
 
     const player = new Player(iframeRef.current);
     playerRef.current = player;
@@ -114,8 +121,12 @@ export const useVimeoTracking = ({
     }, 15000);
 
     return () => {
+      console.log('🧹 Cleaning up Vimeo player for lesson:', lessonId);
+      isInitializedRef.current = false;
+
       if (saveIntervalRef.current) {
         clearInterval(saveIntervalRef.current);
+        saveIntervalRef.current = null;
       }
       if (playerRef.current) {
         playerRef.current.destroy().catch(() => {});

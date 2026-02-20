@@ -79,12 +79,12 @@ const HeroBannerCarousel: React.FC<HeroBannerCarouselProps> = ({
           </div>)}
       </div>
 
-      {/* Navigation Arrows */}
+      {/* Navigation Arrows — hidden on mobile */}
       {activeBanners.length > 1 && <>
-          <button onClick={goToPrev} className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 md:w-14 md:h-14 rounded-full bg-card/80 hover:bg-card border border-border flex items-center justify-center transition-all duration-200 hover:scale-110" aria-label="Banner anterior">
+          <button onClick={goToPrev} className="hidden md:flex absolute left-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-card/80 hover:bg-card border border-border items-center justify-center transition-all duration-200 hover:scale-110" aria-label="Banner anterior">
             <ChevronLeft className="w-6 h-6 text-foreground" />
           </button>
-          <button onClick={goToNext} className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 md:w-14 md:h-14 rounded-full bg-card/80 hover:bg-card border border-border flex items-center justify-center transition-all duration-200 hover:scale-110" aria-label="Próximo banner">
+          <button onClick={goToNext} className="hidden md:flex absolute right-6 top-1/2 -translate-y-1/2 z-20 w-14 h-14 rounded-full bg-card/80 hover:bg-card border border-border items-center justify-center transition-all duration-200 hover:scale-110" aria-label="Próximo banner">
             <ChevronRight className="w-6 h-6 text-foreground" />
           </button>
         </>}

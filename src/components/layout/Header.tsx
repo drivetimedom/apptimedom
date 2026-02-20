@@ -65,22 +65,19 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2">
+        <Link to="/" className="flex items-center">
           {customization.branding.logoUrl ? (
             <img 
               src={customization.branding.logoUrl} 
               alt={customization.texts.siteTitle || 'Logo'} 
-              className="h-8 max-w-[160px] object-contain"
+              className="h-10 md:h-12 w-auto object-contain"
             />
           ) : (
-            <>
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">M</span>
-              </div>
-              <span className="hidden sm:inline-block font-semibold text-foreground">
-                {customization.texts.siteTitle || 'Membros'}
-              </span>
-            </>
+            <img 
+              src="http://timedom.com.br/wp-content/uploads/2026/02/LOGO_TIME_DOM.png"
+              alt="TIME DOM"
+              className="h-10 md:h-12 w-auto object-contain"
+            />
           )}
         </Link>
 

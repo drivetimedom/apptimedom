@@ -92,9 +92,9 @@ const HomePage: React.FC = () => {
 
       {/* In Progress Courses */}
       {inProgressCourses.length > 0 && (
-        <section className="py-10 border-b border-border">
-          <div className="container mb-6">
-            <div className="flex items-center gap-3">
+        <section className="py-10 md:py-16 border-b border-border">
+          <div className="container px-6 md:px-8 mb-6 md:mb-8">
+            <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-info/10 flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-info" />
               </div>
@@ -105,7 +105,7 @@ const HomePage: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex gap-5 overflow-x-auto scrollbar-hide px-4 md:px-8 lg:px-12 pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className="flex gap-5 overflow-x-auto scrollbar-hide px-6 md:px-8 lg:px-12 pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {inProgressCourses.map(course => (
               <VerticalCourseCard
                 key={course.id}
@@ -119,7 +119,7 @@ const HomePage: React.FC = () => {
       )}
 
       {/* Categories with Carousels */}
-      <div id="courses" className="py-8 space-y-8">
+      <div id="courses" className="py-8 md:py-12 space-y-6 md:space-y-10">
         {activeCategories.map(category => {
           const categoryCourses = getCoursesByCategory(category.id);
           if (categoryCourses.length === 0) return null;

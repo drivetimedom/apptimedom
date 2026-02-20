@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCustomization } from '@/lib/customization';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,8 @@ import {
   ArrowDown,
   List,
   Folder,
-  Folder as FolderIcon
+  Folder as FolderIcon,
+  ExternalLink
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
@@ -37,6 +38,7 @@ import {
 
 const SwipeFilePage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { isAdmin } = useAuth();
   const customization = getCustomization();
@@ -84,6 +86,20 @@ const SwipeFilePage: React.FC = () => {
       featuredProcessIds: m.featured_process_ids || [],
     }));
   }, [materials]);
+
+  // Read URL params on load and when processes load
+  useEffect(() => {
+    const processoId = searchParams.get('processo');
+    if (processoId && processes.length > 0) {
+      const found = processes.find(p => p.id === processoId);
+      if (found) {
+        setSelectedProcess(found);
+        setIsCreateMode(false);
+        setIsModalOpen(true);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [processes]);
 
   const scrollToContent = () => {
     document.getElementById('swipefile-content')?.scrollIntoView({ behavior: 'smooth' });
@@ -196,13 +212,15 @@ const SwipeFilePage: React.FC = () => {
     setSelectedProcess(process);
     setIsCreateMode(false);
     setIsModalOpen(true);
-  }, []);
+    setSearchParams({ processo: process.id });
+  }, [setSearchParams]);
 
   const handleEdit = useCallback((process: SwipeProcess) => {
     setSelectedProcess(process);
     setIsCreateMode(false);
     setIsModalOpen(true);
-  }, []);
+    setSearchParams({ processo: process.id });
+  }, [setSearchParams]);
 
   const handleCreate = useCallback(() => {
     setSelectedProcess(null);
@@ -262,7 +280,7 @@ const SwipeFilePage: React.FC = () => {
   }, [typesData, categoriesData, createMaterial]);
 
   const handleCopyLink = useCallback((process: SwipeProcess) => {
-    const url = `${window.location.origin}/swipefile/${process.id}`;
+    const url = `${window.location.origin}/swipe-file?processo=${process.id}`;
     navigator.clipboard.writeText(url);
     toast({ title: 'Link copiado!' });
   }, [toast]);
@@ -293,7 +311,8 @@ const SwipeFilePage: React.FC = () => {
     setIsModalOpen(false);
     setSelectedProcess(null);
     setIsCreateMode(false);
-  }, []);
+    setSearchParams({});
+  }, [setSearchParams]);
 
   const isLoading = materialsLoading;
 
@@ -538,13 +557,13 @@ const SwipeFilePage: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredFolders.map(folder => (
-                    <button
+                    <div
                       key={folder.id}
-                      onClick={() => handleView(folder)}
                       className="p-5 border border-border rounded-xl hover:bg-accent hover:border-primary transition-all cursor-pointer group text-left"
+                      onClick={() => handleView(folder)}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                           <FolderOpen className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -556,9 +575,21 @@ const SwipeFilePage: React.FC = () => {
                             {folderProcessCounts[folder.id] || 0} processos
                           </p>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(`/swipe-file?processo=${folder.id}`, '_blank');
+                            }}
+                            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground"
+                            title="Abrir em nova aba"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </button>
+                          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                        </div>
                       </div>
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -632,6 +663,7 @@ const SwipeFilePage: React.FC = () => {
         onOpenProcess={(proc) => {
           setSelectedProcess(proc);
           setIsCreateMode(false);
+          setSearchParams({ processo: proc.id });
         }}
       />
 

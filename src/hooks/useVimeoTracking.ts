@@ -11,15 +11,19 @@ interface UseVimeoTrackingProps {
 }
 
 export interface VimeoTrackingState {
+  /** True while the player is initialising (before ready()) */
   isLoading: boolean;
+  /** True while the video is actively buffering mid-play */
+  isBuffering: boolean;
+  /** True when an unrecoverable error occurred */
   hasError: boolean;
   retry: () => void;
 }
 
-// Guard timeout: if player doesn't become ready in 15s, treat as error
+// Safety: if player.ready() never resolves within this time → error fallback
 const READY_TIMEOUT_MS = 15_000;
-// Debounce before actually initialising to absorb rapid mount/unmount
-const INIT_DEBOUNCE_MS = 120;
+// Debounce: absorb rapid lesson changes / StrictMode double-invoke
+const INIT_DEBOUNCE_MS = 150;
 
 export const useVimeoTracking = ({
   vimeoId,
@@ -28,33 +32,43 @@ export const useVimeoTracking = ({
   iframeRef,
   onCompleted,
 }: UseVimeoTrackingProps): VimeoTrackingState => {
-  const playerRef = useRef<Player | null>(null);
-  const saveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const isSavingRef = useRef(false);
+  // ─── Internal refs ──────────────────────────────────────────────────────────
+  const playerRef        = useRef<Player | null>(null);
+  const saveIntervalRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+  const initTimeoutRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const readyGuardRef    = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isSavingRef      = useRef(false);
   const isInitializedRef = useRef(false);
-  const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const readyGuardRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [retryKey, setRetryKey] = useState(0);
+  // Track loading state in a ref so the readyGuard closure always sees the latest value
+  const isLoadingRef     = useRef(true);
 
-  // Stable refs — updated every render but never trigger re-effects
-  const userIdRef = useRef(userId);
-  const lessonIdRef = useRef(lessonId);
+  // ─── Stable value refs (updated every render, never in dep arrays) ──────────
+  const userIdRef      = useRef(userId);
+  const lessonIdRef    = useRef(lessonId);
   const onCompletedRef = useRef(onCompleted);
-  userIdRef.current = userId;
-  lessonIdRef.current = lessonId;
+  userIdRef.current      = userId;
+  lessonIdRef.current    = lessonId;
   onCompletedRef.current = onCompleted;
 
-  // Player state exposed to consumers
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
+  // ─── Exposed state ──────────────────────────────────────────────────────────
+  const [retryKey,    setRetryKey]    = useState(0);
+  const [isLoading,   setIsLoading]   = useState(true);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [hasError,    setHasError]    = useState(false);
+
+  const setLoadingSync = useCallback((v: boolean) => {
+    isLoadingRef.current = v;
+    setIsLoading(v);
+  }, []);
 
   const retry = useCallback(() => {
     setHasError(false);
-    setIsLoading(true);
+    setLoadingSync(true);
+    setIsBuffering(false);
     setRetryKey(k => k + 1);
-  }, []);
+  }, [setLoadingSync]);
 
-  // ─── Stable progress saver (reads IDs from refs, never in dep array) ────────
+  // ─── Stable progress saver ──────────────────────────────────────────────────
   const saveProgress = useCallback(async (currentTime: number, duration: number) => {
     const uid = userIdRef.current;
     const lid = lessonIdRef.current;
@@ -80,19 +94,19 @@ export const useVimeoTracking = ({
       if (completed && onCompletedRef.current) {
         onCompletedRef.current();
       }
-    } catch (error) {
-      console.error('❌ Error saving progress:', error);
+    } catch (err) {
+      console.error('❌ Error saving progress:', err);
     } finally {
       isSavingRef.current = false;
     }
-  }, []); // intentionally empty — reads everything from stable refs
+  }, []); // intentionally empty — all values read from stable refs
 
-  // ─── Cleanup helper ─────────────────────────────────────────────────────────
+  // ─── Full cleanup ───────────────────────────────────────────────────────────
   const cleanup = useCallback(() => {
-    if (initTimeoutRef.current) { clearTimeout(initTimeoutRef.current); initTimeoutRef.current = null; }
-    if (readyGuardRef.current)  { clearTimeout(readyGuardRef.current);  readyGuardRef.current  = null; }
-    if (saveIntervalRef.current){ clearInterval(saveIntervalRef.current); saveIntervalRef.current = null; }
-    if (playerRef.current)      { playerRef.current.destroy().catch(() => {}); playerRef.current = null; }
+    if (initTimeoutRef.current)  { clearTimeout(initTimeoutRef.current);   initTimeoutRef.current  = null; }
+    if (readyGuardRef.current)   { clearTimeout(readyGuardRef.current);    readyGuardRef.current   = null; }
+    if (saveIntervalRef.current) { clearInterval(saveIntervalRef.current); saveIntervalRef.current = null; }
+    if (playerRef.current)       { playerRef.current.destroy().catch(() => {}); playerRef.current = null; }
     isInitializedRef.current = false;
   }, []);
 
@@ -100,19 +114,20 @@ export const useVimeoTracking = ({
   useEffect(() => {
     if (!vimeoId || !lessonId || !userId) return;
 
-    // Reset UI state on lesson change
-    setIsLoading(true);
+    // Reset UI state for new lesson / retry
+    setLoadingSync(true);
     setHasError(false);
+    setIsBuffering(false);
 
-    // Cancel any in-flight debounce from a previous rapid update
-    if (initTimeoutRef.current) { clearTimeout(initTimeoutRef.current); }
+    // Cancel any pending debounce from a previous rapid update
+    if (initTimeoutRef.current) { clearTimeout(initTimeoutRef.current); initTimeoutRef.current = null; }
 
     if (isInitializedRef.current) {
       console.log('⚠️ Player already initialised, skipping');
       return;
     }
 
-    // Debounce: absorb rapid mount/unmount (e.g. StrictMode double-invoke)
+    // Debounce: wait INIT_DEBOUNCE_MS before touching the DOM
     initTimeoutRef.current = setTimeout(() => {
       if (!iframeRef.current || isInitializedRef.current) return;
 
@@ -125,7 +140,7 @@ export const useVimeoTracking = ({
       } catch (err) {
         console.error('❌ Failed to create Vimeo Player instance:', err);
         setHasError(true);
-        setIsLoading(false);
+        setLoadingSync(false);
         isInitializedRef.current = false;
         return;
       }
@@ -133,22 +148,23 @@ export const useVimeoTracking = ({
 
       let duration = 0;
 
-      // Safety net: if ready() never fires within READY_TIMEOUT_MS → show error
+      // ── Safety guard: if ready() never fires → error after READY_TIMEOUT_MS ──
       readyGuardRef.current = setTimeout(() => {
-        if (isInitializedRef.current && isLoading) {
-          console.warn('⏱ Vimeo player ready() timeout — showing error fallback');
+        if (isInitializedRef.current && isLoadingRef.current) {
+          console.warn('⏱ Vimeo ready() timeout — showing error fallback');
           setHasError(true);
-          setIsLoading(false);
+          setLoadingSync(false);
         }
       }, READY_TIMEOUT_MS);
 
+      // ── Ready ────────────────────────────────────────────────────────────────
       player.ready()
         .then(async () => {
           console.log('✅ Vimeo player ready!');
           if (readyGuardRef.current) { clearTimeout(readyGuardRef.current); readyGuardRef.current = null; }
-          setIsLoading(false);
+          setLoadingSync(false);
 
-          // Restore saved position
+          // Restore saved watch position
           try {
             const { data } = await supabase
               .from('lesson_watch_progress')
@@ -161,11 +177,8 @@ export const useVimeoTracking = ({
               console.log('⏩ Resuming from:', data.watched_seconds);
               await player.setCurrentTime(data.watched_seconds);
             }
-          } catch {
-            // non-critical — ignore
-          }
+          } catch { /* non-critical */ }
 
-          // Get initial duration
           try { duration = await player.getDuration(); } catch { /* ignore */ }
           console.log('📏 Video duration:', duration);
         })
@@ -173,25 +186,36 @@ export const useVimeoTracking = ({
           console.error('❌ Vimeo player.ready() rejected:', err);
           if (readyGuardRef.current) { clearTimeout(readyGuardRef.current); readyGuardRef.current = null; }
           setHasError(true);
-          setIsLoading(false);
+          setLoadingSync(false);
         });
 
+      // ── Playback events ──────────────────────────────────────────────────────
       player.on('timeupdate', (data: { seconds: number; duration: number }) => {
         if (data.duration) duration = data.duration;
       });
 
+      // Buffering overlay mid-play
+      player.on('bufferstart', () => { setIsBuffering(true); });
+      player.on('bufferend',   () => { setIsBuffering(false); });
+
       player.on('pause', async () => {
+        setIsBuffering(false);
         try { saveProgress(await player.getCurrentTime(), duration); } catch { /* ignore */ }
       });
 
-      player.on('ended', () => { saveProgress(duration, duration); });
+      player.on('ended', () => {
+        setIsBuffering(false);
+        saveProgress(duration, duration);
+      });
 
       player.on('error', () => {
         console.error('❌ Vimeo player emitted error event');
         setHasError(true);
-        setIsLoading(false);
+        setLoadingSync(false);
+        setIsBuffering(false);
       });
 
+      // Periodic autosave every 15s
       saveIntervalRef.current = setInterval(async () => {
         try {
           const currentTime = await player.getCurrentTime();
@@ -204,10 +228,10 @@ export const useVimeoTracking = ({
       console.log('🧹 Cleaning up Vimeo player for lesson:', lessonId);
       cleanup();
     };
-    // iframeRef & saveProgress are intentionally omitted — both stable via refs
-    // retryKey forces a full re-init when the user hits Retry
+    // iframeRef, saveProgress, cleanup: intentionally omitted — all stable via refs/useCallback([])
+    // retryKey: forces full re-init on user-triggered retry
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vimeoId, lessonId, userId, retryKey]);
 
-  return { isLoading, hasError, retry };
+  return { isLoading, isBuffering, hasError, retry };
 };

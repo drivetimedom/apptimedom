@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourse } from '@/hooks/useCourses';
@@ -92,8 +92,8 @@ const LessonPage: React.FC = () => {
   const isDisliked = disliked.includes(lessonId!);
   const isFavorite = favorites.includes(lessonId!);
 
-  // Vimeo tracking — returns player state for error/loading UI
-  const { isLoading: videoLoading, hasError: videoError, retry: retryVideo } = useVimeoTracking({
+  // Vimeo tracking — exposes loading/buffering/error state + retry
+  const { isLoading: videoLoading, isBuffering: videoBuffering, hasError: videoError, retry: retryVideo } = useVimeoTracking({
     vimeoId: currentLesson?.vimeoId,
     lessonId: lessonId!,
     userId: user?.id,
@@ -104,6 +104,15 @@ const LessonPage: React.FC = () => {
       }
     },
   });
+
+  // Debounce lesson navigation to prevent rapid remounts of the Vimeo player
+  const navDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const navigateLesson = useCallback((id: string) => {
+    if (navDebounceRef.current) clearTimeout(navDebounceRef.current);
+    navDebounceRef.current = setTimeout(() => {
+      navigate(`/course/${courseId}/lesson/${id}`);
+    }, 150);
+  }, [courseId, navigate]);
 
   if (courseLoading || lessonsLoading) {
     return (
@@ -222,16 +231,23 @@ const LessonPage: React.FC = () => {
             {/* Video Player */}
             <div className="relative rounded-xl overflow-hidden bg-black shadow-elegant">
               <div className="relative" style={{ paddingBottom: '56.25%' }}>
-                {/* Loading overlay */}
+                {/* Initial loading overlay (before player ready) */}
                 {videoLoading && !videoError && (
-                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70">
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/70 pointer-events-none">
                     <Loader2 className="w-10 h-10 animate-spin text-muted-foreground" />
                   </div>
                 )}
 
-                {/* Error fallback */}
+                {/* Mid-play buffering overlay */}
+                {!videoLoading && videoBuffering && !videoError && (
+                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 pointer-events-none">
+                    <Loader2 className="w-8 h-8 animate-spin text-white/70" />
+                  </div>
+                )}
+
+                {/* Error fallback with retry */}
                 {videoError && (
-                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black/80 px-6 text-center">
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black/85 px-6 text-center">
                     <AlertTriangle className="w-10 h-10 text-destructive" />
                     <p className="text-sm text-muted-foreground">
                       Não foi possível carregar o vídeo. Verifique sua conexão e tente novamente.
@@ -256,7 +272,7 @@ const LessonPage: React.FC = () => {
 
               {prevLesson && (
                 <button
-                  onClick={() => navigate(`/course/${courseId}/lesson/${prevLesson.id}`)}
+                  onClick={() => navigateLesson(prevLesson.id)}
                   className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background transition-colors"
                 >
                   <ChevronLeft className="w-6 h-6" />
@@ -264,7 +280,7 @@ const LessonPage: React.FC = () => {
               )}
               {nextLesson && (
                 <button
-                  onClick={() => navigate(`/course/${courseId}/lesson/${nextLesson.id}`)}
+                  onClick={() => navigateLesson(nextLesson.id)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background transition-colors"
                 >
                   <ChevronRight className="w-6 h-6" />
@@ -442,7 +458,7 @@ const LessonPage: React.FC = () => {
 
               <div className="p-4 border-t border-border space-y-3">
                 {nextLesson && (
-                  <Button className="w-full" onClick={() => navigate(`/course/${courseId}/lesson/${nextLesson.id}`)}>
+                  <Button className="w-full" onClick={() => navigateLesson(nextLesson.id)}>
                     Próxima aula
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>

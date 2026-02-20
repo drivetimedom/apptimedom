@@ -3,8 +3,8 @@ import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+  AccordionTrigger } from
+'@/components/ui/accordion';
 
 interface FinancialAccordionProps {
   icon: string;
@@ -18,13 +18,13 @@ const FinancialAccordion: React.FC<FinancialAccordionProps> = ({
   icon,
   title,
   children,
-  value,
+  value
 }) => {
   return (
     <AccordionItem value={value} className="border-[#404040] bg-[#2d2d2d] rounded-lg overflow-hidden">
       <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-[#3a3a3a] transition-colors">
         <div className="flex items-center gap-3">
-          <span className="text-xl">{icon}</span>
+          
           <span className="font-semibold text-white">{title}</span>
         </div>
       </AccordionTrigger>
@@ -33,8 +33,8 @@ const FinancialAccordion: React.FC<FinancialAccordionProps> = ({
           {children}
         </div>
       </AccordionContent>
-    </AccordionItem>
-  );
+    </AccordionItem>);
+
 };
 
 export default FinancialAccordion;

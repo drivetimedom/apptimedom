@@ -112,38 +112,24 @@ const CustomizationSettings: React.FC = () => {
     }));
   };
 
-  // Compress image to reduce size
-  const compressImage = (base64: string, maxWidth = 800): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const img = new window.Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let { width, height } = img;
-        
-        // Scale down if too large
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width;
-          width = maxWidth;
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          reject(new Error('Canvas context not available'));
-          return;
-        }
-        
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        // Use JPEG for smaller size, or PNG for transparency
-        const compressed = canvas.toDataURL('image/jpeg', 0.8);
-        resolve(compressed);
-      };
-      img.onerror = () => reject(new Error('Failed to load image'));
-      img.src = base64;
-    });
+  // Upload image to Storage and return public URL
+  const uploadImageToStorage = async (file: File, target: string): Promise<string> => {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const ext = file.name.split('.').pop() || 'png';
+    const fileName = `${target}-${Date.now()}.${ext}`;
+    
+    const { data, error } = await supabase.storage
+      .from('branding-assets')
+      .upload(fileName, file, { upsert: true });
+    
+    if (error) throw error;
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from('branding-assets')
+      .getPublicUrl(data.path);
+    
+    return publicUrl;
   };
 
   // Handle file upload for images
@@ -156,30 +142,24 @@ const CustomizationSettings: React.FC = () => {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        let base64 = event.target?.result as string;
-        
-        // Compress if image is too large (> 500KB)
-        if (base64.length > 500 * 1024) {
-          toast({ title: 'Comprimindo imagem...' });
-          base64 = await compressImage(base64);
-        }
-        
-        if (uploadTarget.startsWith('course-')) {
-          updateCourseCover(uploadTarget, base64);
-        } else {
-          updateBranding(uploadTarget as keyof typeof customization.branding, base64);
-        }
-        
-        toast({ title: 'Imagem carregada!' });
-      } catch (error) {
-        console.error('Error processing image:', error);
-        toast({ title: 'Erro ao processar imagem', variant: 'destructive' });
+    try {
+      toast({ title: 'Enviando imagem...' });
+      const publicUrl = await uploadImageToStorage(file, uploadTarget);
+      
+      if (uploadTarget.startsWith('course-')) {
+        updateCourseCover(uploadTarget, publicUrl);
+      } else {
+        updateBranding(uploadTarget as keyof typeof customization.branding, publicUrl);
       }
-    };
-    reader.readAsDataURL(file);
+      
+      toast({ title: 'Imagem enviada com sucesso!' });
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast({ title: 'Erro ao enviar imagem', description: error.message, variant: 'destructive' });
+    }
+    
+    // Reset file input
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const triggerUpload = (target: string) => {

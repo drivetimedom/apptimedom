@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback } from 'react';
+import CreateLessonDialog from '@/components/course-management/CreateLessonDialog';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourse } from '@/hooks/useCourses';
@@ -17,6 +18,7 @@ import {
   Loader2,
   Edit,
   GripVertical,
+  Plus,
 } from 'lucide-react';
 import {
   Accordion,
@@ -42,6 +44,7 @@ const CoursePage: React.FC = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [editCourseOpen, setEditCourseOpen] = useState(false);
+  const [createLessonOpen, setCreateLessonOpen] = useState(false);
 
   const { data: course, isLoading: courseLoading } = useCourse(courseId);
   const { data: allLessons = [], isLoading: lessonsLoading } = useLessons(courseId);
@@ -250,15 +253,23 @@ const CoursePage: React.FC = () => {
               <h2 className="text-xl md:text-2xl font-bold text-foreground">
                 Todos os conteúdos
               </h2>
-              <div className="relative w-full md:w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Buscar conteúdo"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-input border-border"
-                />
+              <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="relative flex-1 md:w-80">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar conteúdo"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 bg-input border-border"
+                  />
+                </div>
+                {isAdmin && (
+                  <Button onClick={() => setCreateLessonOpen(true)} size="sm" className="flex-shrink-0">
+                    <Plus className="w-4 h-4 mr-1" />
+                    Nova aula
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -460,6 +471,17 @@ const CoursePage: React.FC = () => {
           open={editCourseOpen}
           onOpenChange={setEditCourseOpen}
           course={course}
+        />
+      )}
+
+      {/* Create Lesson Dialog */}
+      {isAdmin && course && (
+        <CreateLessonDialog
+          open={createLessonOpen}
+          onOpenChange={setCreateLessonOpen}
+          courseId={courseId!}
+          modules={course.modules}
+          onCreated={handleRefresh}
         />
       )}
     </div>

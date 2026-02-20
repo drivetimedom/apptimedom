@@ -377,7 +377,7 @@ const PlanoMetas: React.FC = () => {
                   <span className="text-[#a0a0a0]"> / {necessarios}</span>
                 </div>
                 <p className={`text-sm mt-1 ${ok ? 'text-[#10b981]' : 'text-[#f59e0b]'}`}>
-                  {ok ? '✅ Plano OK' : '⚠️ Ajustar plano'}
+                  {ok ? 'Plano OK' : 'Ajustar plano'}
                 </p>
               </div>
             );
@@ -390,7 +390,7 @@ const PlanoMetas: React.FC = () => {
         <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-6">
           <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-[#3b82f6]" />
-            💰 INVESTIMENTO ESTIMADO (Meta Ideal)
+            INVESTIMENTO ESTIMADO (Meta Ideal)
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
@@ -417,7 +417,7 @@ const PlanoMetas: React.FC = () => {
 
       {/* Dica */}
       <div className="text-center text-sm text-[#a0a0a0]">
-        💡 Ajuste as fontes até o TOTAL PLANEJADO atingir os Pacientes Necessários
+        Ajuste as fontes até o TOTAL PLANEJADO atingir os Pacientes Necessários
       </div>
 
       {/* Modal Adicionar Fonte */}

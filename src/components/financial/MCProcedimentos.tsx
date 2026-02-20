@@ -94,7 +94,7 @@ const MCProcedimentos: React.FC = () => {
       <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-4">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
-            <span className="text-[#a0a0a0]">📅 Período de Análise:</span>
+            <span className="text-[#a0a0a0]">Período de Análise:</span>
             <select 
               className="bg-[#3a3a3a] border border-[#404040] rounded-lg px-3 py-2 text-white"
               defaultValue="1"
@@ -103,7 +103,7 @@ const MCProcedimentos: React.FC = () => {
             </select>
           </div>
           <p className="text-sm text-[#a0a0a0]">
-            💡 Versão gratuita analisa apenas 1 mês. Sistema PRO: histórico ilimitado.
+            Versão gratuita analisa apenas 1 mês. Sistema PRO: histórico ilimitado.
           </p>
         </div>
       </div>
@@ -299,7 +299,7 @@ const MCProcedimentos: React.FC = () => {
       <div className="bg-[#f59e0b]/10 border border-[#f59e0b] rounded-lg p-6">
         <h3 className="text-lg font-bold text-[#f59e0b] mb-4 flex items-center gap-2">
           <TrendingUp className="w-5 h-5" />
-          📊 RESUMO DO MÊS
+          RESUMO DO MÊS
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <CardResultado
@@ -324,7 +324,7 @@ const MCProcedimentos: React.FC = () => {
           <div className="bg-[#2d2d2d] rounded-lg p-4 flex items-center gap-3">
             <Trophy className="w-6 h-6 text-[#f59e0b]" />
             <div>
-              <span className="text-[#a0a0a0]">🏆 Mais Lucrativo: </span>
+              <span className="text-[#a0a0a0]">Mais Lucrativo: </span>
               <span className="text-white font-bold">{resumo.maisLucrativo.nome}</span>
               <span className="text-[#10b981] ml-2">
                 ({formatPercent(calcularMCProcedimento(resumo.maisLucrativo).mcPercentual)} de MC)
@@ -336,7 +336,7 @@ const MCProcedimentos: React.FC = () => {
 
       {/* Dica */}
       <div className="text-center text-sm text-[#a0a0a0]">
-        💡 Foque nos procedimentos com maior MC% - são os mais rentáveis!
+        Foque nos procedimentos com maior MC% - são os mais rentáveis!
       </div>
 
       {/* Modal */}
@@ -372,7 +372,7 @@ const MCProcedimentos: React.FC = () => {
                 value={formData.custoVariavel}
                 onChange={(value) => setFormData({ ...formData, custoVariavel: value })}
               />
-              <p className="text-xs text-[#a0a0a0] mt-1">💡 Apenas insumos/materiais</p>
+              <p className="text-xs text-[#a0a0a0] mt-1">Apenas insumos/materiais</p>
             </div>
             
             <div>

@@ -60,7 +60,7 @@ const DespesasFixas: React.FC = () => {
       {/* Accordion Sections */}
       <Accordion type="multiple" defaultValue={['infra', 'rh', 'retirada', 'marketing', 'adm', 'prov']} className="space-y-3">
         {/* INFRAESTRUTURA */}
-        <FinancialAccordion icon="📍" title="INFRAESTRUTURA" value="infra">
+        <FinancialAccordion icon="📌" title="INFRAESTRUTURA" value="infra">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <InputMoeda
               label="Aluguel"
@@ -225,7 +225,7 @@ const DespesasFixas: React.FC = () => {
       {despesasFixas.customizadas.length > 0 && (
         <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-4">
           <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
-            <span>➕</span> Despesas Customizadas
+            Despesas Customizadas
           </h3>
           <div className="space-y-3">
             {despesasFixas.customizadas.map((despesa) => (
@@ -261,7 +261,7 @@ const DespesasFixas: React.FC = () => {
       {/* Total Card */}
       <div className="mt-8">
         <CardResultado
-          title="💰 TOTAL DE DESPESAS FIXAS"
+          title="TOTAL DE DESPESAS FIXAS"
           value={totalDespesas}
           variant="total"
           className="py-6"

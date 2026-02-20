@@ -20,14 +20,14 @@ const ComoUsar: React.FC = () => {
           <div className="flex items-center gap-3">
             <Calculator className="w-6 h-6 text-[#3b82f6]" />
             <h3 className="text-lg font-bold text-white">
-              1️⃣ COMECE PELA CALCULADORA DE PRECIFICAÇÃO
+              1. COMECE PELA CALCULADORA DE PRECIFICAÇÃO
             </h3>
           </div>
         </div>
         <div className="p-6 space-y-4">
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <span className="text-[#3b82f6]">✏️</span>
+              <span className="text-[#3b82f6]">•</span>
               <div>
                 <p className="text-white font-medium">Preencha suas Despesas Fixas</p>
                 <ul className="text-[#a0a0a0] text-sm mt-1 space-y-1">
@@ -38,7 +38,7 @@ const ComoUsar: React.FC = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-[#3b82f6]">✏️</span>
+              <span className="text-[#3b82f6]">•</span>
               <div>
                 <p className="text-white font-medium">Calcule sua Hora Clínica</p>
                 <ul className="text-[#a0a0a0] text-sm mt-1 space-y-1">
@@ -48,7 +48,7 @@ const ComoUsar: React.FC = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-[#3b82f6]">✏️</span>
+              <span className="text-[#3b82f6]">•</span>
               <div>
                 <p className="text-white font-medium">Precifique seus Procedimentos</p>
                 <ul className="text-[#a0a0a0] text-sm mt-1 space-y-1">
@@ -59,7 +59,7 @@ const ComoUsar: React.FC = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-[#3b82f6]">✏️</span>
+              <span className="text-[#3b82f6]">•</span>
               <div>
                 <p className="text-white font-medium">Descubra seu Ponto de Equilíbrio</p>
                 <ul className="text-[#a0a0a0] text-sm mt-1 space-y-1">
@@ -84,14 +84,14 @@ const ComoUsar: React.FC = () => {
           <div className="flex items-center gap-3">
             <Target className="w-6 h-6 text-[#10b981]" />
             <h3 className="text-lg font-bold text-white">
-              2️⃣ DEPOIS, USE O SIMULADOR DE METAS
+              2. DEPOIS, USE O SIMULADOR DE METAS
             </h3>
           </div>
         </div>
         <div className="p-6 space-y-4">
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <span className="text-[#10b981]">✏️</span>
+              <span className="text-[#10b981]">•</span>
               <div>
                 <p className="text-white font-medium">Analise MC por Procedimento</p>
                 <ul className="text-[#a0a0a0] text-sm mt-1 space-y-1">
@@ -102,7 +102,7 @@ const ComoUsar: React.FC = () => {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <span className="text-[#10b981]">✏️</span>
+              <span className="text-[#10b981]">•</span>
               <div>
                 <p className="text-white font-medium">Monte seu Plano de Metas</p>
                 <ul className="text-[#a0a0a0] text-sm mt-1 space-y-1">
@@ -129,14 +129,14 @@ const ComoUsar: React.FC = () => {
           <div className="flex items-center gap-3">
             <Calendar className="w-6 h-6 text-[#f59e0b]" />
             <h3 className="text-lg font-bold text-white">
-              3️⃣ REVISE MENSALMENTE
+              3. REVISE MENSALMENTE
             </h3>
           </div>
         </div>
         <div className="p-6 space-y-4">
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <p className="text-white font-medium mb-2">📅 Todo início de mês:</p>
+              <p className="text-white font-medium mb-2">Todo início de mês:</p>
               <ul className="text-[#a0a0a0] text-sm space-y-1">
                 <li>• Revise despesas fixas (mudou algo?)</li>
                 <li>• Ajuste preços se necessário</li>
@@ -145,7 +145,7 @@ const ComoUsar: React.FC = () => {
               </ul>
             </div>
             <div>
-              <p className="text-white font-medium mb-2">📅 Trimestralmente:</p>
+              <p className="text-white font-medium mb-2">Trimestralmente:</p>
               <ul className="text-[#a0a0a0] text-sm space-y-1">
                 <li>• Analise procedimentos mais vendidos</li>
                 <li>• Reavalie MC de cada um</li>
@@ -163,38 +163,38 @@ const ComoUsar: React.FC = () => {
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-6 h-6 text-[#f59e0b]" />
             <h3 className="text-lg font-bold text-white">
-              ⚠️ DICAS IMPORTANTES
+              DICAS IMPORTANTES
             </h3>
           </div>
         </div>
         <div className="p-6 space-y-4">
           <div className="space-y-3">
             <p className="text-white flex items-center gap-2">
-              <span className="text-[#10b981]">✅</span>
+              <span className="text-[#10b981]">+</span>
               Seus dados ficam salvos automaticamente
               <span className="text-[#a0a0a0] text-sm">(localStorage do navegador)</span>
             </p>
             <p className="text-white flex items-center gap-2">
-              <span className="text-[#10b981]">✅</span>
-              Use os tooltips (❓) se tiver dúvida
+              <span className="text-[#10b981]">+</span>
+              Use os tooltips se tiver dúvida
             </p>
             <p className="text-white flex items-center gap-2">
-              <span className="text-[#10b981]">✅</span>
+              <span className="text-[#10b981]">+</span>
               Não precisa ser perfeito, comece!
             </p>
             <p className="text-white flex items-center gap-2">
-              <span className="text-[#10b981]">✅</span>
+              <span className="text-[#10b981]">+</span>
               Melhor ter números aproximados que nenhum número
             </p>
             <p className="text-[#f59e0b] flex items-center gap-2">
-              <span>⚠️</span>
+              <span>!</span>
               Limpar cache do navegador apaga os dados
             </p>
           </div>
 
           <div className="mt-6 pt-6 border-t border-[#404040]">
             <p className="text-[#a0a0a0] text-sm mb-3">
-              💡 Para gestão completa com histórico, backup em nuvem e relatórios avançados:
+              Para gestão completa com histórico, backup em nuvem e relatórios avançados:
             </p>
             <Button
               variant="outline"

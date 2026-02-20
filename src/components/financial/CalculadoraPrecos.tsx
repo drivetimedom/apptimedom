@@ -143,7 +143,7 @@ const CalculadoraPrecos: React.FC = () => {
 
       {/* Parâmetros Globais */}
       <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-6">
-        <h3 className="text-lg font-semibold text-white mb-4">⚙️ Parâmetros Globais</h3>
+        <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2"><Settings className="w-5 h-5 text-[#a0a0a0]" /> Parâmetros Globais</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <InputMoeda
             label="Minuto Clínico"
@@ -180,8 +180,8 @@ const CalculadoraPrecos: React.FC = () => {
             </SelectTrigger>
             <SelectContent className="bg-[#2d2d2d] border-[#404040]">
               <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="profit">✅ Lucrativos</SelectItem>
-              <SelectItem value="loss">❌ Prejuízo</SelectItem>
+              <SelectItem value="profit">Lucrativos</SelectItem>
+              <SelectItem value="loss">Prejuízo</SelectItem>
             </SelectContent>
           </Select>
 
@@ -378,7 +378,7 @@ const CalculadoraPrecos: React.FC = () => {
                   <div className="border-t border-[#404040] pt-2 flex justify-between">
                     <span className="text-white font-medium">Lucro:</span>
                     <span className={`font-bold ${previewCalc.lucro >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                      {formatCurrency(previewCalc.lucro)} {previewCalc.lucro >= 0 ? '✅' : '❌'}
+                      {formatCurrency(previewCalc.lucro)}
                     </span>
                   </div>
                   <div className="flex justify-between">

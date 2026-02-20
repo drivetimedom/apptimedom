@@ -173,7 +173,7 @@ const HoraClinica: React.FC = () => {
       <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-6">
         <div className="flex items-center gap-3 mb-6">
           <Calculator className="w-6 h-6 text-[#3b82f6]" />
-          <h3 className="text-lg font-semibold text-white">💰 CÁLCULO</h3>
+          <h3 className="text-lg font-semibold text-white">CÁLCULO</h3>
         </div>
 
         <div className="space-y-4 mb-6">

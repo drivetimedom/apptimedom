@@ -22,7 +22,7 @@ interface Concept {
 
 const concepts: Concept[] = [
   {
-    icon: '💰',
+    icon: '$',
     title: 'DESPESAS FIXAS',
     content: (
       <div className="space-y-3">
@@ -41,14 +41,14 @@ const concepts: Concept[] = [
           </ul>
         </div>
         <p className="text-[#f59e0b] text-sm">
-          ⚠️ Mesmo em férias, você paga essas contas!
+          Mesmo em férias, você paga essas contas!
         </p>
       </div>
     ),
     link: { text: 'Ver calculadora', href: '/financial-system' },
   },
   {
-    icon: '💵',
+    icon: 'R$',
     title: 'CUSTOS VARIÁVEIS',
     content: (
       <div className="space-y-3">
@@ -68,13 +68,13 @@ const concepts: Concept[] = [
           </ul>
         </div>
         <p className="text-[#10b981] text-sm">
-          💡 Quanto menor o custo variável, maior seu lucro!
+          Quanto menor o custo variável, maior seu lucro!
         </p>
       </div>
     ),
   },
   {
-    icon: '🕐',
+    icon: 'h',
     title: 'HORA CLÍNICA',
     content: (
       <div className="space-y-3">
@@ -95,14 +95,14 @@ const concepts: Concept[] = [
           Ou seja, cada hora que você trabalha tem um custo operacional de R$ 124,00.
         </p>
         <p className="text-[#10b981] text-sm">
-          💡 Use para calcular quanto tempo você "gasta" em cada procedimento e incluir no preço!
+          Use para calcular quanto tempo você "gasta" em cada procedimento e incluir no preço!
         </p>
       </div>
     ),
     link: { text: 'Calcular minha hora clínica', href: '/financial-system' },
   },
   {
-    icon: '📊',
+    icon: '%',
     title: 'MARGEM DE CONTRIBUIÇÃO (MC)',
     content: (
       <div className="space-y-3">
@@ -126,14 +126,14 @@ const concepts: Concept[] = [
           </p>
         </div>
         <p className="text-[#10b981] text-sm">
-          💡 Quanto MAIOR a MC%, melhor! Significa que sobra mais dinheiro para pagar suas despesas fixas e gerar lucro.
+          Quanto MAIOR a MC%, melhor! Significa que sobra mais dinheiro para pagar suas despesas fixas e gerar lucro.
         </p>
       </div>
     ),
     link: { text: 'Analisar MC dos meus procedimentos', href: '/financial-system' },
   },
   {
-    icon: '🎯',
+    icon: '=',
     title: 'PONTO DE EQUILÍBRIO (PE)',
     content: (
       <div className="space-y-3">
@@ -154,18 +154,18 @@ const concepts: Concept[] = [
         </div>
         <div className="bg-[#3a3a3a] rounded-lg p-3 space-y-1">
           <p className="text-[#a0a0a0] text-sm">Interpretação:</p>
-          <p className="text-[#ef4444] text-sm">⚠️ Faturar ABAIXO de R$ 36.383 = PREJUÍZO</p>
-          <p className="text-[#10b981] text-sm">✅ Faturar ACIMA de R$ 36.383 = LUCRO</p>
+          <p className="text-[#ef4444] text-sm">Faturar ABAIXO de R$ 36.383 = PREJUÍZO</p>
+          <p className="text-[#10b981] text-sm">Faturar ACIMA de R$ 36.383 = LUCRO</p>
         </div>
         <p className="text-[#10b981] text-sm">
-          💡 O PE te diz o "chão" que você não pode ficar abaixo!
+          O PE te diz o "chão" que você não pode ficar abaixo!
         </p>
       </div>
     ),
     link: { text: 'Calcular meu PE', href: '/financial-system' },
   },
   {
-    icon: '🎫',
+    icon: 'T',
     title: 'TICKET MÉDIO',
     content: (
       <div className="space-y-3">
@@ -182,7 +182,7 @@ const concepts: Concept[] = [
           </p>
         </div>
         <p className="text-[#10b981] text-sm">
-          💡 Quanto MAIOR o ticket médio, melhor! Você atende menos pessoas e ganha mais. Trabalho inteligente.
+          Quanto MAIOR o ticket médio, melhor! Você atende menos pessoas e ganha mais. Trabalho inteligente.
         </p>
         <div className="bg-[#3a3a3a] rounded-lg p-3">
           <p className="text-[#a0a0a0] text-sm mb-2">Dicas para aumentar:</p>
@@ -196,7 +196,7 @@ const concepts: Concept[] = [
     ),
   },
   {
-    icon: '💎',
+    icon: 'PL',
     title: 'PRÓ-LABORE',
     content: (
       <div className="space-y-3">
@@ -207,8 +207,8 @@ const concepts: Concept[] = [
         </p>
         <div className="bg-[#f59e0b]/10 border border-[#f59e0b] rounded-lg p-3 space-y-1">
           <p className="text-[#f59e0b] text-sm font-semibold">Importante:</p>
-          <p className="text-white text-sm">⚠️ Pró-labore É despesa fixa (entra no cálculo do PE)</p>
-          <p className="text-white text-sm">⚠️ Lucro é o que sobra DEPOIS de pagar tudo, incluindo pró-labore</p>
+          <p className="text-white text-sm">Pró-labore É despesa fixa (entra no cálculo do PE)</p>
+          <p className="text-white text-sm">Lucro é o que sobra DEPOIS de pagar tudo, incluindo pró-labore</p>
         </div>
         <div className="bg-[#3a3a3a] rounded-lg p-3">
           <p className="text-[#a0a0a0] text-sm mb-2">Exemplo:</p>
@@ -217,7 +217,7 @@ const concepts: Concept[] = [
           <p className="text-white text-sm">Se tiver lucro no final, pode distribuir além do pró-labore</p>
         </div>
         <p className="text-[#ef4444] text-sm font-semibold">
-          💡 NUNCA deixe seu pró-labore em R$ 0,00! Você também precisa receber pelo seu trabalho.
+          NUNCA deixe seu pró-labore em R$ 0,00! Você também precisa receber pelo seu trabalho.
         </p>
       </div>
     ),

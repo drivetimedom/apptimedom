@@ -213,23 +213,23 @@ const LessonPage: React.FC = () => {
     <div className="min-h-screen bg-background">
       {/* Breadcrumb */}
       <div className="border-b border-border bg-card/50">
-        <div className="container py-3">
-          <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <Link to="/" className="hover:text-foreground transition-colors">Início</Link>
-            <span>/</span>
-            <Link to={`/course/${courseId}`} className="hover:text-foreground transition-colors">{course.title}</Link>
-            <span>/</span>
-            <span className="text-foreground truncate max-w-xs">{currentLesson.title}</span>
+        <div className="container px-6 md:px-8 py-4 md:py-5">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground overflow-x-auto">
+            <Link to="/" className="hover:text-foreground transition-colors whitespace-nowrap flex-shrink-0">Início</Link>
+            <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <Link to={`/course/${courseId}`} className="hover:text-foreground transition-colors truncate max-w-[120px] md:max-w-none" title={course.title}>{course.title}</Link>
+            <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+            <span className="text-foreground font-medium truncate max-w-[150px] md:max-w-md" title={currentLesson.title}>{currentLesson.title}</span>
           </nav>
         </div>
       </div>
 
-      <div className="container py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
+      <div className="container px-6 md:px-8 py-6 md:py-8">
+        <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
           {/* Main Content */}
-          <div className="flex-1 space-y-6">
+          <div className="flex-1 space-y-6 md:space-y-8">
             {/* Video Player */}
-            <div className="relative rounded-xl overflow-hidden bg-black shadow-elegant">
+            <div className="relative rounded-xl overflow-hidden bg-black shadow-elegant mb-2 md:mb-0">
               <div className="relative" style={{ paddingBottom: '56.25%' }}>
                 {/* Initial loading overlay (before player ready) */}
                 {videoLoading && !videoError && (
@@ -270,10 +270,11 @@ const LessonPage: React.FC = () => {
                 />
               </div>
 
+              {/* Navigation arrows — hidden on mobile */}
               {prevLesson && (
                 <button
                   onClick={() => navigateLesson(prevLesson.id)}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background transition-colors"
+                  className="hidden md:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/80 backdrop-blur-sm items-center justify-center text-foreground hover:bg-background transition-colors z-10"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -281,7 +282,7 @@ const LessonPage: React.FC = () => {
               {nextLesson && (
                 <button
                   onClick={() => navigateLesson(nextLesson.id)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center text-foreground hover:bg-background transition-colors"
+                  className="hidden md:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/80 backdrop-blur-sm items-center justify-center text-foreground hover:bg-background transition-colors z-10"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -289,23 +290,21 @@ const LessonPage: React.FC = () => {
             </div>
 
             {/* Lesson Info */}
-            <div className="space-y-4">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">{currentLesson.title}</h1>
-                  <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
-                    <span className="flex items-center space-x-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{currentLesson.duration}</span>
-                    </span>
-                  </div>
+            <div className="space-y-4 md:space-y-6">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-3">{currentLesson.title}</h1>
+                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                  <span className="flex items-center space-x-1">
+                    <Clock className="w-4 h-4" />
+                    <span>{currentLesson.duration}</span>
+                  </span>
                 </div>
               </div>
 
-              <p className="text-muted-foreground">{currentLesson.description}</p>
+              <p className="text-muted-foreground text-base">{currentLesson.description}</p>
 
-              {/* Actions */}
-              <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-border">
+              {/* Actions — Desktop */}
+              <div className="hidden md:flex flex-wrap items-center gap-4 pt-6 border-t border-border">
                 <Button variant={isLiked ? 'default' : 'outline'} size="sm" onClick={handleLike} className={isLiked ? 'bg-success hover:bg-success/90' : ''}>
                   <ThumbsUp className="w-4 h-4 mr-2" /> Like
                 </Button>
@@ -323,24 +322,44 @@ const LessonPage: React.FC = () => {
                   <Share2 className="w-4 h-4 mr-2" /> Compartilhar
                 </Button>
               </div>
+
+              {/* Actions — Mobile: 2-col grid with larger touch targets */}
+              <div className="grid grid-cols-2 gap-4 md:hidden pt-6 border-t border-border">
+                <Button variant={isLiked ? 'default' : 'outline'} onClick={handleLike} className={`w-full h-12 ${isLiked ? 'bg-success hover:bg-success/90' : ''}`}>
+                  <ThumbsUp className="w-4 h-4 mr-2" /> Like
+                </Button>
+                <Button variant={isDisliked ? 'default' : 'outline'} onClick={handleDislike} className={`w-full h-12 ${isDisliked ? 'bg-destructive hover:bg-destructive/90' : ''}`}>
+                  <ThumbsDown className="w-4 h-4 mr-2" /> Dislike
+                </Button>
+                <Button variant={isCompleted ? 'default' : 'outline'} onClick={handleMarkComplete} className={`w-full col-span-2 h-12 ${isCompleted ? 'bg-success hover:bg-success/90' : ''}`}>
+                  <CheckCircle className="w-4 h-4 mr-2" /> {isCompleted ? 'Concluída' : 'Marcar como concluída'}
+                </Button>
+                <Button variant={isFavorite ? 'default' : 'outline'} onClick={handleFavorite} className="w-full h-12">
+                  {isFavorite ? <BookmarkCheck className="w-4 h-4 mr-2" /> : <Bookmark className="w-4 h-4 mr-2" />}
+                  Salvar
+                </Button>
+                <Button variant="outline" className="w-full h-12">
+                  <Share2 className="w-4 h-4 mr-2" /> Compartilhar
+                </Button>
+              </div>
             </div>
 
             {/* Resources */}
             {currentLesson.resources && currentLesson.resources.length > 0 && (
-              <div className="bg-card rounded-xl border border-border p-6">
-                <h3 className="font-semibold text-foreground mb-4">Recursos da Aula</h3>
-                <div className="space-y-2">
+              <div className="bg-card rounded-xl border border-border p-5 md:p-8">
+                <h3 className="font-semibold text-foreground text-lg mb-4 md:mb-6">Recursos da Aula</h3>
+                <div className="space-y-3 md:space-y-4">
                   {currentLesson.resources.map((resource: any, idx: number) => (
                     <a
                       key={idx}
                       href={resource.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center space-x-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
+                      className="flex items-center space-x-4 p-4 md:p-5 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
                     >
-                      <FileText className="w-5 h-5 text-info" />
-                      <span className="text-foreground flex-1">{resource.name}</span>
-                      <ExternalLink className="w-4 h-4 text-muted-foreground" />
+                      <FileText className="w-6 h-6 text-info flex-shrink-0" />
+                      <span className="text-foreground flex-1 font-medium">{resource.name}</span>
+                      <ExternalLink className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                     </a>
                   ))}
                 </div>
@@ -348,8 +367,8 @@ const LessonPage: React.FC = () => {
             )}
 
             {/* Comments */}
-            <div className="bg-card rounded-xl border border-border p-6">
-              <h3 className="font-semibold text-foreground mb-6">Dúvidas ({lessonComments.length})</h3>
+            <div className="bg-card rounded-xl border border-border p-5 md:p-8">
+              <h3 className="font-semibold text-foreground text-lg mb-6">Dúvidas ({lessonComments.length})</h3>
               
               {/* New Comment */}
               <div className="flex items-start space-x-3 mb-6">

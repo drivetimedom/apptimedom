@@ -77,42 +77,38 @@ const FeaturedRelationships: React.FC<{
   if (featuredFolders.length === 0 && featuredProcesses.length === 0) return null;
 
   return (
-    <div className="mt-6 border-t border-border pt-6 space-y-5">
+    <div className="border-t border-border pt-5 space-y-4">
+      {/* Metodologias — badges discretos */}
       {featuredFolders.length > 0 && (
         <div>
-          <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
-            <FolderOpen className="w-4 h-4" />
-            Metodologias
-          </Label>
+          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Metodologias</p>
           <div className="flex flex-wrap gap-2">
             {featuredFolders.map(folder => (
-              <button
+              <Badge
                 key={folder.id}
+                variant="outline"
+                className="cursor-pointer hover:bg-accent transition-colors text-xs"
                 onClick={() => onOpenProcess?.(folder.id)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-accent rounded-lg text-sm text-foreground hover:bg-accent/80 transition-colors cursor-pointer"
               >
-                📂 {folder.title}
-              </button>
+                {folder.title}
+              </Badge>
             ))}
           </div>
         </div>
       )}
+      {/* Processos Relacionados — lista simples */}
       {featuredProcesses.length > 0 && (
         <div>
-          <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 flex items-center gap-2">
-            <LinkIcon className="w-4 h-4" />
-            Processos Relacionados
-          </Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wide">Ver também</p>
+          <div className="space-y-1">
             {featuredProcesses.map(related => (
               <button
                 key={related.id}
                 onClick={() => onOpenProcess?.(related.id)}
-                className="flex items-center gap-3 p-4 border border-border rounded-lg hover:bg-accent hover:border-primary transition-all cursor-pointer group text-left"
+                className="flex items-center gap-2 w-full text-left text-sm text-muted-foreground hover:text-foreground hover:underline transition-colors py-0.5"
               >
-                <Badge variant="outline">{related.type?.name || 'Processo'}</Badge>
-                <span className="flex-1 text-sm text-foreground truncate">{related.title}</span>
-                <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                <ChevronRight className="w-3 h-3 flex-shrink-0" />
+                {related.title}
               </button>
             ))}
           </div>
@@ -605,77 +601,65 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                 </div>
               )}
 
-              {/* Links */}
-              {process?.links && process.links.length > 0 && (
-                <div>
-                  <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 block">Links e Recursos</Label>
-                  <div className="space-y-3">
-                    {process.links.map((link, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between bg-card/50 p-3 rounded-lg hover:bg-card transition-colors"
-                      >
-                        <span className="flex items-center gap-2 text-foreground text-sm">
-                          <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                          {link.label}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => window.open(link.url, '_blank')}
-                            className="h-8 px-3 text-xs"
-                          >
-                            Abrir
-                          </Button>
-                          <button
-                            onClick={() => handleCopyLink(link.url)}
-                            className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-                            title="Copiar link"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </button>
-                        </div>
+              {/* Links & PDFs — seção principal em destaque */}
+              {((process?.links && process.links.length > 0) || (process?.pdfs && process.pdfs.length > 0)) && (
+                <div className="border-2 border-primary/20 bg-primary/5 rounded-xl p-5 space-y-3">
+                  <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
+                    <ExternalLink className="w-5 h-5 text-primary" />
+                    Links e Recursos
+                  </h3>
+                  {process?.links && process.links.map((link, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-background rounded-lg p-4 border border-border"
+                    >
+                      <p className="font-medium text-foreground mb-1">{link.label}</p>
+                      <p className="text-xs text-muted-foreground break-all mb-3">{link.url}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => window.open(link.url, '_blank')}
+                          className="flex-1 gap-2"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Abrir Link
+                        </Button>
+                        <button
+                          onClick={() => handleCopyLink(link.url)}
+                          className="w-9 h-9 rounded-md flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors border border-border"
+                          title="Copiar link"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* PDFs */}
-              {process?.pdfs && process.pdfs.length > 0 && (
-                <div>
-                  <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3 block">Documentos PDF</Label>
-                  <div className="space-y-3">
-                    {process.pdfs.map((pdf, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between bg-card/50 p-3 rounded-lg hover:bg-card transition-colors"
-                      >
-                        <span className="flex items-center gap-2 text-foreground text-sm">
-                          <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                          {pdf.label}
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => window.open(pdf.url, '_blank')}
-                            className="h-8 px-3 text-xs"
-                          >
-                            Ver
-                          </Button>
-                          <button
-                            onClick={() => handleCopyLink(pdf.url)}
-                            className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-                            title="Copiar link"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </button>
-                        </div>
+                    </div>
+                  ))}
+                  {process?.pdfs && process.pdfs.map((pdf, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-background rounded-lg p-4 border border-border"
+                    >
+                      <p className="font-medium text-foreground mb-1">{pdf.label}</p>
+                      <p className="text-xs text-muted-foreground break-all mb-3">{pdf.url}</p>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => window.open(pdf.url, '_blank')}
+                          className="flex-1 gap-2"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Ver Documento
+                        </Button>
+                        <button
+                          onClick={() => handleCopyLink(pdf.url)}
+                          className="w-9 h-9 rounded-md flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors border border-border"
+                          title="Copiar link"
+                        >
+                          <Copy className="w-4 h-4" />
+                        </button>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               )}
 

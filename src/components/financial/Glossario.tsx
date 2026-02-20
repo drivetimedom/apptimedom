@@ -17,7 +17,7 @@ const glossaryTerms: GlossaryTerm[] = [
       <>
         Percentual de imposto cobrado sobre o faturamento. Varia conforme regime tributário 
         (Simples Nacional, Lucro Presumido, Lucro Real).
-        <p className="text-[#10b981] text-sm mt-2">💡 Consulte seu contador para saber a sua.</p>
+        <p className="text-[#10b981] text-sm mt-2">Consulte seu contador para saber a sua.</p>
       </>
     ),
   },
@@ -219,13 +219,13 @@ const Glossario: React.FC = () => {
                     className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-4"
                   >
                     <div className="flex items-start gap-2">
-                      <span className="text-[#3b82f6]">📌</span>
+                      <span className="text-[#3b82f6]">#</span>
                       <div className="flex-1">
                         <h4 className="text-white font-semibold">
                           {item.term}
                           {item.isPro && (
                             <span className="ml-2 text-xs bg-[#f59e0b]/20 text-[#f59e0b] px-2 py-0.5 rounded">
-                              💎 PRO
+                              PRO
                             </span>
                           )}
                         </h4>

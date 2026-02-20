@@ -613,8 +613,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                       key={idx}
                       className="bg-background rounded-lg p-4 border border-border"
                     >
-                      <p className="font-medium text-foreground mb-1">{link.label}</p>
-                      <p className="text-xs text-muted-foreground break-all mb-3">{link.url}</p>
+                      <p className="font-medium text-foreground mb-3">{link.label}</p>
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -639,8 +638,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                       key={idx}
                       className="bg-background rounded-lg p-4 border border-border"
                     >
-                      <p className="font-medium text-foreground mb-1">{pdf.label}</p>
-                      <p className="text-xs text-muted-foreground break-all mb-3">{pdf.url}</p>
+                      <p className="font-medium text-foreground mb-3">{pdf.label}</p>
                       <div className="flex gap-2">
                         <Button
                           size="sm"

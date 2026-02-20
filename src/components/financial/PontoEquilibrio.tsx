@@ -8,7 +8,7 @@ const PontoEquilibrio: React.FC = () => {
   const {
     dadosPE,
     setDadosPE,
-    getTotalDespesasFixas,
+    getTotalDespesasFixas
   } = useFinancialStore();
 
   const despesasFixas = getTotalDespesasFixas();
@@ -19,17 +19,17 @@ const PontoEquilibrio: React.FC = () => {
 
   // Pontos de Equilíbrio
   const peBasico = indiceMC > 0 ? despesasFixas / indiceMC : 0;
-  
+
   // PE com meta %: DF / (IMC - meta%)
   const metaDecimal = dadosPE.metaLucroPercent / 100;
-  const peComMetaPercent = (indiceMC - metaDecimal) > 0 
-    ? despesasFixas / (indiceMC - metaDecimal) 
-    : 0;
-  
+  const peComMetaPercent = indiceMC - metaDecimal > 0 ?
+  despesasFixas / (indiceMC - metaDecimal) :
+  0;
+
   // PE com lucro R$: (DF + lucroDesejado) / IMC
-  const peComLucroValor = indiceMC > 0 
-    ? (despesasFixas + dadosPE.lucroDesejado) / indiceMC 
-    : 0;
+  const peComLucroValor = indiceMC > 0 ?
+  (despesasFixas + dadosPE.lucroDesejado) / indiceMC :
+  0;
 
   return (
     <div className="space-y-6">
@@ -50,21 +50,21 @@ const PontoEquilibrio: React.FC = () => {
             label="Receita Mensal Típica"
             value={dadosPE.receitaMensal}
             onChange={(v) => setDadosPE({ receitaMensal: v })}
-            tooltip="Faturamento médio mensal"
-          />
+            tooltip="Faturamento médio mensal" />
+
           <InputMoeda
             label="Custos Variáveis Mensais"
             value={dadosPE.custosVariaveis}
             onChange={(v) => setDadosPE({ custosVariaveis: v })}
-            tooltip="Custos que variam com o faturamento (materiais, comissões)"
-          />
+            tooltip="Custos que variam com o faturamento (materiais, comissões)" />
+
           <InputMoeda
             label="Despesas Fixas"
             value={despesasFixas}
             onChange={() => {}}
             readOnly
-            tooltip="Calculado automaticamente na aba Despesas Fixas"
-          />
+            tooltip="Calculado automaticamente na aba Despesas Fixas" />
+
         </div>
       </div>
 
@@ -79,15 +79,15 @@ const PontoEquilibrio: React.FC = () => {
             title="MC em R$"
             value={margemContribuicao}
             subtitle="Receita - Custos Variáveis"
-            variant={margemContribuicao >= 0 ? 'success' : 'danger'}
-          />
+            variant={margemContribuicao >= 0 ? 'success' : 'danger'} />
+
           <CardResultado
             title="Índice de MC (%)"
             value={indiceMC * 100}
             isPercent
             subtitle="MC ÷ Receita"
-            variant="default"
-          />
+            variant="default" />
+
         </div>
       </div>
 
@@ -101,7 +101,7 @@ const PontoEquilibrio: React.FC = () => {
         {/* PE Básico */}
         <div className="bg-[#f59e0b]/10 rounded-lg border border-[#f59e0b] p-6">
           <div className="flex items-start gap-4">
-            <div className="text-3xl">1️⃣</div>
+            
             <div className="flex-1">
               <h4 className="text-[#f59e0b] font-bold text-lg mb-2">BÁSICO (Lucro = Zero)</h4>
               <p className="text-[#a0a0a0] text-sm mb-4">Você precisa faturar:</p>
@@ -126,8 +126,8 @@ const PontoEquilibrio: React.FC = () => {
                   value={dadosPE.metaLucroPercent}
                   onChange={(v) => setDadosPE({ metaLucroPercent: v })}
                   prefix=""
-                  suffix="%"
-                />
+                  suffix="%" />
+
               </div>
 
               <p className="text-[#a0a0a0] text-sm mb-2">Você precisa faturar:</p>
@@ -152,8 +152,8 @@ const PontoEquilibrio: React.FC = () => {
                 <InputMoeda
                   label="Quero lucro de:"
                   value={dadosPE.lucroDesejado}
-                  onChange={(v) => setDadosPE({ lucroDesejado: v })}
-                />
+                  onChange={(v) => setDadosPE({ lucroDesejado: v })} />
+
               </div>
 
               <p className="text-[#a0a0a0] text-sm mb-2">Você precisa faturar:</p>
@@ -175,8 +175,8 @@ const PontoEquilibrio: React.FC = () => {
           <span className="text-white font-medium">💡 Dica:</span> Valores acima do PE = <span className="text-[#10b981] font-medium">LUCRO</span> | Abaixo = <span className="text-[#ef4444] font-medium">PREJUÍZO</span>
         </p>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default PontoEquilibrio;

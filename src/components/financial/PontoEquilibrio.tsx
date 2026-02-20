@@ -144,7 +144,7 @@ const PontoEquilibrio: React.FC = () => {
         {/* PE com Lucro R$ */}
         <div className="bg-[#2d2d2d] rounded-lg border border-[#404040] p-6">
           <div className="flex items-start gap-4">
-            <div className="text-3xl">3️⃣</div>
+            
             <div className="flex-1">
               <h4 className="text-white font-bold text-lg mb-4">COM LUCRO EM VALOR (R$)</h4>
               
@@ -172,7 +172,7 @@ const PontoEquilibrio: React.FC = () => {
       <div className="flex items-start gap-3 p-4 bg-[#3b82f6]/10 border border-[#3b82f6]/30 rounded-lg">
         <Lightbulb className="w-5 h-5 text-[#3b82f6] flex-shrink-0 mt-0.5" />
         <p className="text-[#a0a0a0] text-sm">
-          <span className="text-white font-medium">💡 Dica:</span> Valores acima do PE = <span className="text-[#10b981] font-medium">LUCRO</span> | Abaixo = <span className="text-[#ef4444] font-medium">PREJUÍZO</span>
+          <span className="text-white font-medium">Dica:</span> Valores acima do PE = <span className="text-[#10b981] font-medium">LUCRO</span> | Abaixo = <span className="text-[#ef4444] font-medium">PREJUÍZO</span>
         </p>
       </div>
     </div>);

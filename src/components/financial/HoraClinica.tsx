@@ -11,7 +11,7 @@ const HoraClinica: React.FC = () => {
     getTotalDespesasFixas,
     getTotalHorasMensais,
     getHoraClinicaValor,
-    getMinutoClinicoValor,
+    getMinutoClinicoValor
   } = useFinancialStore();
 
   const totalDespesas = getTotalDespesasFixas();
@@ -58,8 +58,8 @@ const HoraClinica: React.FC = () => {
                     onChange={(v) => setHoraClinica({ horasSemana: v })}
                     prefix=""
                     suffix="h"
-                    className="max-w-[100px] mx-auto"
-                  />
+                    className="max-w-[100px] mx-auto" />
+
                 </td>
                 <td className="py-4 px-4">
                   <InputMoeda
@@ -68,8 +68,8 @@ const HoraClinica: React.FC = () => {
                     onChange={(v) => setHoraClinica({ diasSemana: v })}
                     prefix=""
                     suffix="dias"
-                    className="max-w-[100px] mx-auto"
-                  />
+                    className="max-w-[100px] mx-auto" />
+
                 </td>
                 <td className="py-4 px-4 text-center">
                   <span className="text-[#10b981] font-bold text-lg">{horasSemanaTotal}h</span>
@@ -84,8 +84,8 @@ const HoraClinica: React.FC = () => {
                     onChange={(v) => setHoraClinica({ horasSabado: v })}
                     prefix=""
                     suffix="h"
-                    className="max-w-[100px] mx-auto"
-                  />
+                    className="max-w-[100px] mx-auto" />
+
                 </td>
                 <td className="py-4 px-4">
                   <InputMoeda
@@ -94,8 +94,8 @@ const HoraClinica: React.FC = () => {
                     onChange={(v) => setHoraClinica({ diasSabado: v })}
                     prefix=""
                     suffix="dias"
-                    className="max-w-[100px] mx-auto"
-                  />
+                    className="max-w-[100px] mx-auto" />
+
                 </td>
                 <td className="py-4 px-4 text-center">
                   <span className="text-[#10b981] font-bold text-lg">{horasSabadoTotal}h</span>
@@ -123,15 +123,15 @@ const HoraClinica: React.FC = () => {
                 value={horaClinica.horasSemana}
                 onChange={(v) => setHoraClinica({ horasSemana: v })}
                 prefix=""
-                suffix="h"
-              />
+                suffix="h" />
+
               <InputMoeda
                 label="Dias/Mês"
                 value={horaClinica.diasSemana}
                 onChange={(v) => setHoraClinica({ diasSemana: v })}
                 prefix=""
-                suffix="dias"
-              />
+                suffix="dias" />
+
             </div>
             <div className="mt-3 text-right">
               <span className="text-[#a0a0a0] text-sm">Total: </span>
@@ -147,15 +147,15 @@ const HoraClinica: React.FC = () => {
                 value={horaClinica.horasSabado}
                 onChange={(v) => setHoraClinica({ horasSabado: v })}
                 prefix=""
-                suffix="h"
-              />
+                suffix="h" />
+
               <InputMoeda
                 label="Dias/Mês"
                 value={horaClinica.diasSabado}
                 onChange={(v) => setHoraClinica({ diasSabado: v })}
                 prefix=""
-                suffix="dias"
-              />
+                suffix="dias" />
+
             </div>
             <div className="mt-3 text-right">
               <span className="text-[#a0a0a0] text-sm">Total: </span>
@@ -192,14 +192,14 @@ const HoraClinica: React.FC = () => {
             title="💎 SUA HORA CLÍNICA"
             value={horaClinicaValor}
             subtitle="por hora"
-            variant="total"
-          />
+            variant="total" />
+
           <CardResultado
             title="⏱️ MINUTO CLÍNICO"
             value={minutoClinico}
             subtitle="por minuto"
-            variant="success"
-          />
+            variant="success" />
+
         </div>
       </div>
 
@@ -207,11 +207,11 @@ const HoraClinica: React.FC = () => {
       <div className="flex items-start gap-3 p-4 bg-[#3b82f6]/10 border border-[#3b82f6]/30 rounded-lg">
         <Lightbulb className="w-5 h-5 text-[#3b82f6] flex-shrink-0 mt-0.5" />
         <p className="text-[#a0a0a0] text-sm">
-          <span className="text-white font-medium">💡 Dica:</span> Use este valor para calcular o custo do seu tempo em cada procedimento!
+          <span className="text-white font-medium">Dica:</span> Use este valor para calcular o custo do seu tempo em cada procedimento!
         </p>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default HoraClinica;

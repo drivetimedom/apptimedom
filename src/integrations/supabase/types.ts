@@ -691,6 +691,44 @@ export type Database = {
           },
         ]
       }
+      map_progress: {
+        Row: {
+          created_at: string
+          id: string
+          map_id: string
+          progress: number
+          updated_at: string
+          user_id: string
+          watched_videos: string[]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          map_id: string
+          progress?: number
+          updated_at?: string
+          user_id: string
+          watched_videos?: string[]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          map_id?: string
+          progress?: number
+          updated_at?: string
+          user_id?: string
+          watched_videos?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "map_progress_map_id_fkey"
+            columns: ["map_id"]
+            isOneToOne: false
+            referencedRelation: "hof_maps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           activation_plan: Json | null

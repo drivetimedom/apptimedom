@@ -87,6 +87,19 @@ function useEducationalData(userId: string) {
     },
   });
 
+  const mapProgress = useQuery({
+    queryKey: ['map-progress-admin', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('map_progress')
+        .select('*, hof_maps(id, name, icon, videos, total_duration)')
+        .eq('user_id', userId);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
   const lastActivity = useQuery({
     queryKey: ['last-activity', userId],
     queryFn: async () => {
@@ -110,13 +123,14 @@ function useEducationalData(userId: string) {
     watchProgress: watchProgress.data || [],
     challengeProgress: challengeProgress.data || [],
     maps: maps.data || [],
+    mapProgress: mapProgress.data || [],
     lastActivity: lastActivity.data,
-    isLoading: enrollments.isLoading || completions.isLoading || certificates.isLoading || lastActivity.isLoading || watchProgress.isLoading || challengeProgress.isLoading,
+    isLoading: enrollments.isLoading || completions.isLoading || certificates.isLoading || lastActivity.isLoading || watchProgress.isLoading || challengeProgress.isLoading || mapProgress.isLoading,
   };
 }
 
 const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId, studentName }) => {
-  const { enrollments, completions, certificates, watchProgress, challengeProgress, maps, lastActivity, isLoading } = useEducationalData(userId);
+  const { enrollments, completions, certificates, watchProgress, challengeProgress, maps, mapProgress, lastActivity, isLoading } = useEducationalData(userId);
 
   if (isLoading) {
     return (
@@ -397,20 +411,24 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
         </Card>
       )}
 
-      {/* Maps Progress - derived from challenge_progress for maps */}
-      {/* Note: Maps use the same hof structure; show available maps with prescribed info */}
+      {/* Maps Progress */}
       {maps.length > 0 && (
         <Card className="bg-card border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Map className="w-4 h-4 text-primary" />
-              🗺️ Mapas Disponíveis ({maps.length})
+              🗺️ Mapas ({maps.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {maps.map((m: any) => {
                 const videos = Array.isArray(m.videos) ? m.videos : [];
+                const userProgress = mapProgress.find((mp: any) => mp.map_id === m.id);
+                const watchedCount = userProgress ? (Array.isArray(userProgress.watched_videos) ? userProgress.watched_videos.length : 0) : 0;
+                const totalCount = videos.length;
+                const pct = totalCount > 0 ? Math.round((watchedCount / totalCount) * 100) : 0;
+
                 return (
                   <div key={m.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
                     <span className="text-lg flex-shrink-0">{m.icon || '🗺️'}</span>
@@ -419,11 +437,20 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
                       {m.description && (
                         <p className="text-[11px] text-muted-foreground truncate">{m.description}</p>
                       )}
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <Progress value={pct} className="h-2 flex-1" />
+                        <span className="text-[11px] font-medium text-muted-foreground w-8 text-right">{pct}%</span>
+                      </div>
                       <p className="text-[11px] text-muted-foreground mt-1">
-                        {videos.length} vídeo{videos.length !== 1 ? 's' : ''}
+                        {watchedCount}/{totalCount} vídeos assistidos
                         {m.total_duration > 0 && ` • ${Math.floor(m.total_duration / 60)}min`}
                       </p>
                     </div>
+                    {pct === 100 && (
+                      <Badge variant="default" className="text-[10px] px-1.5 py-0 bg-success text-success-foreground flex-shrink-0">
+                        <CheckCircle className="w-3 h-3 mr-0.5" /> Concluído
+                      </Badge>
+                    )}
                   </div>
                 );
               })}

@@ -250,6 +250,84 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
         </CardContent>
       </Card>
 
+      {/* Detailed Watched Lessons */}
+      <Card className="bg-card border-border">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-primary" />
+            📖 Aulas Assistidas ({watchProgress.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {watchProgress.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              Nenhuma aula assistida ainda
+            </p>
+          ) : (
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              {[...watchProgress]
+                .sort((a: any, b: any) => new Date(b.last_watched_at || 0).getTime() - new Date(a.last_watched_at || 0).getTime())
+                .map((wp: any) => {
+                  const lesson = wp.lessons;
+                  const course = lesson?.courses;
+                  const watchedSec = wp.watched_seconds || 0;
+                  const totalSec = wp.total_duration || 0;
+                  const pct = totalSec > 0 ? Math.min(Math.round((watchedSec / totalSec) * 100), 100) : 0;
+                  const completed = wp.completed || false;
+
+                  const fmt = (s: number) => {
+                    const h = Math.floor(s / 3600);
+                    const m = Math.floor((s % 3600) / 60);
+                    return h > 0 ? `${h}h ${m}min` : `${m}min`;
+                  };
+
+                  return (
+                    <div key={wp.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {completed ? (
+                          <CheckCircle className="w-5 h-5 text-success" />
+                        ) : (
+                          <Clock className="w-5 h-5 text-warning" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {lesson?.title || 'Sem título'}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground truncate">
+                          {course?.title || 'Curso não especificado'}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                completed ? 'bg-success' : pct > 50 ? 'bg-warning' : 'bg-primary'
+                              }`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className="text-[11px] font-medium text-muted-foreground w-8 text-right">
+                            {pct}%
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-3 mt-1 text-[11px] text-muted-foreground">
+                          <span>⏱️ {fmt(watchedSec)}{totalSec > 0 ? ` / ${fmt(totalSec)}` : ''}</span>
+                          {wp.last_watched_at && (
+                            <span>
+                              🕐 {new Date(wp.last_watched_at).toLocaleDateString('pt-BR')} às{' '}
+                              {new Date(wp.last_watched_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Certificates */}
       {certificates.length > 0 && (
         <Card className="bg-card border-border">

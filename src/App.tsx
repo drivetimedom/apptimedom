@@ -22,6 +22,7 @@ import FinancialSystemPage from "@/pages/FinancialSystemPage";
 import HomeBuilderPage from "@/pages/HomeBuilderPage";
 import EmailPreviewPage from "@/pages/EmailPreviewPage";
 import ImportUsersPage from "@/pages/ImportUsersPage";
+import ImportProcessesPage from "@/pages/ImportProcessesPage";
 import ProfilePage from "@/pages/ProfilePage";
 import NotFound from "@/pages/NotFound";
 
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/admin/home-builder" element={<HomeBuilderPage />} />
               <Route path="/admin/email-preview" element={<EmailPreviewPage />} />
               <Route path="/admin/import-users" element={<ImportUsersPage />} />
+              <Route path="/admin/import-processes" element={<ImportProcessesPage />} />
             </Route>
             
             {/* Catch all */}

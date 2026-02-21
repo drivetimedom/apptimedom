@@ -127,7 +127,7 @@ const LoginPage = () => {
             forgotSent ? (
               <div className="space-y-4 text-center">
                 <div className="bg-primary/10 border border-primary/20 text-primary rounded-lg p-4 text-sm">
-                  📧 Email enviado para <strong>{forgotEmail}</strong>. Verifique sua caixa de entrada e clique no link para redefinir sua senha.
+                  Email enviado para <strong>{forgotEmail}</strong>. Verifique sua caixa de entrada e clique no link para redefinir sua senha.
                 </div>
                 <button
                   type="button"

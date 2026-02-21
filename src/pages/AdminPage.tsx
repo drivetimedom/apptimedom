@@ -91,7 +91,7 @@ import AdminMapsManager from '@/components/admin/AdminMapsManager';
 import AdminChallengesManager from '@/components/admin/AdminChallengesManager';
 import AdminSwipeFileManager from '@/components/admin/AdminSwipeFileManager';
 import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
-import { ClipboardList, Map, Trophy, History } from 'lucide-react';
+import { ClipboardList, Map, Trophy, History, Mail } from 'lucide-react';
 
 // Import database hooks
 import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course } from '@/hooks/useCourses';
@@ -108,6 +108,7 @@ const AdminPage: React.FC = () => {
   const { createUser, isLoading: isCreatingUser } = useCreateUser();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSendingAccess, setIsSendingAccess] = useState(false);
 
   // Database hooks for courses, categories, lessons, banners
   const { data: dbCourses = [], isLoading: coursesLoading } = useCourses();
@@ -368,6 +369,43 @@ const AdminPage: React.FC = () => {
     }
     
     setDeleteConfirm(null);
+  };
+
+  const handleResendAccess = async (user: AdminUser) => {
+    if (isSendingAccess) return;
+
+    const confirmResend = window.confirm(
+      `Reenviar credenciais de acesso para ${user.email}?\n\nUma nova senha temporária será gerada e enviada por email.`
+    );
+    if (!confirmResend) return;
+
+    setIsSendingAccess(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('resend-access', {
+        body: {
+          userId: user.user_id,
+          email: user.email || '',
+          name: user.name,
+        },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: '✅ Credenciais reenviadas!',
+        description: `Email enviado para ${user.email}`,
+      });
+    } catch (error: any) {
+      console.error('Erro ao reenviar acesso:', error);
+      toast({
+        title: 'Erro ao reenviar credenciais',
+        description: error.message || 'Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSendingAccess(false);
+    }
   };
 
   // ====================
@@ -997,6 +1035,14 @@ const AdminPage: React.FC = () => {
                             <DropdownMenuItem onClick={() => openUserModal(user)} className="cursor-pointer">
                               <Key className="w-4 h-4 mr-2" />
                               Gerenciar Acessos
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              onClick={() => handleResendAccess(user)} 
+                              className="cursor-pointer"
+                              disabled={isSendingAccess}
+                            >
+                              <Mail className="w-4 h-4 mr-2" />
+                              Reenviar Acesso
                             </DropdownMenuItem>
                             <DropdownMenuSeparator className="bg-border" />
                             <DropdownMenuItem 

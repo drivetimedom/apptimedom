@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, CheckCircle, Clock, Award, Activity, Loader2 } from 'lucide-react';
+import { BookOpen, CheckCircle, Clock, Award, Activity, Loader2, Target, Map } from 'lucide-react';
 
 interface EducationalDataSectionProps {
   userId: string;
@@ -65,6 +65,28 @@ function useEducationalData(userId: string) {
     enabled: !!userId,
   });
 
+  const challengeProgress = useQuery({
+    queryKey: ['challenge-progress-admin', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('challenge_progress')
+        .select('*, hof_challenges(id, name, icon, videos, total_duration)')
+        .eq('user_id', userId);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
+  const maps = useQuery({
+    queryKey: ['hof-maps-all'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('hof_maps').select('*');
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
   const lastActivity = useQuery({
     queryKey: ['last-activity', userId],
     queryFn: async () => {
@@ -86,13 +108,15 @@ function useEducationalData(userId: string) {
     completions: completions.data || [],
     certificates: certificates.data || [],
     watchProgress: watchProgress.data || [],
+    challengeProgress: challengeProgress.data || [],
+    maps: maps.data || [],
     lastActivity: lastActivity.data,
-    isLoading: enrollments.isLoading || completions.isLoading || certificates.isLoading || lastActivity.isLoading || watchProgress.isLoading,
+    isLoading: enrollments.isLoading || completions.isLoading || certificates.isLoading || lastActivity.isLoading || watchProgress.isLoading || challengeProgress.isLoading,
   };
 }
 
 const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId, studentName }) => {
-  const { enrollments, completions, certificates, watchProgress, lastActivity, isLoading } = useEducationalData(userId);
+  const { enrollments, completions, certificates, watchProgress, challengeProgress, maps, lastActivity, isLoading } = useEducationalData(userId);
 
   if (isLoading) {
     return (
@@ -327,6 +351,86 @@ const EducationalDataSection: React.FC<EducationalDataSectionProps> = ({ userId,
           )}
         </CardContent>
       </Card>
+
+      {/* Protocols (Challenges) Progress */}
+      {challengeProgress.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Target className="w-4 h-4 text-primary" />
+              🎯 Protocolos ({challengeProgress.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {challengeProgress.map((cp: any) => {
+                const challenge = cp.hof_challenges;
+                if (!challenge) return null;
+                const videos = Array.isArray(challenge.videos) ? challenge.videos : [];
+                const watchedCount = Array.isArray(cp.watched_videos) ? cp.watched_videos.length : 0;
+                const totalCount = videos.length;
+                const pct = totalCount > 0 ? Math.round((watchedCount / totalCount) * 100) : cp.progress || 0;
+
+                return (
+                  <div key={cp.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
+                    <span className="text-lg flex-shrink-0">{challenge.icon || '🎯'}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{challenge.name}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <Progress value={pct} className="h-2 flex-1" />
+                        <span className="text-[11px] font-medium text-muted-foreground w-8 text-right">{pct}%</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        {watchedCount}/{totalCount} vídeos assistidos
+                      </p>
+                    </div>
+                    {pct === 100 && (
+                      <Badge variant="default" className="text-[10px] px-1.5 py-0 bg-success text-success-foreground flex-shrink-0">
+                        <CheckCircle className="w-3 h-3 mr-0.5" /> Concluído
+                      </Badge>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Maps Progress - derived from challenge_progress for maps */}
+      {/* Note: Maps use the same hof structure; show available maps with prescribed info */}
+      {maps.length > 0 && (
+        <Card className="bg-card border-border">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Map className="w-4 h-4 text-primary" />
+              🗺️ Mapas Disponíveis ({maps.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {maps.map((m: any) => {
+                const videos = Array.isArray(m.videos) ? m.videos : [];
+                return (
+                  <div key={m.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/20 border border-border">
+                    <span className="text-lg flex-shrink-0">{m.icon || '🗺️'}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{m.name}</p>
+                      {m.description && (
+                        <p className="text-[11px] text-muted-foreground truncate">{m.description}</p>
+                      )}
+                      <p className="text-[11px] text-muted-foreground mt-1">
+                        {videos.length} vídeo{videos.length !== 1 ? 's' : ''}
+                        {m.total_duration > 0 && ` • ${Math.floor(m.total_duration / 60)}min`}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Certificates */}
       {certificates.length > 0 && (

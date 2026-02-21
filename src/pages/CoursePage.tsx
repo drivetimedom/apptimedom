@@ -35,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import LessonContextMenu from '@/components/course-management/LessonContextMenu';
 import ModuleContextMenu from '@/components/course-management/ModuleContextMenu';
 import EditCourseDialog from '@/components/course-management/EditCourseDialog';
+import CreateModuleDialog from '@/components/course-management/CreateModuleDialog';
 
 const CoursePage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -45,6 +46,7 @@ const CoursePage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [editCourseOpen, setEditCourseOpen] = useState(false);
   const [createLessonOpen, setCreateLessonOpen] = useState(false);
+  const [createModuleOpen, setCreateModuleOpen] = useState(false);
 
   const { data: course, isLoading: courseLoading } = useCourse(courseId);
   const { data: allLessons = [], isLoading: lessonsLoading } = useLessons(courseId);
@@ -265,10 +267,16 @@ const CoursePage: React.FC = () => {
                   />
                 </div>
                 {isAdmin && (
-                  <Button onClick={() => setCreateLessonOpen(true)} size="sm" className="flex-shrink-0">
-                    <Plus className="w-4 h-4 mr-1" />
-                    Nova aula
-                  </Button>
+                  <>
+                    <Button onClick={() => setCreateModuleOpen(true)} size="sm" variant="outline" className="flex-shrink-0">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Novo módulo
+                    </Button>
+                    <Button onClick={() => setCreateLessonOpen(true)} size="sm" className="flex-shrink-0">
+                      <Plus className="w-4 h-4 mr-1" />
+                      Nova aula
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -481,6 +489,17 @@ const CoursePage: React.FC = () => {
           onOpenChange={setCreateLessonOpen}
           courseId={courseId!}
           modules={course.modules}
+          onCreated={handleRefresh}
+        />
+      )}
+
+      {/* Create Module Dialog */}
+      {isAdmin && course && (
+        <CreateModuleDialog
+          open={createModuleOpen}
+          onOpenChange={setCreateModuleOpen}
+          courseId={courseId!}
+          existingModules={course.modules}
           onCreated={handleRefresh}
         />
       )}

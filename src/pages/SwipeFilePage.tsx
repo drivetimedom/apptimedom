@@ -16,7 +16,8 @@ import {
   List,
   Folder,
   Folder as FolderIcon,
-  ExternalLink
+  ExternalLink,
+  Upload
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
@@ -379,10 +380,16 @@ const SwipeFilePage: React.FC = () => {
               <ArrowDown className="w-4 h-4 ml-2" />
             </Button>
             {isAdmin && (
-              <Button onClick={handleCreate} variant="outline" size="lg" className="gap-2">
-                <Plus className="w-4 h-4" />
-                Novo Processo
-              </Button>
+              <>
+                <Button onClick={handleCreate} variant="outline" size="lg" className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Novo Processo
+                </Button>
+                <Button onClick={() => navigate('/admin/import-processes')} variant="outline" size="lg" className="gap-2">
+                  <Upload className="w-4 h-4" />
+                  Importar em Massa
+                </Button>
+              </>
             )}
           </div>
         </div>

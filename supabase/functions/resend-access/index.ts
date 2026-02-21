@@ -58,11 +58,23 @@ serve(async (req) => {
       );
     }
 
-    const { userId, email, name }: ResendAccessRequest = await req.json();
+    const body = await req.json();
+    const { userId, email, name } = body as ResendAccessRequest;
 
-    if (!userId || !email || !name) {
+    console.log("Received body:", JSON.stringify({ userId, email, name }));
+
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!userId || !uuidRegex.test(userId)) {
       return new Response(
-        JSON.stringify({ error: "userId, email and name are required" }),
+        JSON.stringify({ error: `Invalid userId format: ${userId}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!email || !name) {
+      return new Response(
+        JSON.stringify({ error: "email and name are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

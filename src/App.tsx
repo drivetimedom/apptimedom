@@ -24,6 +24,7 @@ import EmailPreviewPage from "@/pages/EmailPreviewPage";
 import ImportUsersPage from "@/pages/ImportUsersPage";
 import ImportProcessesPage from "@/pages/ImportProcessesPage";
 import ProfilePage from "@/pages/ProfilePage";
+import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import NotFound from "@/pages/NotFound";
 
 // Initialize seed data
@@ -41,6 +42,7 @@ const App = () => (
           <Routes>
             {/* Public routes */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             
             {/* Protected routes */}
             <Route element={<MainLayout />}>

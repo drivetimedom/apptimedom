@@ -36,8 +36,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Trash2, Target, BookOpen, Settings, FileDown, Loader2, Key } from 'lucide-react';
+import { Plus, Trash2, Target, BookOpen, Settings, FileDown, Loader2, Key, Mail } from 'lucide-react';
 import { useResetPassword } from '@/hooks/useResetPassword';
+import { supabase } from '@/integrations/supabase/client';
 
 // Cloud hooks
 import { useCourses, Course } from '@/hooks/useCourses';
@@ -88,6 +89,9 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
   const [resetPasswordOpen, setResetPasswordOpen] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [changeEmailOpen, setChangeEmailOpen] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [changingEmail, setChangingEmail] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -373,6 +377,38 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     }
   };
 
+  const handleChangeEmail = async () => {
+    if (!userId) {
+      toast({ title: 'ID do usuário não encontrado', variant: 'destructive' });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      toast({ title: 'Email inválido', variant: 'destructive' });
+      return;
+    }
+
+    setChangingEmail(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('update-user-email', {
+        body: { userId, newEmail: newEmail.trim().toLowerCase() },
+      });
+
+      if (error) throw new Error(error.message);
+      if (data?.error) throw new Error(data.error);
+
+      setFormData(prev => ({ ...prev, email: newEmail.trim().toLowerCase() }));
+      toast({ title: 'Email alterado com sucesso!' });
+      setChangeEmailOpen(false);
+      setNewEmail('');
+    } catch (err: any) {
+      toast({ title: 'Erro ao alterar email', description: err.message, variant: 'destructive' });
+    } finally {
+      setChangingEmail(false);
+    }
+  };
+
   const renderCourseCheckboxes = (courseList: Course[], title: string, icon: string) => {
     if (courseList.length === 0) return null;
     
@@ -553,6 +589,32 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                     >
                       <Key className="w-4 h-4" />
                       Redefinir Senha
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Change Email Button - Only for existing users */}
+              {user && userId && (
+                <div className="pt-4 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-base">Alterar Email</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Altere o email de login deste usuário
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setNewEmail(formData.email);
+                        setChangeEmailOpen(true);
+                      }}
+                      className="gap-2"
+                    >
+                      <Mail className="w-4 h-4" />
+                      Alterar Email
                     </Button>
                   </div>
                 </div>
@@ -963,6 +1025,52 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
               </>
             ) : (
               'Redefinir Senha'
+            )}
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    {/* Change Email Dialog */}
+    <AlertDialog open={changeEmailOpen} onOpenChange={(open) => {
+      setChangeEmailOpen(open);
+      if (!open) setNewEmail('');
+    }}>
+      <AlertDialogContent className="bg-card border-border">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <Mail className="w-5 h-5" />
+            Alterar Email
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            Digite o novo email para o usuário <strong>{user?.name}</strong>. O email será alterado imediatamente, sem necessidade de confirmação.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label>Novo Email</Label>
+            <Input
+              type="email"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              placeholder="novo@email.com"
+              className="bg-input border-border"
+            />
+          </div>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={changingEmail}>Cancelar</AlertDialogCancel>
+          <Button
+            onClick={handleChangeEmail}
+            disabled={changingEmail || !newEmail}
+          >
+            {changingEmail ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Alterando...
+              </>
+            ) : (
+              'Confirmar Alteração'
             )}
           </Button>
         </AlertDialogFooter>

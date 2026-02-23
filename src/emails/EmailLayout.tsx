@@ -144,6 +144,6 @@ export const EmailSignature: React.FC = () => (
     marginBottom: 0,
   }}>
     Qualquer dúvida, estamos à disposição!<br />
-    <strong>Equipe HOF Circle</strong>
+    <strong>#timeDom</strong>
   </p>
 );

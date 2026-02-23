@@ -26,7 +26,7 @@ export const PasswordResetEmail: React.FC<PasswordResetEmailProps> = ({ nome }) 
       </EmailButton>
       <p style={{ fontSize: '14px', color: '#6b7280', borderTop: '1px solid #e5e7eb', paddingTop: '20px', marginBottom: 0 }}>
         Se você não solicitou esta redefinição, entre em contato conosco imediatamente.<br />
-        <strong>Equipe HOF Circle</strong>
+        <strong>#timeDom</strong>
       </p>
     </EmailBody>
   </EmailLayout>

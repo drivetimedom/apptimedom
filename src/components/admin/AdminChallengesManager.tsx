@@ -27,7 +27,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, MoreHorizontal, Edit, Copy, Trash2, Trophy, Search, GripVertical, Video, Loader2, FileText } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Copy, Trash2, Trophy, Search, GripVertical, Video, Loader2, FileText, Target, Rocket, Zap, Dumbbell, Flame, Diamond, TrendingUp, Shield, Star, Award, Paperclip, icons as lucideIcons } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { 
   useHofChallenges, 
   useCreateHofChallenge, 
@@ -38,7 +39,18 @@ import {
   VideoResource,
 } from '@/hooks/useHofChallenges';
 
-const iconOptions = ['🎯', '🚀', '⚡', '💪', '🔥', '💎', '📈', '🛡️', '⭐', '🏆'];
+const iconOptions: { value: string; Icon: LucideIcon }[] = [
+  { value: 'Target', Icon: Target },
+  { value: 'Rocket', Icon: Rocket },
+  { value: 'Zap', Icon: Zap },
+  { value: 'Dumbbell', Icon: Dumbbell },
+  { value: 'Flame', Icon: Flame },
+  { value: 'Diamond', Icon: Diamond },
+  { value: 'TrendingUp', Icon: TrendingUp },
+  { value: 'Shield', Icon: Shield },
+  { value: 'Star', Icon: Star },
+  { value: 'Award', Icon: Award },
+];
 
 const AdminChallengesManager: React.FC = () => {
   const { data: challenges = [], isLoading } = useHofChallenges();
@@ -281,7 +293,10 @@ const AdminChallengesManager: React.FC = () => {
             <Card key={challenge.id} className="bg-card border-border hover:border-warning/50 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-                  <span className="text-2xl">{challenge.icon}</span>
+                  {(() => {
+                    const found = iconOptions.find(o => o.value === challenge.icon);
+                    return found ? <found.Icon className="w-6 h-6 text-warning" /> : <span className="text-2xl">{challenge.icon}</span>;
+                  })()}
                   {challenge.name}
                 </CardTitle>
                 <DropdownMenu>
@@ -364,18 +379,18 @@ const AdminChallengesManager: React.FC = () => {
               <div className="space-y-2">
                 <Label>Ícone</Label>
                 <div className="flex flex-wrap gap-2">
-                  {iconOptions.map(icon => (
+                  {iconOptions.map(({ value, Icon }) => (
                     <button
-                      key={icon}
+                      key={value}
                       type="button"
-                      onClick={() => setFormData({ ...formData, icon })}
-                      className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center transition-colors ${
-                        formData.icon === icon 
+                      onClick={() => setFormData({ ...formData, icon: value })}
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                        formData.icon === value 
                           ? 'bg-warning text-warning-foreground' 
                           : 'bg-muted hover:bg-muted/80'
                       }`}
                     >
-                      {icon}
+                      <Icon className="w-5 h-5" />
                     </button>
                   ))}
                 </div>
@@ -384,8 +399,8 @@ const AdminChallengesManager: React.FC = () => {
               {/* Support Material */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-warning" />
-                  📎 Material de Apoio (opcional)
+                  <Paperclip className="w-4 h-4 text-warning" />
+                  Material de Apoio (opcional)
                 </Label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -412,7 +427,7 @@ const AdminChallengesManager: React.FC = () => {
               {/* Videos */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label>📹 Vídeos do Protocolo</Label>
+                  <Label className="flex items-center gap-2"><Video className="w-4 h-4 text-warning" /> Vídeos do Protocolo</Label>
                   <p className="text-sm text-muted-foreground">
                     Total: {formatDuration(calculateTotalDuration(formData.videos))}
                   </p>

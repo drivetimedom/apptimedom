@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { getLucideIcon } from '@/lib/iconMap';
 import {
   Dialog,
   DialogContent,
@@ -120,7 +121,10 @@ const PlaylistPlayerModal: React.FC<PlaylistPlayerModalProps> = ({
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4 border-b border-border flex flex-row items-center justify-between">
           <DialogTitle className="text-foreground flex items-center gap-3">
-            <span className="text-2xl">{icon}</span>
+            {(() => {
+              const IconComp = getLucideIcon(icon);
+              return IconComp ? <IconComp className="w-6 h-6 text-primary" /> : <span className="text-2xl">{icon}</span>;
+            })()}
             <div>
               <p className="text-lg font-semibold">{title}</p>
               <p className="text-sm text-muted-foreground font-normal">

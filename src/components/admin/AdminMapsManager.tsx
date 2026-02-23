@@ -27,7 +27,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, MoreHorizontal, Edit, Copy, Trash2, Map, Search, GripVertical, Video, Loader2, FileText } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Copy, Trash2, Map, Search, GripVertical, Video, Loader2, FileText, Compass, Target, Rocket, Award, Zap, Diamond, Flame, TrendingUp, Shield, Star, Paperclip } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { 
   useHofMaps, 
   useCreateHofMap, 
@@ -38,7 +39,18 @@ import {
   VideoResource,
 } from '@/hooks/useHofMaps';
 
-const iconOptions = ['🗺️', '🎯', '🚀', '🏆', '⚡', '💎', '🔥', '📈', '🛡️', '⭐'];
+const iconOptions: { value: string; Icon: LucideIcon }[] = [
+  { value: 'Compass', Icon: Compass },
+  { value: 'Target', Icon: Target },
+  { value: 'Rocket', Icon: Rocket },
+  { value: 'Award', Icon: Award },
+  { value: 'Zap', Icon: Zap },
+  { value: 'Diamond', Icon: Diamond },
+  { value: 'Flame', Icon: Flame },
+  { value: 'TrendingUp', Icon: TrendingUp },
+  { value: 'Shield', Icon: Shield },
+  { value: 'Star', Icon: Star },
+];
 
 const AdminMapsManager: React.FC = () => {
   const { data: maps = [], isLoading } = useHofMaps();
@@ -281,7 +293,10 @@ const AdminMapsManager: React.FC = () => {
             <Card key={map.id} className="bg-card border-border hover:border-primary/50 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
-                  <span className="text-2xl">{map.icon}</span>
+                  {(() => {
+                    const found = iconOptions.find(o => o.value === map.icon);
+                    return found ? <found.Icon className="w-6 h-6 text-primary" /> : <span className="text-2xl">{map.icon}</span>;
+                  })()}
                   {map.name}
                 </CardTitle>
                 <DropdownMenu>
@@ -369,18 +384,18 @@ const AdminMapsManager: React.FC = () => {
               <div className="space-y-2">
                 <Label>Ícone</Label>
                 <div className="flex flex-wrap gap-2">
-                  {iconOptions.map(icon => (
+                  {iconOptions.map(({ value, Icon }) => (
                     <button
-                      key={icon}
+                      key={value}
                       type="button"
-                      onClick={() => setFormData({ ...formData, icon })}
-                      className={`w-10 h-10 rounded-lg text-xl flex items-center justify-center transition-colors ${
-                        formData.icon === icon 
+                      onClick={() => setFormData({ ...formData, icon: value })}
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+                        formData.icon === value 
                           ? 'bg-primary text-primary-foreground' 
                           : 'bg-muted hover:bg-muted/80'
                       }`}
                     >
-                      {icon}
+                      <Icon className="w-5 h-5" />
                     </button>
                   ))}
                 </div>
@@ -389,8 +404,8 @@ const AdminMapsManager: React.FC = () => {
               {/* Support Material */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-primary" />
-                  📎 Material de Apoio (opcional)
+                  <Paperclip className="w-4 h-4 text-primary" />
+                  Material de Apoio (opcional)
                 </Label>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -417,7 +432,7 @@ const AdminMapsManager: React.FC = () => {
               {/* Videos */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label>📹 Vídeos do Mapa (Playlist)</Label>
+                  <Label className="flex items-center gap-2"><Video className="w-4 h-4 text-primary" /> Vídeos do Mapa (Playlist)</Label>
                   <p className="text-sm text-muted-foreground">
                     Total: {formatDuration(calculateTotalDuration(formData.videos))}
                   </p>

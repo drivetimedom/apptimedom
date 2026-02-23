@@ -16,7 +16,6 @@ import {
   Bell, 
   LogOut, 
   User, 
-  Settings, 
   LayoutDashboard,
   BookOpen,
   FileText,
@@ -24,19 +23,20 @@ import {
   X,
   DollarSign
 } from 'lucide-react';
-import { getCustomization } from '@/lib/customization';
+import { Customization, defaultCustomization } from '@/lib/customization';
+import fallbackLogo from '@/assets/LOGO_TIME_DOM.png';
 
 interface HeaderProps {
   onSearchChange?: (query: string) => void;
+  customization?: Customization;
 }
 
-const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
+const Header: React.FC<HeaderProps> = ({ onSearchChange, customization = defaultCustomization }) => {
   const { user, profile, logout, isAdmin, isInstructor } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const customization = getCustomization();
 
   const handleLogout = () => {
     logout();
@@ -61,24 +61,19 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange }) => {
     onSearchChange?.(e.target.value);
   };
 
+  // Use DB logo, fallback to embedded asset
+  const logoSrc = customization.branding.logoUrl || fallbackLogo;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center">
-          {customization.branding.logoUrl ? (
-            <img 
-              src={customization.branding.logoUrl} 
-              alt={customization.texts.siteTitle || 'Logo'} 
-              className="h-10 md:h-12 w-auto object-contain"
-            />
-          ) : (
-            <img 
-              src="http://timedom.com.br/wp-content/uploads/2026/02/LOGO_TIME_DOM.png"
-              alt="TIME DOM"
-              className="h-10 md:h-12 w-auto object-contain"
-            />
-          )}
+          <img 
+            src={logoSrc} 
+            alt={customization.texts.siteTitle || 'Logo'} 
+            className="h-10 md:h-12 w-auto object-contain"
+          />
         </Link>
 
         {/* Desktop Navigation */}

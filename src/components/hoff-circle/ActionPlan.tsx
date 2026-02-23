@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getLucideIcon } from '@/lib/iconMap';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -167,7 +168,11 @@ const ActionPlan: React.FC = () => {
           </CardTitle>
           {prescribedMap && (
             <p className="text-sm text-muted-foreground mt-1">
-              {prescribedMap.icon} {prescribedMap.name} - Sua jornada para o sucesso
+              {(() => {
+                const MapIcon = getLucideIcon(prescribedMap.icon);
+                return MapIcon ? <MapIcon className="w-4 h-4 inline text-primary" /> : null;
+              })()}{' '}
+              {prescribedMap.name} - Sua jornada para o sucesso
             </p>
           )}
         </CardHeader>
@@ -180,8 +185,11 @@ const ActionPlan: React.FC = () => {
                 onClick={openMapPlayer}
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center text-2xl">
-                    {prescribedMap.icon}
+                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                    {(() => {
+                      const MapIcon = getLucideIcon(prescribedMap.icon);
+                      return MapIcon ? <MapIcon className="w-6 h-6 text-primary" /> : <span className="text-2xl">{prescribedMap.icon}</span>;
+                    })()}
                   </div>
                   <div className="flex-1">
                     <h4 className="font-semibold text-foreground">
@@ -258,7 +266,10 @@ const ActionPlan: React.FC = () => {
                         status === 'locked' && "bg-muted text-muted-foreground"
                       )}>
                         {status === 'completed' && <CheckCircle className="w-4 h-4" />}
-                        {status === 'current' && challenge.icon}
+                        {status === 'current' && (() => {
+                          const CIcon = getLucideIcon(challenge.icon);
+                          return CIcon ? <CIcon className="w-4 h-4" /> : <Target className="w-4 h-4" />;
+                        })()}
                         {status === 'available' && <Play className="w-4 h-4" />}
                         {status === 'locked' && <Lock className="w-4 h-4" />}
                       </div>

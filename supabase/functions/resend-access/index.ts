@@ -168,7 +168,7 @@ serve(async (req) => {
 
       <p style="font-size: 14px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; margin-bottom: 0;">
         Precisa de ajuda? Entre em contato com nosso suporte.<br>
-        <strong>Equipe HOF Circle</strong>
+        <strong>#timeDom</strong>
       </p>
     </div>
   </div>

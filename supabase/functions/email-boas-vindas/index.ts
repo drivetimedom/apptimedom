@@ -63,7 +63,7 @@ function buildWelcomeHtml(nome: string, senhaTemporaria?: string): string {
 
       <p style="font-size: 14px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 20px; margin-bottom: 0;">
         Qualquer dúvida, estamos à disposição!<br>
-        <strong>Equipe HOF Circle</strong>
+        <strong>#timeDom</strong>
       </p>
     </div>
   </div>

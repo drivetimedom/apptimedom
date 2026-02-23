@@ -1,4 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourse } from '@/hooks/useCourses';
@@ -54,6 +56,27 @@ const LessonPage: React.FC = () => {
   // Comments from Supabase
   const { data: lessonComments = [] } = useLessonComments(lessonId);
   const addCommentMutation = useAddComment();
+
+  // Fetch commenter profiles from public_profiles view
+  const commenterIds = useMemo(() => [...new Set(lessonComments.map(c => c.userId))], [lessonComments]);
+  const { data: commenterProfiles = [] } = useQuery({
+    queryKey: ['commenter-profiles', commenterIds],
+    queryFn: async () => {
+      if (commenterIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from('public_profiles')
+        .select('user_id, name, avatar')
+        .in('user_id', commenterIds);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: commenterIds.length > 0,
+  });
+  const profilesMap = useMemo(() => {
+    const map: Record<string, { name: string; avatar: string | null }> = {};
+    commenterProfiles.forEach(p => { if (p.user_id) map[p.user_id] = { name: p.name || 'Usuário', avatar: p.avatar }; });
+    return map;
+  }, [commenterProfiles]);
 
   const courseLessons = useMemo(
     () => [...lessonsFromDb].sort((a, b) => a.order - b.order),
@@ -397,21 +420,27 @@ const LessonPage: React.FC = () => {
 
               {/* Comments List */}
               <div className="space-y-4">
-                {lessonComments.map(comment => (
-                  <div key={comment.id} className="flex items-start space-x-3 p-4 rounded-lg bg-accent/30">
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback>U</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(comment.createdAt).toLocaleDateString('pt-BR')}
-                        </span>
+                {lessonComments.map(comment => {
+                  const commenter = profilesMap[comment.userId];
+                  const commenterName = commenter?.name || 'Usuário';
+                  return (
+                    <div key={comment.id} className="flex items-start space-x-3 p-4 rounded-lg bg-accent/30">
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={commenter?.avatar || undefined} />
+                        <AvatarFallback>{commenterName.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium text-sm text-foreground">{commenterName}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(comment.createdAt).toLocaleDateString('pt-BR')}
+                          </span>
+                        </div>
+                        <p className="text-muted-foreground mt-1">{comment.text}</p>
                       </div>
-                      <p className="text-muted-foreground mt-1">{comment.text}</p>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 
                 {lessonComments.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">

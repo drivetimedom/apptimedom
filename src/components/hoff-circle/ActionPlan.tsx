@@ -243,8 +243,8 @@ const ActionPlan: React.FC = () => {
                       className={cn(
                         "relative flex items-start gap-3 p-3 rounded-lg border transition-all",
                         status === 'completed' && "bg-accent/10 border-accent/30",
-                        status === 'current' && "bg-warning/10 border-warning/30",
-                        status === 'available' && "bg-card border-border hover:border-warning/50 cursor-pointer",
+                        status === 'current' && "bg-success/10 border-success/30",
+                        status === 'available' && "bg-card border-border hover:border-success/50 cursor-pointer",
                         status === 'locked' && "bg-muted/30 border-muted opacity-60",
                         isClickable && "cursor-pointer hover:scale-[1.01]"
                       )}
@@ -261,7 +261,7 @@ const ActionPlan: React.FC = () => {
                       <div className={cn(
                         "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm",
                         status === 'completed' && "bg-accent text-accent-foreground",
-                        status === 'current' && "bg-warning text-warning-foreground",
+                        status === 'current' && "bg-success text-success-foreground",
                         status === 'available' && "bg-muted text-muted-foreground",
                         status === 'locked' && "bg-muted text-muted-foreground"
                       )}>
@@ -312,7 +312,7 @@ const ActionPlan: React.FC = () => {
                             </div>
                             <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                               <div 
-                                className="h-full bg-warning rounded-full transition-all"
+                                className="h-full bg-success rounded-full transition-all"
                                 style={{ width: `${progress}%` }}
                               />
                             </div>

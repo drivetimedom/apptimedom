@@ -3,12 +3,12 @@ import { Outlet, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from './Header';
 import { Loader2, ShieldX } from 'lucide-react';
-import { getCustomization } from '@/lib/customization';
 import { Button } from '@/components/ui/button';
+import { useApplyCustomization } from '@/hooks/useApplyCustomization';
 
 const MainLayout: React.FC = () => {
   const { user, profile, isLoading, logout, isAdmin } = useAuth();
-  const customization = getCustomization();
+  const customization = useApplyCustomization();
 
   if (isLoading) {
     return (
@@ -44,7 +44,7 @@ const MainLayout: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
+      <Header customization={customization} />
       <main className="flex-1">
         <Outlet />
       </main>

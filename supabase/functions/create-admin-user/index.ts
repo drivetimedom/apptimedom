@@ -20,6 +20,15 @@ serve(async (req) => {
   }
 
   try {
+    // 1. Verify Authorization header
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Authorization required" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -30,6 +39,31 @@ serve(async (req) => {
         },
       }
     );
+
+    // 2. Verify the calling user
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user: callingUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !callingUser) {
+      return new Response(
+        JSON.stringify({ error: "Invalid authentication" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // 3. Check calling user is admin
+    const { data: roleData, error: roleError } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callingUser.id)
+      .single();
+
+    if (roleError || roleData?.role !== "admin") {
+      return new Response(
+        JSON.stringify({ error: "Admin access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const { email, password, name, role = "user" }: CreateUserRequest = await req.json();
 

@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourses } from '@/hooks/useCourses';
 import { useUserProgress } from '@/hooks/useUserProgress';
-import CourseCard from '@/components/courses/CourseCard';
+import MyCoursesCard from '@/components/courses/MyCoursesCard';
 import { BookOpen, Clock, Trophy, Home, ChevronRight, GraduationCap, ArrowDown, Loader2, CheckCircle2, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 
 const MyCoursesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -53,9 +52,6 @@ const MyCoursesPage: React.FC = () => {
     return completedLessons === 0;
   });
 
-  const getProgress = (courseId: string) =>
-    userProgressList.find(p => p.courseId === courseId);
-
   const totalLessonsCompleted = userProgressList.reduce((acc, p) => acc + p.completedLessons.length, 0);
 
   const scrollToContent = () => {
@@ -71,7 +67,7 @@ const MyCoursesPage: React.FC = () => {
   }
 
   const CourseGrid = ({ children }: { children: React.ReactNode }) => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
       {children}
     </div>
   );
@@ -173,7 +169,7 @@ const MyCoursesPage: React.FC = () => {
 
       {/* Sections */}
       <div className="container py-8 space-y-12">
-        {/* In Progress Section */}
+        {/* In Progress */}
         {inProgressCourses.length > 0 && (
           <section>
             <div className="flex items-center gap-3 mb-6">
@@ -187,29 +183,24 @@ const MyCoursesPage: React.FC = () => {
             </div>
             <CourseGrid>
               {inProgressCourses.map(course => {
-                const { percent, completedLessons, totalLessons } = getCourseProgress(course);
+                const { percent, completedLessons, totalLessons, progress } = getCourseProgress(course);
                 return (
-                  <div key={course.id} className="space-y-0">
-                    <CourseCard
-                      course={course as any}
-                      progress={getProgress(course.id) as any}
-                      isLocked={false}
-                    />
-                    <div className="px-1 pt-2 space-y-1">
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>{completedLessons}/{totalLessons} aulas</span>
-                        <span className="font-medium text-foreground">{percent}%</span>
-                      </div>
-                      <Progress value={percent} className="h-1.5" />
-                    </div>
-                  </div>
+                  <MyCoursesCard
+                    key={course.id}
+                    course={course}
+                    progress={progress}
+                    isLocked={false}
+                    progressPercent={percent}
+                    completedLessons={completedLessons}
+                    totalLessons={totalLessons}
+                  />
                 );
               })}
             </CourseGrid>
           </section>
         )}
 
-        {/* Completed Section */}
+        {/* Completed */}
         {completedCourses.length > 0 && (
           <section>
             <div className="flex items-center gap-3 mb-6">
@@ -222,23 +213,29 @@ const MyCoursesPage: React.FC = () => {
               </div>
             </div>
             <CourseGrid>
-              {completedCourses.map(course => (
-                <div key={course.id} className="relative">
-                  <CourseCard
-                    course={course as any}
-                    progress={getProgress(course.id) as any}
-                    isLocked={false}
-                  />
-                  <div className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-success flex items-center justify-center">
-                    <CheckCircle2 className="w-5 h-5 text-success-foreground" />
+              {completedCourses.map(course => {
+                const { percent, completedLessons, totalLessons, progress } = getCourseProgress(course);
+                return (
+                  <div key={course.id} className="relative">
+                    <MyCoursesCard
+                      course={course}
+                      progress={progress}
+                      isLocked={false}
+                      progressPercent={percent}
+                      completedLessons={completedLessons}
+                      totalLessons={totalLessons}
+                    />
+                    <div className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-success flex items-center justify-center">
+                      <CheckCircle2 className="w-5 h-5 text-success-foreground" />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </CourseGrid>
           </section>
         )}
 
-        {/* Not Started Section */}
+        {/* Not Started */}
         {notStartedCourses.length > 0 && (
           <section>
             <div className="flex items-center gap-3 mb-6">
@@ -251,19 +248,24 @@ const MyCoursesPage: React.FC = () => {
               </div>
             </div>
             <CourseGrid>
-              {notStartedCourses.map(course => (
-                <CourseCard
-                  key={course.id}
-                  course={course as any}
-                  progress={getProgress(course.id) as any}
-                  isLocked={false}
-                />
-              ))}
+              {notStartedCourses.map(course => {
+                const { percent, completedLessons, totalLessons, progress } = getCourseProgress(course);
+                return (
+                  <MyCoursesCard
+                    key={course.id}
+                    course={course}
+                    progress={progress}
+                    isLocked={false}
+                    progressPercent={percent}
+                    completedLessons={completedLessons}
+                    totalLessons={totalLessons}
+                  />
+                );
+              })}
             </CourseGrid>
           </section>
         )}
 
-        {/* Empty state */}
         {unlockedCourses.length === 0 && (
           <EmptyState message="Você ainda não tem cursos desbloqueados." />
         )}

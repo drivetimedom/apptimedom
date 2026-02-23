@@ -249,7 +249,7 @@ const AdminChallengesManager: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-warning" />
+            <Trophy className="w-6 h-6 text-success" />
             Protocolos (Playlists Curtas)
           </h2>
           <p className="text-muted-foreground mt-1">
@@ -290,12 +290,12 @@ const AdminChallengesManager: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {filteredChallenges.map(challenge => (
-            <Card key={challenge.id} className="bg-card border-border hover:border-warning/50 transition-colors">
+            <Card key={challenge.id} className="bg-card border-border hover:border-success/50 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
                   {(() => {
                     const found = iconOptions.find(o => o.value === challenge.icon);
-                    return found ? <found.Icon className="w-6 h-6 text-warning" /> : <span className="text-2xl">{challenge.icon}</span>;
+                    return found ? <found.Icon className="w-6 h-6 text-success" /> : <span className="text-2xl">{challenge.icon}</span>;
                   })()}
                   {challenge.name}
                 </CardTitle>
@@ -331,7 +331,7 @@ const AdminChallengesManager: React.FC = () => {
                 <div className="space-y-1">
                   {challenge.videos.map((video, index) => (
                     <p key={video.id} className="text-sm text-foreground/80 flex items-center gap-2">
-                      <Video className="w-3 h-3 text-warning" />
+                      <Video className="w-3 h-3 text-success" />
                       {index + 1}. {video.title} ({video.duration}min)
                     </p>
                   ))}
@@ -386,7 +386,7 @@ const AdminChallengesManager: React.FC = () => {
                       onClick={() => setFormData({ ...formData, icon: value })}
                       className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
                         formData.icon === value 
-                          ? 'bg-warning text-warning-foreground' 
+                          ? 'bg-success text-success-foreground' 
                           : 'bg-muted hover:bg-muted/80'
                       }`}
                     >
@@ -399,7 +399,7 @@ const AdminChallengesManager: React.FC = () => {
               {/* Support Material */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2">
-                  <Paperclip className="w-4 h-4 text-warning" />
+                  <Paperclip className="w-4 h-4 text-success" />
                   Material de Apoio (opcional)
                 </Label>
                 <div className="grid grid-cols-2 gap-3">
@@ -427,7 +427,7 @@ const AdminChallengesManager: React.FC = () => {
               {/* Videos */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-2"><Video className="w-4 h-4 text-warning" /> Vídeos do Protocolo</Label>
+                  <Label className="flex items-center gap-2"><Video className="w-4 h-4 text-success" /> Vídeos do Protocolo</Label>
                   <p className="text-sm text-muted-foreground">
                     Total: {formatDuration(calculateTotalDuration(formData.videos))}
                   </p>

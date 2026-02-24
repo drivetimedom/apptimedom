@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import GlobalSearch from '@/components/layout/GlobalSearch';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
-  Search, 
   Bell, 
   LogOut, 
   User, 
@@ -27,15 +26,13 @@ import { Customization, defaultCustomization } from '@/lib/customization';
 import fallbackLogo from '@/assets/LOGO_TIME_DOM.png';
 
 interface HeaderProps {
-  onSearchChange?: (query: string) => void;
   customization?: Customization;
 }
 
-const Header: React.FC<HeaderProps> = ({ onSearchChange, customization = defaultCustomization }) => {
+const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization }) => {
   const { user, profile, logout, isAdmin, isInstructor } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
@@ -54,11 +51,6 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange, customization = default
   const isActiveLink = (path: string) => {
     if (path === '/') return location.pathname === '/';
     return location.pathname.startsWith(path);
-  };
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    onSearchChange?.(e.target.value);
   };
 
   // Use DB logo, fallback to embedded asset
@@ -120,16 +112,7 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange, customization = default
         {/* Right Section */}
         <div className="flex items-center space-x-4">
           {/* Search */}
-          <div className="hidden lg:flex relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Buscar..."
-              value={searchQuery}
-              onChange={handleSearch}
-              className="w-64 pl-9 bg-input border-border text-sm"
-            />
-          </div>
+          <GlobalSearch className="hidden lg:flex w-64" />
 
           {/* Notifications */}
           <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
@@ -201,15 +184,8 @@ const Header: React.FC<HeaderProps> = ({ onSearchChange, customization = default
         <div className="md:hidden border-t border-border bg-background animate-slide-up">
           <div className="container py-4 space-y-2">
             {/* Mobile Search */}
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Buscar cursos, aulas..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="w-full pl-9 bg-input border-border"
-              />
+            <div className="mb-4">
+              <GlobalSearch className="w-full" />
             </div>
             
             {navLinks.map((link) => (

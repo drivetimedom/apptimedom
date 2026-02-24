@@ -110,7 +110,7 @@ const ActivationPlan: React.FC = () => {
           </CardTitle>
           <div className="flex items-center gap-2">
             {allCompleted && (
-              <Trophy className="w-5 h-5 text-warning animate-pulse" />
+              <Trophy className="w-5 h-5 text-success animate-pulse" />
             )}
             <span className="text-sm text-muted-foreground">
               {completedCount}/{totalCount}
@@ -125,14 +125,14 @@ const ActivationPlan: React.FC = () => {
               className={cn(
                 "h-full rounded-full transition-all duration-500",
                 allCompleted 
-                  ? "bg-gradient-to-r from-warning to-warning/80" 
+                  ? "bg-gradient-to-r from-success to-success/80" 
                   : "bg-gradient-to-r from-accent to-accent/80"
               )}
               style={{ width: `${progressPercent}%` }}
             />
           </div>
           {allCompleted && (
-            <p className="text-xs text-warning font-medium mt-2 text-center animate-pulse">
+            <p className="text-xs text-success font-medium mt-2 text-center animate-pulse">
               🎉 Parabéns! Você completou todas as tarefas!
             </p>
           )}

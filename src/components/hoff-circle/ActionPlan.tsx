@@ -242,7 +242,7 @@ const ActionPlan: React.FC = () => {
                       onClick={() => isClickable && openChallengePlayer(challenge)}
                       className={cn(
                         "relative flex items-start gap-3 p-3 rounded-lg border transition-all",
-                        status === 'completed' && "bg-accent/10 border-accent/30",
+                        status === 'completed' && "bg-success/10 border-success/30",
                         status === 'current' && "bg-success/10 border-success/30",
                         status === 'available' && "bg-card border-border hover:border-success/50 cursor-pointer",
                         status === 'locked' && "bg-muted/30 border-muted opacity-60",
@@ -253,14 +253,14 @@ const ActionPlan: React.FC = () => {
                       {index < visibleChallenges.length - 1 && (
                         <div className={cn(
                           "absolute left-[22px] top-12 w-0.5 h-6",
-                          status === 'completed' ? "bg-accent" : "bg-border"
+                          status === 'completed' ? "bg-success" : "bg-border"
                         )} />
                       )}
 
                       {/* Icon */}
                       <div className={cn(
                         "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm",
-                        status === 'completed' && "bg-accent text-accent-foreground",
+                        status === 'completed' && "bg-success text-success-foreground",
                         status === 'current' && "bg-success text-success-foreground",
                         status === 'available' && "bg-muted text-muted-foreground",
                         status === 'locked' && "bg-muted text-muted-foreground"

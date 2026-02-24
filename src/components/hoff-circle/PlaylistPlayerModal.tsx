@@ -239,7 +239,7 @@ const PlaylistPlayerModal: React.FC<PlaylistPlayerModalProps> = ({
                         isCurrentVideo 
                           ? type === 'map' 
                             ? "bg-primary text-primary-foreground" 
-                            : "bg-warning text-warning-foreground"
+                            : "bg-success text-success-foreground"
                           : isWatched
                             ? "bg-accent/20 text-foreground"
                             : "bg-card hover:bg-muted/50 text-foreground"

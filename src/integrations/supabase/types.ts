@@ -839,6 +839,7 @@ export type Database = {
       swipe_file_materials: {
         Row: {
           category_id: string | null
+          code: string | null
           content: string | null
           created_at: string
           created_by: string | null
@@ -857,6 +858,7 @@ export type Database = {
         }
         Insert: {
           category_id?: string | null
+          code?: string | null
           content?: string | null
           created_at?: string
           created_by?: string | null
@@ -875,6 +877,7 @@ export type Database = {
         }
         Update: {
           category_id?: string | null
+          code?: string | null
           content?: string | null
           created_at?: string
           created_by?: string | null

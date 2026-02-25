@@ -53,8 +53,11 @@ const SwipeTable: React.FC<SwipeTableProps> = ({
   return (
     <div className="bg-background rounded-xl overflow-hidden">
       {/* Table Header */}
-      <div className="hidden md:grid grid-cols-[56px_1fr_140px_120px_80px] bg-background border-b-2 border-border sticky top-0 z-10">
+      <div className="hidden md:grid grid-cols-[56px_80px_1fr_140px_120px_80px] bg-background border-b-2 border-border sticky top-0 z-10">
         <div className="h-12 px-4 flex items-center" />
+        <div className="h-12 px-4 flex items-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Código
+        </div>
         <div className="h-12 px-4 flex items-center text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Título
         </div>
@@ -78,7 +81,7 @@ const SwipeTable: React.FC<SwipeTableProps> = ({
           return (
             <div
               key={process.id}
-              className="group grid grid-cols-1 md:grid-cols-[56px_1fr_140px_120px_80px] h-auto md:h-16 hover:bg-card/50 transition-colors duration-150"
+              className="group grid grid-cols-1 md:grid-cols-[56px_80px_1fr_140px_120px_80px] h-auto md:h-16 hover:bg-card/50 transition-colors duration-150"
             >
               {/* Mobile Card Layout */}
               <div className="md:hidden p-4 flex items-start gap-4">
@@ -123,6 +126,15 @@ const SwipeTable: React.FC<SwipeTableProps> = ({
                 <div className="w-10 h-10 rounded-lg bg-card flex items-center justify-center">
                   <Icon className="w-5 h-5 text-muted-foreground" />
                 </div>
+              </div>
+
+              {/* Code */}
+              <div className="hidden md:flex h-16 px-4 items-center">
+                {process.code && (
+                  <span className="text-xs font-mono font-semibold text-primary bg-primary/10 px-2 py-1 rounded">
+                    {process.code}
+                  </span>
+                )}
               </div>
 
               {/* Title */}

@@ -71,6 +71,7 @@ const SwipeFilePage: React.FC = () => {
       id: m.id,
       title: m.title,
       description: m.description || '',
+      code: m.code || undefined,
       category: m.category?.name || 'Sem categoria',
       type: m.type?.name || 'Processo',
       tags: m.tags || [],
@@ -183,6 +184,7 @@ const SwipeFilePage: React.FC = () => {
         p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
         p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.code || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (p.type || '').toLowerCase().includes(searchQuery.toLowerCase());
       
       const matchesCategory = selectedCategory === 'all' || p.categoryId === selectedCategory;
@@ -237,6 +239,7 @@ const SwipeFilePage: React.FC = () => {
     const materialData = {
       title: updatedProcess.title,
       description: updatedProcess.description || null,
+      code: updatedProcess.code || null,
       type_id: typeId,
       category_id: categoryId,
       tags: updatedProcess.tags,
@@ -325,7 +328,7 @@ const SwipeFilePage: React.FC = () => {
     if (selectedCategory !== 'all' && selectedCategoryData) {
       return `Buscar em ${selectedCategoryData.name}...`;
     }
-    return 'Buscar materiais...';
+    return 'Buscar por código, título...';
   }, [selectedCategory, selectedType, selectedCategoryData, selectedTypeData]);
 
   return (

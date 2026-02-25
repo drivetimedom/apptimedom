@@ -24,6 +24,7 @@ export interface SwipeFileMaterial {
   id: string;
   title: string;
   description: string | null;
+  code: string | null;
   type_id: string | null;
   category_id: string | null;
   tags: string[];

@@ -20,6 +20,7 @@ export interface SwipeProcess {
   id: string;
   title: string;
   description: string;
+  code?: string;
   category: string;
   type: string;
   tags: string[];
@@ -179,6 +180,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    code: '',
     category: '',
     type: availableTypes[0] || 'Processo',
     tags: '',
@@ -195,6 +197,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
       setFormData({
         title: process.title,
         description: process.description,
+        code: process.code || '',
         category: process.category,
         type: process.type || 'Processo',
         tags: process.tags.join(', '),
@@ -211,6 +214,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
       setFormData({
         title: '',
         description: '',
+        code: '',
         category: '',
         type: 'Processo',
         tags: '',
@@ -258,6 +262,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
       id: process?.id || '',
       title: formData.title,
       description: formData.description,
+      code: formData.code.trim().toUpperCase() || undefined,
       category: formData.category,
       type: formData.type,
       tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
@@ -386,6 +391,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
                         setFormData({
                           title: process.title,
                           description: process.description,
+                          code: process.code || '',
                           category: process.category,
                           type: process.type || 'Processo',
                           tags: process.tags.join(', '),
@@ -424,6 +430,21 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
           {isEditing ? (
             /* Edit Mode */
             <div className="space-y-6">
+              {/* Code field */}
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Código</Label>
+                <Input
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                  placeholder="Ex: SC001, PR015, CK003"
+                  maxLength={20}
+                  className="bg-card border-border h-11 font-mono"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Código único para identificação rápida (opcional)
+                </p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Categoria *</Label>
@@ -552,6 +573,11 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
             <>
               {/* Metadata */}
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                {process?.code && (
+                  <span className="inline-flex items-center text-xs font-mono font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded">
+                    {process.code}
+                  </span>
+                )}
                 <span className="px-3 py-1.5 rounded-full bg-secondary text-muted-foreground text-xs font-medium">
                   {process?.category}
                 </span>

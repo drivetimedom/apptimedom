@@ -19,6 +19,7 @@ import CommercialTrackingTable from '@/components/hoff-circle/CommercialTracking
 import TrafficTrackingTable from '@/components/hoff-circle/TrafficTrackingTable';
 import MonthlyMetrics from '@/components/hoff-circle/MonthlyMetrics';
 import LibrarySection from '@/components/hoff-circle/LibrarySection';
+import PrescribedLessonsStudent from '@/components/hoff-circle/PrescribedLessonsStudent';
 
 const HoffCirclePage: React.FC = () => {
   const navigate = useNavigate();
@@ -132,6 +133,9 @@ const HoffCirclePage: React.FC = () => {
 
             {/* Action Plan (MAPA 10K) */}
             <ActionPlan />
+
+            {/* Prescribed Extra Lessons */}
+            <PrescribedLessonsStudent />
 
             {/* Activation Plan (Checklist) */}
             <ActivationPlan />

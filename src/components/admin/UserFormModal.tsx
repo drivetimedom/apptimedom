@@ -39,6 +39,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Plus, Trash2, Target, BookOpen, Settings, FileDown, Loader2, Key, Mail } from 'lucide-react';
 import { useResetPassword } from '@/hooks/useResetPassword';
 import { supabase } from '@/integrations/supabase/client';
+import PrescribedLessonsSection from '@/components/admin/PrescribedLessonsSection';
+import MeetingRecordingsSection from '@/components/admin/MeetingRecordingsSection';
 
 // Cloud hooks
 import { useCourses, Course } from '@/hooks/useCourses';
@@ -723,6 +725,11 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                   )}
                 </div>
 
+                {/* Prescribed Lessons (Aulas Extras) */}
+                {user && userId && (
+                  <PrescribedLessonsSection userId={userId} />
+                )}
+
                 {/* Visible Challenges */}
                 <div className="space-y-3">
                   <div>
@@ -928,6 +935,11 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                     </div>
                   </div>
                 </div>
+
+                {/* Meeting Recordings (Reuniões Individuais) */}
+                {user && userId && (
+                  <MeetingRecordingsSection userId={userId} />
+                )}
               </div>
             </TabsContent>
           </div>

@@ -600,6 +600,38 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_prescriptions: {
+        Row: {
+          created_at: string
+          id: string
+          lesson_id: string
+          prescribed_by: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lesson_id: string
+          prescribed_by: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lesson_id?: string
+          prescribed_by?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_prescriptions_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_watch_progress: {
         Row: {
           completed: boolean | null
@@ -728,6 +760,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      meeting_recordings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          meeting_date: string
+          title: string
+          updated_at: string
+          user_id: string
+          vimeo_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          meeting_date: string
+          title: string
+          updated_at?: string
+          user_id: string
+          vimeo_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          meeting_date?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          vimeo_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

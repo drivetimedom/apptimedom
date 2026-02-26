@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { User as UserIcon, Star, TrendingUp, Zap, Crown, Flame } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { User as UserIcon, Star, TrendingUp, Zap, Crown, Flame, Video } from 'lucide-react';
+import MeetingsStudentModal from './MeetingsStudent';
 import { useHofMaps } from '@/hooks/useHofMaps';
 
 type UserStatus = 'iniciante' | 'primeiras-vendas' | 'intermediario' | 'avancado' | 'elite';
@@ -36,7 +38,8 @@ const levelConfig: Record<UserStatus, { label: string; color: string; icon: Reac
 };
 
 const IndividualPanel: React.FC = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
+  const [showMeetings, setShowMeetings] = useState(false);
   const { data: maps } = useHofMaps();
   
   // Get status from profile data (set by admin) or default
@@ -52,6 +55,7 @@ const IndividualPanel: React.FC = () => {
     : '';
 
   return (
+    <>
     <Card className="bg-card border-border">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
@@ -98,9 +102,29 @@ const IndividualPanel: React.FC = () => {
               </Badge>
             </div>
           )}
+
+          {/* Meetings Button */}
+          <div className="pt-2">
+            <Button
+              onClick={() => setShowMeetings(true)}
+              variant="outline"
+              className="w-full gap-2"
+            >
+              <Video className="w-4 h-4" />
+              Reuniões Individuais
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
+
+    {showMeetings && (
+      <MeetingsStudentModal
+        isOpen={showMeetings}
+        onClose={() => setShowMeetings(false)}
+      />
+    )}
+    </>
   );
 };
 

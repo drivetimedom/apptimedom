@@ -91,7 +91,8 @@ import AdminMapsManager from '@/components/admin/AdminMapsManager';
 import AdminChallengesManager from '@/components/admin/AdminChallengesManager';
 import AdminSwipeFileManager from '@/components/admin/AdminSwipeFileManager';
 import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
-import { ClipboardList, Map, Trophy, History, Mail } from 'lucide-react';
+import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
+import { ClipboardList, Map, Trophy, History, Mail, Stethoscope } from 'lucide-react';
 
 // Import database hooks
 import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course } from '@/hooks/useCourses';
@@ -776,6 +777,10 @@ const AdminPage: React.FC = () => {
               <TrendingUp className="w-4 h-4" />
               Acompanhamento
             </TabsTrigger>
+            <TabsTrigger value="diagnosticos" className="data-[state=active]:bg-accent gap-2">
+              <Stethoscope className="w-4 h-4" />
+              Diagnósticos
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -1432,6 +1437,17 @@ const AdminPage: React.FC = () => {
           {/* Commercial Tracking Tab */}
           <TabsContent value="commercial" className="space-y-6">
             <AdminCommercialTracking />
+          </TabsContent>
+
+          {/* Diagnosticos Tab */}
+          <TabsContent value="diagnosticos" className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+                <Stethoscope className="w-5 h-5" />
+                Diagnósticos HOF Circle
+              </h2>
+              <AdminDiagnosticos />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

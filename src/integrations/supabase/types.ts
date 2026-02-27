@@ -471,6 +471,42 @@ export type Database = {
         }
         Relationships: []
       }
+      diagnosticos: {
+        Row: {
+          created_at: string
+          id: string
+          mapa_prescrito_final: string | null
+          respostas: Json
+          resultado_final: Json | null
+          resultado_ia: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mapa_prescrito_final?: string | null
+          respostas?: Json
+          resultado_final?: Json | null
+          resultado_ia?: Json | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mapa_prescrito_final?: string | null
+          respostas?: Json
+          resultado_final?: Json | null
+          resultado_ia?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       financial_data: {
         Row: {
           created_at: string

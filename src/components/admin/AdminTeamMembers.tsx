@@ -454,7 +454,7 @@ const TeamMemberSettingsPanel: React.FC = () => {
           Selecione os cursos que team members poderão acessar ({localSettings.allowed_course_ids.length} selecionados).
         </p>
 
-        <ScrollArea className="max-h-80">
+        <ScrollArea className="h-80">
           <div className="space-y-2">
             {courses.map(course => (
               <label key={course.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">

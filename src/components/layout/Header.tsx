@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTeamMemberGlobalSettings } from '@/hooks/useTeamMembers';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/layout/GlobalSearch';
 import {
@@ -30,23 +31,33 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization }) => {
-  const { user, profile, logout, isAdmin, isInstructor } = useAuth();
+  const { user, profile, logout, isAdmin, isInstructor, isTeamMember } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const { data: tmSettings } = useTeamMemberGlobalSettings();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  const navLinks = [
-    { href: '/', label: 'Início', icon: LayoutDashboard },
-    { href: '/my-courses', label: 'Meus Cursos', icon: BookOpen },
-    { href: '/hoff-circle', label: 'HOF CIRCLE', icon: BookOpen },
-    { href: '/financial-system', label: 'Calculadoras', icon: DollarSign },
-    { href: '/swipe-file', label: 'Swipe File', icon: FileText },
+  const allNavLinks = [
+    { href: '/', label: 'Início', icon: LayoutDashboard, alwaysShow: true },
+    { href: '/my-courses', label: 'Meus Cursos', icon: BookOpen, alwaysShow: true },
+    { href: '/hoff-circle', label: 'HOF CIRCLE', icon: BookOpen, tmKey: 'hof_circle_access' as const },
+    { href: '/financial-system', label: 'Calculadoras', icon: DollarSign, tmKey: 'calculators_access' as const },
+    { href: '/swipe-file', label: 'Swipe File', icon: FileText, tmKey: 'swipefile_access' as const },
   ];
+
+  // Filter links for team_member
+  const navLinks = allNavLinks.filter(link => {
+    if (link.alwaysShow) return true;
+    if (!isTeamMember) return true;
+    if (!link.tmKey) return true;
+    return tmSettings?.[link.tmKey] === true;
+  });
 
   const isActiveLink = (path: string) => {
     if (path === '/') return location.pathname === '/';

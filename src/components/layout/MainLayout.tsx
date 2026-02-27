@@ -1,14 +1,18 @@
 import React from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsTeamMemberSuspended, useTeamMemberGlobalSettings } from '@/hooks/useTeamMembers';
 import Header from './Header';
-import { Loader2, ShieldX } from 'lucide-react';
+import { Loader2, ShieldX, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApplyCustomization } from '@/hooks/useApplyCustomization';
 
 const MainLayout: React.FC = () => {
-  const { user, profile, isLoading, logout, isAdmin } = useAuth();
+  const { user, profile, isLoading, logout, isAdmin, isTeamMember } = useAuth();
   const customization = useApplyCustomization();
+  const location = useLocation();
+  const { data: isSuspended } = useIsTeamMemberSuspended();
+  const { data: tmSettings } = useTeamMemberGlobalSettings();
 
   if (isLoading) {
     return (
@@ -40,6 +44,44 @@ const MainLayout: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  // Show suspended screen for suspended team members
+  if (isTeamMember && isSuspended) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="text-center max-w-md space-y-6">
+          <div className="w-20 h-20 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+            <Ban className="w-10 h-10 text-destructive" />
+          </div>
+          <h1 className="text-2xl font-bold text-foreground">Acesso Suspenso</h1>
+          <p className="text-muted-foreground">
+            Seu acesso foi suspenso pelo médico responsável. Entre em contato para mais informações.
+          </p>
+          <Button variant="outline" onClick={logout}>
+            Sair
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Block team_member from restricted routes
+  if (isTeamMember && tmSettings) {
+    const restrictedRoutes: { path: string; setting: keyof typeof tmSettings }[] = [
+      { path: '/hoff-circle', setting: 'hof_circle_access' },
+      { path: '/financial-system', setting: 'calculators_access' },
+      { path: '/swipe-file', setting: 'swipefile_access' },
+      { path: '/diagnostico', setting: 'hof_circle_access' },
+    ];
+    
+    const blocked = restrictedRoutes.find(
+      r => location.pathname.startsWith(r.path) && !tmSettings[r.setting]
+    );
+
+    if (blocked || location.pathname.startsWith('/admin')) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   return (

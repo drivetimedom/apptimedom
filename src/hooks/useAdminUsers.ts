@@ -21,7 +21,7 @@ export interface AdminUser {
   updated_at: string;
   blocked: boolean;
   // Joined from user_roles
-  role: 'admin' | 'instructor' | 'user';
+  role: 'admin' | 'instructor' | 'user' | 'team_member';
   active: boolean;
 }
 
@@ -46,9 +46,9 @@ export function useAdminUsers() {
       if (rolesError) throw rolesError;
 
       // Create a map of user_id -> role
-      const roleMap = new Map<string, 'admin' | 'instructor' | 'user'>();
+      const roleMap = new Map<string, 'admin' | 'instructor' | 'user' | 'team_member'>();
       (roles || []).forEach(r => {
-        roleMap.set(r.user_id, r.role);
+        roleMap.set(r.user_id, r.role as AdminUser['role']);
       });
 
       // Transform data to AdminUser format
@@ -158,12 +158,12 @@ export function useUpdateUserRole() {
   const { logAction } = useAuditLog();
 
   return useMutation({
-    mutationFn: async ({ 
-      userId, 
-      role 
+    mutationFn: async ({
+      userId,
+      role
     }: { 
-      userId: string; 
-      role: 'admin' | 'instructor' | 'user';
+      userId: string;
+      role: 'admin' | 'instructor' | 'user' | 'team_member';
     }) => {
       // First, check if role exists
       const { data: existingRole, error: fetchError } = await supabase

@@ -92,7 +92,8 @@ import AdminChallengesManager from '@/components/admin/AdminChallengesManager';
 import AdminSwipeFileManager from '@/components/admin/AdminSwipeFileManager';
 import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
-import { ClipboardList, Map, Trophy, History, Mail, Stethoscope } from 'lucide-react';
+import AdminTeamMembers from '@/components/admin/AdminTeamMembers';
+import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2 } from 'lucide-react';
 
 // Import database hooks
 import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course } from '@/hooks/useCourses';
@@ -781,6 +782,10 @@ const AdminPage: React.FC = () => {
               <Stethoscope className="w-4 h-4" />
               Diagnósticos
             </TabsTrigger>
+            <TabsTrigger value="team-members" className="data-[state=active]:bg-accent gap-2">
+              <UsersIcon2 className="w-4 h-4" />
+              Equipes
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -1447,6 +1452,17 @@ const AdminPage: React.FC = () => {
                 Diagnósticos HOF Circle
               </h2>
               <AdminDiagnosticos />
+            </div>
+          </TabsContent>
+
+          {/* Team Members Tab */}
+          <TabsContent value="team-members" className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+                <UsersIcon2 className="w-5 h-5" />
+                Equipes Comerciais (Team Members)
+              </h2>
+              <AdminTeamMembers />
             </div>
           </TabsContent>
         </Tabs>

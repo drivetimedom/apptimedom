@@ -1042,6 +1042,75 @@ export type Database = {
         }
         Relationships: []
       }
+      team_member_global_settings: {
+        Row: {
+          allowed_course_ids: string[]
+          calculators_access: boolean
+          hof_circle_access: boolean
+          id: string
+          swipefile_access: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          allowed_course_ids?: string[]
+          calculators_access?: boolean
+          hof_circle_access?: boolean
+          id?: string
+          swipefile_access?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          allowed_course_ids?: string[]
+          calculators_access?: boolean
+          hof_circle_access?: boolean
+          id?: string
+          swipefile_access?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          member_id: string
+          owner_id: string
+          reactivated_at: string | null
+          reactivated_by: string | null
+          status: string
+          suspended_at: string | null
+          suspended_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          member_id: string
+          owner_id: string
+          reactivated_at?: string | null
+          reactivated_by?: string | null
+          status?: string
+          suspended_at?: string | null
+          suspended_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          member_id?: string
+          owner_id?: string
+          reactivated_at?: string | null
+          reactivated_by?: string | null
+          status?: string
+          suspended_at?: string | null
+          suspended_by?: string | null
+        }
+        Relationships: []
+      }
       traffic_tracking: {
         Row: {
           appointments: number
@@ -1217,7 +1286,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "instructor" | "user"
+      app_role: "admin" | "instructor" | "user" | "team_member"
       user_status:
         | "iniciante"
         | "primeiras-vendas"
@@ -1351,7 +1420,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "instructor", "user"],
+      app_role: ["admin", "instructor", "user", "team_member"],
       user_status: [
         "iniciante",
         "primeiras-vendas",

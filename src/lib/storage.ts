@@ -68,7 +68,7 @@ export interface User {
   name: string;
   email: string;
   password: string;
-  type: 'admin' | 'instructor' | 'user';
+  type: 'admin' | 'instructor' | 'user' | 'team_member';
   avatar?: string;
   bio?: string;
   instagram?: string;
@@ -241,7 +241,7 @@ export interface Comment {
 export interface Session {
   userId: string;
   email: string;
-  type: 'admin' | 'instructor' | 'user';
+  type: 'admin' | 'instructor' | 'user' | 'team_member';
   loginAt: string;
 }
 

@@ -5,7 +5,7 @@ interface CreateUserParams {
   email: string;
   password: string;
   name: string;
-  role?: 'admin' | 'instructor' | 'user';
+  role?: 'admin' | 'instructor' | 'user' | 'team_member';
 }
 
 interface CreateUserResult {

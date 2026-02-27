@@ -20,6 +20,7 @@ import TrafficTrackingTable from '@/components/hoff-circle/TrafficTrackingTable'
 import MonthlyMetrics from '@/components/hoff-circle/MonthlyMetrics';
 import LibrarySection from '@/components/hoff-circle/LibrarySection';
 import PrescribedLessonsStudent from '@/components/hoff-circle/PrescribedLessonsStudent';
+import MyTeamSection from '@/components/hoff-circle/MyTeamSection';
 
 const HoffCirclePage: React.FC = () => {
   const navigate = useNavigate();
@@ -136,6 +137,9 @@ const HoffCirclePage: React.FC = () => {
 
             {/* Prescribed Extra Lessons */}
             <PrescribedLessonsStudent />
+
+            {/* My Team (for doctors) */}
+            <MyTeamSection />
 
             {/* Activation Plan (Checklist) */}
             <ActivationPlan />

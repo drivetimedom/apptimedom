@@ -25,6 +25,7 @@ import ImportUsersPage from "@/pages/ImportUsersPage";
 import ImportProcessesPage from "@/pages/ImportProcessesPage";
 import ProfilePage from "@/pages/ProfilePage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import DiagnosticoPage from "@/pages/DiagnosticoPage";
 import NotFound from "@/pages/NotFound";
 
 // Initialize seed data
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/swipe-file" element={<SwipeFilePage />} />
               <Route path="/hoff-circle" element={<HoffCirclePage />} />
               <Route path="/financial-system" element={<FinancialSystemPage />} />
+              <Route path="/diagnostico" element={<DiagnosticoPage />} />
               <Route path="/perfil" element={<ProfilePage />} />
               <Route path="/meu-perfil" element={<ProfilePage />} />
               <Route path="/admin" element={<AdminPage />} />

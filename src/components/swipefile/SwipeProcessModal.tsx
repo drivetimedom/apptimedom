@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { X, Edit2, MoreVertical, ExternalLink, Copy, Calendar, User, Tag, FolderOpen, Link as LinkIcon, Star, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { X, Edit2, MoreVertical, ExternalLink, Copy, Calendar, User, Tag, FolderOpen, Link as LinkIcon, Star, ChevronRight, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -230,19 +230,72 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
     }
   }, [process, isCreateMode]);
 
+  // Compute sorted non-folder processes by code for navigation
+  const sortedProcesses = useMemo(() => {
+    return allMaterials
+      .filter(m => {
+        const typeName = m.type?.name || '';
+        return typeName !== 'Pasta' && m.code;
+      })
+      .sort((a, b) => (a.code || '').localeCompare(b.code || ''));
+  }, [allMaterials]);
+
+  const currentIndex = useMemo(() => {
+    if (!process?.code) return -1;
+    return sortedProcesses.findIndex(p => p.id === process.id);
+  }, [sortedProcesses, process]);
+
+  const previousProcess = currentIndex > 0 ? sortedProcesses[currentIndex - 1] : null;
+  const nextProcess = currentIndex >= 0 && currentIndex < sortedProcesses.length - 1 ? sortedProcesses[currentIndex + 1] : null;
+
+  const navigateTo = useCallback((material: any) => {
+    if (onOpenProcess) {
+      // Build a SwipeProcess-compatible object
+      const proc: SwipeProcess = {
+        id: material.id,
+        title: material.title,
+        description: material.description || '',
+        code: material.code || undefined,
+        category: material.category?.name || 'Sem categoria',
+        type: material.type?.name || 'Processo',
+        tags: material.tags || [],
+        content: material.content || '',
+        links: Array.isArray(material.links) ? material.links : [],
+        pdfs: Array.isArray(material.pdfs) ? material.pdfs : [],
+        createdAt: material.created_at,
+        updatedAt: material.updated_at,
+        typeId: material.type_id,
+        categoryId: material.category_id,
+        parentFolderIds: material.parent_folder_ids || [],
+        featuredFolderIds: material.featured_folder_ids || [],
+        relatedProcessIds: material.related_process_ids || [],
+        featuredProcessIds: material.featured_process_ids || [],
+      };
+      onOpenProcess(proc);
+    }
+  }, [onOpenProcess]);
+
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
+      if (isEditing) return; // Don't navigate while editing
+      if (e.key === 'ArrowLeft' && previousProcess) {
+        e.preventDefault();
+        navigateTo(previousProcess);
+      } else if (e.key === 'ArrowRight' && nextProcess) {
+        e.preventDefault();
+        navigateTo(nextProcess);
+      }
     };
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'hidden';
     }
     return () => {
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isEditing, previousProcess, nextProcess, navigateTo]);
 
   if (!isOpen) return null;
 
@@ -349,8 +402,44 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
       
       {/* Modal */}
       <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] max-w-[95vw] max-h-[90vh] bg-background border border-border rounded-2xl shadow-lg z-[9999] overflow-hidden animate-scale-in flex flex-col">
+        {/* Navigation Bar */}
+        {!isEditing && !isCreateMode && process?.code && sortedProcesses.length > 1 && (
+          <div className="bg-muted/30 border-b border-border px-6 py-2.5 flex items-center justify-between flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => previousProcess && navigateTo(previousProcess)}
+              disabled={!previousProcess}
+              className="gap-1.5 h-8 text-xs"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              {previousProcess?.code || 'Início'}
+            </Button>
+            
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-sm font-bold text-foreground">{process.code}</span>
+              {currentIndex >= 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {currentIndex + 1} de {sortedProcesses.length}
+                </span>
+              )}
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => nextProcess && navigateTo(nextProcess)}
+              disabled={!nextProcess}
+              className="gap-1.5 h-8 text-xs"
+            >
+              {nextProcess?.code || 'Fim'}
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
         {/* Header */}
-        <div className="bg-card border-b border-border px-6 py-5 flex items-center justify-between flex-shrink-0">
+        <div className="bg-card border-b border-border px-6 py-5 flex items-start justify-between flex-shrink-0">
           {isEditing ? (
             <Input
               value={formData.title}
@@ -359,7 +448,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
               className="text-xl font-bold bg-card border-2 border-border focus:border-muted-foreground h-12 flex-1 mr-4"
             />
           ) : (
-            <h2 className="text-2xl font-bold text-foreground flex-1 truncate">
+            <h2 className="text-2xl font-bold text-foreground flex-1 break-words leading-tight">
               {process?.title || 'Novo Processo'}
             </h2>
           )}

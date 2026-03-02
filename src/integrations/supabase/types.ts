@@ -836,6 +836,82 @@ export type Database = {
         }
         Relationships: []
       }
+      module_material_progress: {
+        Row: {
+          course_id: string
+          created_at: string | null
+          id: string
+          module_id: string
+          progress_data: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          course_id: string
+          created_at?: string | null
+          id?: string
+          module_id: string
+          progress_data?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          course_id?: string
+          created_at?: string | null
+          id?: string
+          module_id?: string
+          progress_data?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_material_progress_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      module_materials: {
+        Row: {
+          content: Json | null
+          course_id: string
+          created_at: string | null
+          created_by: string
+          id: string
+          module_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: Json | null
+          course_id: string
+          created_at?: string | null
+          created_by: string
+          id?: string
+          module_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: Json | null
+          course_id?: string
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          module_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_materials_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           activation_plan: Json | null

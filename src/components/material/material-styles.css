@@ -1,0 +1,234 @@
+/* =====================================================
+   HOF BOX — Material Viewer Styles (Notion-inspired)
+   ===================================================== */
+
+.material-viewer {
+  background: hsl(var(--background));
+}
+
+.material-viewer-content {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  color: hsl(var(--foreground));
+  line-height: 1.7;
+}
+
+/* Headings */
+.material-viewer-content h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: hsl(var(--foreground));
+}
+
+.material-viewer-content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+
+.material-viewer-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--foreground));
+}
+
+/* Paragraphs */
+.material-viewer-content p {
+  margin-bottom: 0.75rem;
+}
+
+/* Bold, italic, underline */
+.material-viewer-content strong {
+  font-weight: 700;
+}
+
+.material-viewer-content em {
+  font-style: italic;
+}
+
+.material-viewer-content u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Lists */
+.material-viewer-content ul,
+.material-viewer-content ol {
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.material-viewer-content ul {
+  list-style: disc;
+}
+
+.material-viewer-content ol {
+  list-style: decimal;
+}
+
+.material-viewer-content li {
+  margin-bottom: 0.25rem;
+}
+
+/* Task List (Checklist) */
+.material-viewer-content ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.material-viewer-content ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.material-viewer-content ul[data-type="taskList"] li label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.material-viewer-content ul[data-type="taskList"] li label input[type="checkbox"] {
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 4px;
+  accent-color: hsl(var(--primary));
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.material-viewer-content ul[data-type="taskList"] li[data-checked="true"] > div > p {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+/* Blockquote */
+.material-viewer-content blockquote {
+  border-left: 4px solid hsl(var(--primary));
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  background: hsl(var(--accent) / 0.5);
+  border-radius: 0 0.5rem 0.5rem 0;
+  color: hsl(var(--foreground));
+}
+
+.material-viewer-content blockquote p {
+  margin-bottom: 0;
+}
+
+/* Horizontal Rule */
+.material-viewer-content hr {
+  border: none;
+  border-top: 1px solid hsl(var(--border));
+  margin: 2rem 0;
+}
+
+/* Table */
+.material-viewer-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid hsl(var(--border));
+}
+
+.material-viewer-content th {
+  background: hsl(var(--muted));
+  font-weight: 600;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border: 1px solid hsl(var(--border));
+  font-size: 0.875rem;
+}
+
+.material-viewer-content td {
+  padding: 0.75rem 1rem;
+  border: 1px solid hsl(var(--border));
+  font-size: 0.875rem;
+}
+
+.material-viewer-content tr:nth-child(even) td {
+  background: hsl(var(--muted) / 0.3);
+}
+
+/* Code blocks */
+.material-viewer-content pre {
+  background: hsl(var(--muted));
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+
+.material-viewer-content code {
+  background: hsl(var(--muted));
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+/* Editor Prose (admin editor) */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror .is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
+
+/* Table editing in admin */
+.ProseMirror table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  border: 1px solid hsl(var(--border));
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid hsl(var(--border));
+  min-width: 100px;
+}
+
+.ProseMirror th {
+  background: hsl(var(--muted));
+  font-weight: 600;
+}
+
+/* Task list in editor */
+.ProseMirror ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.ProseMirror ul[data-type="taskList"] li label input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: hsl(var(--primary));
+  margin-top: 4px;
+}

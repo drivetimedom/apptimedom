@@ -19,6 +19,7 @@ import {
   Edit,
   GripVertical,
   Plus,
+  FileText,
 } from 'lucide-react';
 import {
   Accordion,
@@ -36,6 +37,9 @@ import LessonContextMenu from '@/components/course-management/LessonContextMenu'
 import ModuleContextMenu from '@/components/course-management/ModuleContextMenu';
 import EditCourseDialog from '@/components/course-management/EditCourseDialog';
 import CreateModuleDialog from '@/components/course-management/CreateModuleDialog';
+import MaterialEditor from '@/components/material/MaterialEditor';
+import MaterialViewer from '@/components/material/MaterialViewer';
+import '@/components/material/material-styles.css';
 
 const CoursePage: React.FC = () => {
   const { courseId } = useParams<{ courseId: string }>();
@@ -326,8 +330,11 @@ const CoursePage: React.FC = () => {
                                   {module.title}
                                 </h3>
                                 <p className="text-xs md:text-sm text-muted-foreground">
-                                  {allModuleLessons.length} aulas • {moduleProgress}/
-                                  {allModuleLessons.length} concluídas
+                                  {(module.type || 'aulas') === 'material' ? (
+                                    <span className="flex items-center gap-1"><FileText className="w-3 h-3" /> Material</span>
+                                  ) : (
+                                    <>{allModuleLessons.length} aulas • {moduleProgress}/{allModuleLessons.length} concluídas</>
+                                  )}
                                 </p>
                               </div>
                             </div>
@@ -344,91 +351,103 @@ const CoursePage: React.FC = () => {
                         </AccordionTrigger>
                         <AccordionContent className="px-0 pb-0">
                           <div className="border-t border-border">
-                            {moduleLessons.length === 0 ? (
-                              <p className="text-center py-4 text-muted-foreground text-sm">
-                                {searchTerm
-                                  ? 'Nenhuma aula encontrada'
-                                  : 'Nenhuma aula neste módulo'}
-                              </p>
+                            {(module.type || 'aulas') === 'material' ? (
+                              <div className="p-4 md:p-6">
+                                {isAdmin ? (
+                                  <MaterialEditor courseId={courseId!} moduleId={module.id} />
+                                ) : (
+                                  <MaterialViewer courseId={courseId!} moduleId={module.id} />
+                                )}
+                              </div>
                             ) : (
-                              <Droppable droppableId={module.id} isDropDisabled={!isAdmin}>
-                                {(provided) => (
-                                  <div ref={provided.innerRef} {...provided.droppableProps}>
-                                    {moduleLessons.map((lesson, idx) => {
-                                      const isComplete = isLessonCompleted(lesson.id);
-                                      return (
-                                        <Draggable
-                                          key={lesson.id}
-                                          draggableId={lesson.id}
-                                          index={idx}
-                                          isDragDisabled={!isAdmin}
-                                        >
-                                          {(dragProvided, snapshot) => (
-                                            <div
-                                              ref={dragProvided.innerRef}
-                                              {...dragProvided.draggableProps}
-                                              className={`flex items-center gap-3 md:gap-4 px-4 md:px-6 py-4 border-b border-border last:border-0 hover:bg-accent/30 transition-colors ${
-                                                snapshot.isDragging
-                                                  ? 'bg-accent shadow-lg rounded-lg'
-                                                  : ''
-                                              }`}
+                              <>
+                                {moduleLessons.length === 0 ? (
+                                  <p className="text-center py-4 text-muted-foreground text-sm">
+                                    {searchTerm
+                                      ? 'Nenhuma aula encontrada'
+                                      : 'Nenhuma aula neste módulo'}
+                                  </p>
+                                ) : (
+                                  <Droppable droppableId={module.id} isDropDisabled={!isAdmin}>
+                                    {(provided) => (
+                                      <div ref={provided.innerRef} {...provided.droppableProps}>
+                                        {moduleLessons.map((lesson, idx) => {
+                                          const isComplete = isLessonCompleted(lesson.id);
+                                          return (
+                                            <Draggable
+                                              key={lesson.id}
+                                              draggableId={lesson.id}
+                                              index={idx}
+                                              isDragDisabled={!isAdmin}
                                             >
-                                              {isAdmin && (
+                                              {(dragProvided, snapshot) => (
                                                 <div
-                                                  {...dragProvided.dragHandleProps}
-                                                  className="cursor-grab active:cursor-grabbing flex-shrink-0"
+                                                  ref={dragProvided.innerRef}
+                                                  {...dragProvided.draggableProps}
+                                                  className={`flex items-center gap-3 md:gap-4 px-4 md:px-6 py-4 border-b border-border last:border-0 hover:bg-accent/30 transition-colors ${
+                                                    snapshot.isDragging
+                                                      ? 'bg-accent shadow-lg rounded-lg'
+                                                      : ''
+                                                  }`}
                                                 >
-                                                  <GripVertical className="w-4 h-4 text-muted-foreground" />
-                                                </div>
-                                              )}
-                                              <Link
-                                                to={`/course/${courseId}/lesson/${lesson.id}`}
-                                                className="flex items-center gap-3 md:gap-4 flex-1 min-w-0"
-                                              >
-                                                <div className="flex-shrink-0">
-                                                  {isComplete ? (
-                                                    <CheckCircle className="w-5 h-5 text-success" />
-                                                  ) : lesson.locked ? (
-                                                    <Lock className="w-5 h-5 text-destructive" />
-                                                  ) : (
-                                                    <Circle className="w-5 h-5 text-muted-foreground" />
+                                                  {isAdmin && (
+                                                    <div
+                                                      {...dragProvided.dragHandleProps}
+                                                      className="cursor-grab active:cursor-grabbing flex-shrink-0"
+                                                    >
+                                                      <GripVertical className="w-4 h-4 text-muted-foreground" />
+                                                    </div>
+                                                  )}
+                                                  <Link
+                                                    to={`/course/${courseId}/lesson/${lesson.id}`}
+                                                    className="flex items-center gap-3 md:gap-4 flex-1 min-w-0"
+                                                  >
+                                                    <div className="flex-shrink-0">
+                                                      {isComplete ? (
+                                                        <CheckCircle className="w-5 h-5 text-success" />
+                                                      ) : lesson.locked ? (
+                                                        <Lock className="w-5 h-5 text-destructive" />
+                                                      ) : (
+                                                        <Circle className="w-5 h-5 text-muted-foreground" />
+                                                      )}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                      <p
+                                                        className={`font-medium text-sm md:text-base truncate ${
+                                                          isComplete
+                                                            ? 'text-muted-foreground'
+                                                            : 'text-foreground'
+                                                        }`}
+                                                      >
+                                                        {idx + 1}. {lesson.title}
+                                                      </p>
+                                                    </div>
+                                                    {lesson.duration && (
+                                                      <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground flex-shrink-0">
+                                                        <Clock className="w-4 h-4" />
+                                                        <span>{lesson.duration}</span>
+                                                      </div>
+                                                    )}
+                                                  </Link>
+                                                  {isAdmin && (
+                                                    <LessonContextMenu
+                                                      lesson={lesson}
+                                                      modules={course.modules}
+                                                      courseId={courseId!}
+                                                      onUpdated={handleRefresh}
+                                                    />
                                                   )}
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                  <p
-                                                    className={`font-medium text-sm md:text-base truncate ${
-                                                      isComplete
-                                                        ? 'text-muted-foreground'
-                                                        : 'text-foreground'
-                                                    }`}
-                                                  >
-                                                    {idx + 1}. {lesson.title}
-                                                  </p>
-                                                </div>
-                                                {lesson.duration && (
-                                                  <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground flex-shrink-0">
-                                                    <Clock className="w-4 h-4" />
-                                                    <span>{lesson.duration}</span>
-                                                  </div>
-                                                )}
-                                              </Link>
-                                              {isAdmin && (
-                                                <LessonContextMenu
-                                                  lesson={lesson}
-                                                  modules={course.modules}
-                                                  courseId={courseId!}
-                                                  onUpdated={handleRefresh}
-                                                />
                                               )}
-                                            </div>
-                                          )}
-                                        </Draggable>
-                                      );
-                                    })}
-                                    {provided.placeholder}
-                                  </div>
+                                            </Draggable>
+                                          );
+                                        })}
+                                        {provided.placeholder}
+                                      </div>
+                                    )}
+                                  </Droppable>
                                 )}
-                              </Droppable>
+                              </>
                             )}
                           </div>
                         </AccordionContent>

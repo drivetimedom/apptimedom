@@ -10,10 +10,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
-import { Module } from '@/hooks/useCourses';
+import { Module, ModuleType } from '@/hooks/useCourses';
 
 interface CreateModuleDialogProps {
   open: boolean;
@@ -32,6 +33,7 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({
 }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [moduleType, setModuleType] = useState<ModuleType>('aulas');
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -47,6 +49,7 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({
         description: description.trim(),
         order: maxOrder + 1,
         lessonIds: [],
+        type: moduleType,
       };
 
       const updatedModules = [...existingModules, newModule];
@@ -64,6 +67,7 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({
       onCreated();
       setTitle('');
       setDescription('');
+      setModuleType('aulas');
       onOpenChange(false);
     } catch (err: any) {
       toast({ title: 'Erro ao criar módulo', description: err.message, variant: 'destructive' });
@@ -97,6 +101,19 @@ const CreateModuleDialog: React.FC<CreateModuleDialogProps> = ({
               placeholder="Descrição do módulo"
               rows={3}
             />
+          </div>
+          <div className="space-y-2">
+            <Label>Tipo do módulo</Label>
+            <RadioGroup value={moduleType} onValueChange={(v) => setModuleType(v as ModuleType)} className="flex gap-4">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="aulas" id="type-aulas" />
+                <Label htmlFor="type-aulas" className="font-normal cursor-pointer">Aulas (vídeos)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="material" id="type-material" />
+                <Label htmlFor="type-material" className="font-normal cursor-pointer">Material (documento)</Label>
+              </div>
+            </RadioGroup>
           </div>
         </div>
         <DialogFooter>

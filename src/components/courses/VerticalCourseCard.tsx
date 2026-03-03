@@ -11,7 +11,7 @@ import {
   getCourseStatus,
   checkCourseAccess 
 } from '@/lib/storage';
-import { Lock, Clock, PlayCircle, CheckCircle, BookOpen } from 'lucide-react';
+import { Lock, PlayCircle, CheckCircle, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
@@ -142,10 +142,6 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
                 <div className="flex items-center gap-1">
                   <PlayCircle className="w-3.5 h-3.5" />
                   <span>{totalLessons} aulas</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>{course.totalDuration}</span>
                 </div>
               </div>
             </>

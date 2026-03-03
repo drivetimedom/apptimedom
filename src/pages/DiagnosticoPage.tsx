@@ -159,7 +159,7 @@ const DiagnosticoPage: React.FC = () => {
 
           {/* 3. Atendimentos */}
           <Card className="p-6 space-y-3">
-            <Label className="text-base font-semibold">3. Quantos atendimentos você realiza por mês em média?</Label>
+            <Label className="text-base font-semibold">3. Desde que entrou no HOF Circle, qual foi o seu pico de faturamento em um mês?</Label>
             <Input
               type="number"
               value={respostas.atendimentos}

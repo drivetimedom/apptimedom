@@ -146,7 +146,7 @@ const DiagnosticoPage: React.FC = () => {
 
           {/* 2. Ticket Médio */}
           <Card className="p-6 space-y-3">
-            <Label className="text-base font-semibold">2. Qual é seu ticket médio por procedimento hoje? (R$)</Label>
+            <Label className="text-base font-semibold">2. Qual é seu ticket médio hoje? (R$)</Label>
             <Input
               type="number"
               value={respostas.ticket_medio}

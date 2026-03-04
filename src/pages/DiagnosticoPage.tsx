@@ -164,7 +164,7 @@ const DiagnosticoPage: React.FC = () => {
               type="number"
               value={respostas.atendimentos}
               onChange={(e) => updateField('atendimentos', e.target.value)}
-              placeholder="Ex: 20"
+              placeholder="Ex: 30000"
               className="bg-input border-border"
               required
             />

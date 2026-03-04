@@ -274,7 +274,7 @@ const AdminDiagnosticos: React.FC = () => {
                         <div className="grid grid-cols-2 gap-2 text-sm text-muted-foreground mt-1">
                           <span>Faturamento: R$ {diag.respostas?.faturamento}</span>
                           <span>Ticket Médio: R$ {diag.respostas?.ticket_medio}</span>
-                          <span>Atendimentos: {diag.respostas?.atendimentos}/mês</span>
+                          <span>Pico Faturamento: R$ {diag.respostas?.atendimentos}</span>
                           <span>Estrutura: {diag.respostas?.estrutura}</span>
                           <span>Posicionamento: {diag.respostas?.posicionamento}</span>
                           <span>Origem: {diag.respostas?.origem_pacientes}</span>
@@ -352,7 +352,7 @@ const AdminDiagnosticos: React.FC = () => {
                 <div className="grid grid-cols-1 gap-2 text-sm">
                   <p><strong>Faturamento:</strong> R$ {selectedDiag.respostas?.faturamento}</p>
                   <p><strong>Ticket Médio:</strong> R$ {selectedDiag.respostas?.ticket_medio}</p>
-                  <p><strong>Atendimentos/mês:</strong> {selectedDiag.respostas?.atendimentos}</p>
+                  <p><strong>Pico Faturamento:</strong> R$ {selectedDiag.respostas?.atendimentos}</p>
                   <p><strong>Estrutura:</strong> {selectedDiag.respostas?.estrutura}</p>
                   <p><strong>Posicionamento:</strong> {selectedDiag.respostas?.posicionamento}</p>
                   <p><strong>Origem pacientes:</strong> {selectedDiag.respostas?.origem_pacientes}</p>

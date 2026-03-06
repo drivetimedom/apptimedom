@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -93,8 +94,8 @@ import AdminSwipeFileManager from '@/components/admin/AdminSwipeFileManager';
 import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
 import AdminTeamMembers from '@/components/admin/AdminTeamMembers';
-import AdminStudentsManager from '@/components/admin/AdminStudentsManager';
 import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap } from 'lucide-react';
+import { useAddStudentCourse, useRemoveStudentCourse } from '@/hooks/useStudentAccess';
 
 // Import database hooks
 import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course } from '@/hooks/useCourses';
@@ -112,6 +113,9 @@ const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSendingAccess, setIsSendingAccess] = useState(false);
+  const [selectedStudentForCourses, setSelectedStudentForCourses] = useState<AdminUser | null>(null);
+  const [manageCoursesModalOpen, setManageCoursesModalOpen] = useState(false);
+  const [addCourseId, setAddCourseId] = useState('');
 
   // Database hooks for courses, categories, lessons, banners
   const { data: dbCourses = [], isLoading: coursesLoading } = useCourses();
@@ -149,6 +153,8 @@ const AdminPage: React.FC = () => {
   const deleteUserMutation = useDeleteAdminUser();
   const toggleBlockedMutation = useToggleUserBlocked();
   const { logAction } = useAuditLog();
+  const addStudentCourseMutation = useAddStudentCourse();
+  const removeStudentCourseMutation = useRemoveStudentCourse();
 
   // Modal states
   const [userModalOpen, setUserModalOpen] = useState(false);
@@ -341,7 +347,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  const changeUserType = async (userId: string, newType: 'admin' | 'instructor' | 'user') => {
+  const changeUserType = async (userId: string, newType: 'admin' | 'instructor' | 'user' | 'team_member' | 'student') => {
     // Find the user to get their user_id
     const user = adminUsers.find(u => u.id === userId);
     if (!user) return;
@@ -787,10 +793,6 @@ const AdminPage: React.FC = () => {
               <UsersIcon2 className="w-4 h-4" />
               Equipes
             </TabsTrigger>
-            <TabsTrigger value="students" className="data-[state=active]:bg-accent gap-2">
-              <GraduationCap className="w-4 h-4" />
-              Students
-            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -919,9 +921,11 @@ const AdminPage: React.FC = () => {
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         user.role === 'admin' ? 'bg-destructive/20 text-destructive' :
                         user.role === 'instructor' ? 'bg-warning/20 text-warning' :
+                        user.role === 'student' ? 'bg-orange-500/20 text-orange-700' :
+                        user.role === 'team_member' ? 'bg-emerald-500/20 text-emerald-700' :
                         'bg-info/20 text-info'
                       }`}>
-                        {user.role === 'admin' ? 'Admin' : user.role === 'instructor' ? 'Instrutor' : 'Usuário'}
+                        {user.role === 'admin' ? 'Admin' : user.role === 'instructor' ? 'Instrutor' : user.role === 'student' ? 'Student' : user.role === 'team_member' ? 'Equipe' : 'Médico'}
                       </span>
                       <span className={`w-2 h-2 rounded-full ${user.active ? 'bg-success' : 'bg-muted-foreground'}`} />
                     </div>
@@ -952,7 +956,9 @@ const AdminPage: React.FC = () => {
                     <SelectItem value="all">Todos</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="instructor">Instrutor</SelectItem>
-                    <SelectItem value="user">Usuário</SelectItem>
+                    <SelectItem value="user">Médico</SelectItem>
+                    <SelectItem value="team_member">Equipe</SelectItem>
+                    <SelectItem value="student">Student</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={userStatusFilter} onValueChange={setUserStatusFilter}>
@@ -1011,6 +1017,8 @@ const AdminPage: React.FC = () => {
                           <SelectTrigger className={`w-28 h-7 text-xs border-0 ${
                             user.role === 'admin' ? 'bg-destructive/20 text-destructive' :
                             user.role === 'instructor' ? 'bg-warning/20 text-warning' :
+                            user.role === 'student' ? 'bg-orange-500/20 text-orange-700' :
+                            user.role === 'team_member' ? 'bg-emerald-500/20 text-emerald-700' :
                             'bg-info/20 text-info'
                           }`}>
                             <SelectValue />
@@ -1018,7 +1026,9 @@ const AdminPage: React.FC = () => {
                           <SelectContent className="bg-popover border-border">
                             <SelectItem value="admin">Admin</SelectItem>
                             <SelectItem value="instructor">Instrutor</SelectItem>
-                            <SelectItem value="user">Usuário</SelectItem>
+                            <SelectItem value="user">Médico</SelectItem>
+                            <SelectItem value="team_member">Equipe</SelectItem>
+                            <SelectItem value="student">Student</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
@@ -1047,10 +1057,24 @@ const AdminPage: React.FC = () => {
                               <Edit className="w-4 h-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openUserModal(user)} className="cursor-pointer">
-                              <Key className="w-4 h-4 mr-2" />
-                              Gerenciar Acessos
-                            </DropdownMenuItem>
+                            {user.role !== 'student' && user.role !== 'team_member' && (
+                              <DropdownMenuItem onClick={() => openUserModal(user)} className="cursor-pointer">
+                                <Key className="w-4 h-4 mr-2" />
+                                Gerenciar Acessos
+                              </DropdownMenuItem>
+                            )}
+                            {user.role === 'student' && (
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setSelectedStudentForCourses(user);
+                                  setManageCoursesModalOpen(true);
+                                }} 
+                                className="cursor-pointer"
+                              >
+                                <BookOpen className="w-4 h-4 mr-2" />
+                                Gerenciar Cursos
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem 
                               onClick={() => handleResendAccess(user)} 
                               className="cursor-pointer"
@@ -1470,13 +1494,6 @@ const AdminPage: React.FC = () => {
               <AdminTeamMembers />
             </div>
           </TabsContent>
-
-          {/* Students Tab */}
-          <TabsContent value="students" className="space-y-6">
-            <div className="bg-card rounded-xl border border-border p-6">
-              <AdminStudentsManager />
-            </div>
-          </TabsContent>
         </Tabs>
       </div>
 
@@ -1657,6 +1674,130 @@ const AdminPage: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Manage Student Courses Modal */}
+      <Dialog open={manageCoursesModalOpen} onOpenChange={(open) => {
+        setManageCoursesModalOpen(open);
+        if (!open) { setSelectedStudentForCourses(null); setAddCourseId(''); }
+      }}>
+        <DialogContent className="bg-card border-border sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Gerenciar Cursos</DialogTitle>
+          </DialogHeader>
+          {selectedStudentForCourses && (
+            <ManageStudentCoursesContent
+              student={selectedStudentForCourses}
+              courses={courses}
+              addCourseId={addCourseId}
+              setAddCourseId={setAddCourseId}
+              addCourseMutation={addStudentCourseMutation}
+              removeCourseMutation={removeStudentCourseMutation}
+              onRefresh={refetchUsers}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+// Inline component for managing student courses
+const ManageStudentCoursesContent: React.FC<{
+  student: AdminUser;
+  courses: any[];
+  addCourseId: string;
+  setAddCourseId: (id: string) => void;
+  addCourseMutation: any;
+  removeCourseMutation: any;
+  onRefresh: () => void;
+}> = ({ student, courses, addCourseId, setAddCourseId, addCourseMutation, removeCourseMutation, onRefresh }) => {
+  const { data: studentAccess = [] } = useQuery({
+    queryKey: ['student-courses-inline', student.user_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('student_course_access')
+        .select('id, course_id, granted_at')
+        .eq('student_id', student.user_id)
+        .is('removed_at', null)
+        .order('granted_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const accessedCourseIds = studentAccess.map((a: any) => a.course_id);
+  const publishedCourses = courses.filter((c: any) => c.status === 'published');
+  const availableCourses = publishedCourses.filter((c: any) => !accessedCourseIds.includes(c.id));
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">{student.name} ({student.email})</p>
+
+      {/* Add course */}
+      <div className="flex items-center gap-2">
+        <Select value={addCourseId} onValueChange={setAddCourseId}>
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Adicionar curso..." />
+          </SelectTrigger>
+          <SelectContent>
+            {availableCourses.map((course: any) => (
+              <SelectItem key={course.id} value={course.id}>
+                {course.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          size="sm"
+          disabled={!addCourseId || addCourseMutation.isPending}
+          onClick={() => {
+            if (addCourseId) {
+              addCourseMutation.mutate(
+                { studentId: student.user_id, courseId: addCourseId },
+                { onSuccess: () => { setAddCourseId(''); onRefresh(); } }
+              );
+            }
+          }}
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Current courses */}
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-foreground">Cursos com acesso:</p>
+        {studentAccess.length > 0 ? (
+          studentAccess.map((access: any) => {
+            const course = courses.find((c: any) => c.id === access.course_id);
+            return (
+              <div key={access.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium">{course?.title || 'Curso removido'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Liberado em: {new Date(access.granted_at).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => {
+                    if (!confirm(`Remover acesso ao curso "${course?.title}"?`)) return;
+                    removeCourseMutation.mutate(
+                      { accessId: access.id },
+                      { onSuccess: () => onRefresh() }
+                    );
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-sm text-muted-foreground py-4 text-center">Nenhum curso liberado</p>
+        )}
+      </div>
     </div>
   );
 };

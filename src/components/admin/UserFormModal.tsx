@@ -100,7 +100,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     email: '',
     password: '',
     confirmPassword: '',
-    type: 'user' as 'admin' | 'instructor' | 'user' | 'team_member',
+    type: 'user' as 'admin' | 'instructor' | 'user' | 'team_member' | 'student',
     avatar: '',
     active: true,
     unlockedCourses: [] as string[],
@@ -553,8 +553,10 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
                     </SelectTrigger>
                     <SelectContent className="bg-popover border-border">
                       <SelectItem value="admin">Administrador (acesso total)</SelectItem>
-                      <SelectItem value="user">Usuário (acesso a cursos liberados)</SelectItem>
+                      <SelectItem value="user">Médico (mentorado)</SelectItem>
                       <SelectItem value="instructor">Instrutor (gerencia seus cursos)</SelectItem>
+                      <SelectItem value="team_member">Equipe Comercial</SelectItem>
+                      <SelectItem value="student">Student (cursos avulsos)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

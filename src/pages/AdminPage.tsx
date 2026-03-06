@@ -1671,6 +1671,29 @@ const AdminPage: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Manage Student Courses Modal */}
+      <Dialog open={manageCoursesModalOpen} onOpenChange={(open) => {
+        setManageCoursesModalOpen(open);
+        if (!open) { setSelectedStudentForCourses(null); setAddCourseId(''); }
+      }}>
+        <DialogContent className="bg-card border-border sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Gerenciar Cursos</DialogTitle>
+          </DialogHeader>
+          {selectedStudentForCourses && (
+            <ManageStudentCoursesContent
+              student={selectedStudentForCourses}
+              courses={courses}
+              addCourseId={addCourseId}
+              setAddCourseId={setAddCourseId}
+              addCourseMutation={addStudentCourseMutation}
+              removeCourseMutation={removeStudentCourseMutation}
+              onRefresh={refetchUsers}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

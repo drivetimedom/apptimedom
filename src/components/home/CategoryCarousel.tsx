@@ -30,6 +30,8 @@ const CategoryCarousel: React.FC<CategoryCarouselProps> = ({
   users,
   userProgress,
   isCourseUnlocked,
+  isStudent = false,
+  onStudentLockedClick,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);

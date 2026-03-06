@@ -100,7 +100,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({
     email: '',
     password: '',
     confirmPassword: '',
-    type: 'user' as 'admin' | 'instructor' | 'user' | 'team_member',
+    type: 'user' as 'admin' | 'instructor' | 'user' | 'team_member' | 'student',
     avatar: '',
     active: true,
     unlockedCourses: [] as string[],

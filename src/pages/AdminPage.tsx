@@ -93,8 +93,8 @@ import AdminSwipeFileManager from '@/components/admin/AdminSwipeFileManager';
 import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
 import AdminTeamMembers from '@/components/admin/AdminTeamMembers';
-import AdminStudentsManager from '@/components/admin/AdminStudentsManager';
 import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap } from 'lucide-react';
+import { useAddStudentCourse, useRemoveStudentCourse } from '@/hooks/useStudentAccess';
 
 // Import database hooks
 import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course } from '@/hooks/useCourses';

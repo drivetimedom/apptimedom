@@ -46,7 +46,7 @@ export function useAdminUsers() {
       if (rolesError) throw rolesError;
 
       // Create a map of user_id -> role
-      const roleMap = new Map<string, 'admin' | 'instructor' | 'user' | 'team_member'>();
+      const roleMap = new Map<string, AdminUser['role']>();
       (roles || []).forEach(r => {
         roleMap.set(r.user_id, r.role as AdminUser['role']);
       });

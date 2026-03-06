@@ -1049,10 +1049,24 @@ const AdminPage: React.FC = () => {
                               <Edit className="w-4 h-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openUserModal(user)} className="cursor-pointer">
-                              <Key className="w-4 h-4 mr-2" />
-                              Gerenciar Acessos
-                            </DropdownMenuItem>
+                            {user.role !== 'student' && user.role !== 'team_member' && (
+                              <DropdownMenuItem onClick={() => openUserModal(user)} className="cursor-pointer">
+                                <Key className="w-4 h-4 mr-2" />
+                                Gerenciar Acessos
+                              </DropdownMenuItem>
+                            )}
+                            {user.role === 'student' && (
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setSelectedStudentForCourses(user);
+                                  setManageCoursesModalOpen(true);
+                                }} 
+                                className="cursor-pointer"
+                              >
+                                <BookOpen className="w-4 h-4 mr-2" />
+                                Gerenciar Cursos
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem 
                               onClick={() => handleResendAccess(user)} 
                               className="cursor-pointer"

@@ -1698,4 +1698,105 @@ const AdminPage: React.FC = () => {
   );
 };
 
+// Inline component for managing student courses
+const ManageStudentCoursesContent: React.FC<{
+  student: AdminUser;
+  courses: any[];
+  addCourseId: string;
+  setAddCourseId: (id: string) => void;
+  addCourseMutation: any;
+  removeCourseMutation: any;
+  onRefresh: () => void;
+}> = ({ student, courses, addCourseId, setAddCourseId, addCourseMutation, removeCourseMutation, onRefresh }) => {
+  const { data: studentAccess = [] } = useQuery({
+    queryKey: ['student-courses-inline', student.user_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('student_course_access')
+        .select('id, course_id, granted_at')
+        .eq('student_id', student.user_id)
+        .is('removed_at', null)
+        .order('granted_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const accessedCourseIds = studentAccess.map((a: any) => a.course_id);
+  const publishedCourses = courses.filter((c: any) => c.status === 'published');
+  const availableCourses = publishedCourses.filter((c: any) => !accessedCourseIds.includes(c.id));
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">{student.name} ({student.email})</p>
+
+      {/* Add course */}
+      <div className="flex items-center gap-2">
+        <Select value={addCourseId} onValueChange={setAddCourseId}>
+          <SelectTrigger className="flex-1">
+            <SelectValue placeholder="Adicionar curso..." />
+          </SelectTrigger>
+          <SelectContent>
+            {availableCourses.map((course: any) => (
+              <SelectItem key={course.id} value={course.id}>
+                {course.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          size="sm"
+          disabled={!addCourseId || addCourseMutation.isPending}
+          onClick={() => {
+            if (addCourseId) {
+              addCourseMutation.mutate(
+                { studentId: student.user_id, courseId: addCourseId },
+                { onSuccess: () => { setAddCourseId(''); onRefresh(); } }
+              );
+            }
+          }}
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+      </div>
+
+      {/* Current courses */}
+      <div className="space-y-2">
+        <p className="text-sm font-medium text-foreground">Cursos com acesso:</p>
+        {studentAccess.length > 0 ? (
+          studentAccess.map((access: any) => {
+            const course = courses.find((c: any) => c.id === access.course_id);
+            return (
+              <div key={access.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium">{course?.title || 'Curso removido'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Liberado em: {new Date(access.granted_at).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => {
+                    if (!confirm(`Remover acesso ao curso "${course?.title}"?`)) return;
+                    removeCourseMutation.mutate(
+                      { accessId: access.id },
+                      { onSuccess: () => onRefresh() }
+                    );
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            );
+          })
+        ) : (
+          <p className="text-sm text-muted-foreground py-4 text-center">Nenhum curso liberado</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default AdminPage;

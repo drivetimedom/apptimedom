@@ -18,6 +18,7 @@ import VerticalCourseCard from '@/components/courses/VerticalCourseCard';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBanners } from '@/hooks/useBanners';
+import { useStudentCourseAccess } from '@/hooks/useStudentAccess';
 import HeroBannerCarousel from '@/components/home/HeroBannerCarousel';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';

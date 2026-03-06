@@ -921,9 +921,11 @@ const AdminPage: React.FC = () => {
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         user.role === 'admin' ? 'bg-destructive/20 text-destructive' :
                         user.role === 'instructor' ? 'bg-warning/20 text-warning' :
+                        user.role === 'student' ? 'bg-orange-500/20 text-orange-700' :
+                        user.role === 'team_member' ? 'bg-emerald-500/20 text-emerald-700' :
                         'bg-info/20 text-info'
                       }`}>
-                        {user.role === 'admin' ? 'Admin' : user.role === 'instructor' ? 'Instrutor' : 'Usuário'}
+                        {user.role === 'admin' ? 'Admin' : user.role === 'instructor' ? 'Instrutor' : user.role === 'student' ? 'Student' : user.role === 'team_member' ? 'Equipe' : 'Médico'}
                       </span>
                       <span className={`w-2 h-2 rounded-full ${user.active ? 'bg-success' : 'bg-muted-foreground'}`} />
                     </div>

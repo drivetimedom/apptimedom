@@ -66,6 +66,15 @@ const MainLayout: React.FC = () => {
     );
   }
 
+  // Block student from restricted routes
+  if (isStudent) {
+    const studentBlockedRoutes = ['/hoff-circle', '/financial-system', '/swipe-file', '/diagnostico', '/admin'];
+    const isBlocked = studentBlockedRoutes.some(r => location.pathname.startsWith(r));
+    if (isBlocked) {
+      return <Navigate to="/" replace />;
+    }
+  }
+
   // Block team_member from restricted routes
   if (isTeamMember && tmSettings) {
     const restrictedRoutes: { path: string; setting: keyof typeof tmSettings }[] = [

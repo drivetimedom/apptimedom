@@ -201,14 +201,19 @@ const CoursesBlock: React.FC<{ data: CoursesBlockData }> = ({ data }) => {
         </div>
       ) : (
         <div className={`grid ${gridCols[itemsPerRow] || gridCols[3]} gap-6`}>
-          {courses.map((course: any) => (
-            <VerticalCourseCard
-              key={course.id}
-              course={course}
-              progress={getProgress(course.id)}
-              isLocked={!isCourseUnlocked(course)}
-            />
-          ))}
+          {courses.map((course: any) => {
+            const locked = !isCourseUnlocked(course);
+            return (
+              <VerticalCourseCard
+                key={course.id}
+                course={course}
+                progress={getProgress(course.id)}
+                isLocked={locked}
+                studentLocked={isStudent && locked}
+                onStudentLockedClick={() => {}}
+              />
+            );
+          })}
         </div>
       )}
     </section>

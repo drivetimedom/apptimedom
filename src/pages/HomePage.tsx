@@ -185,7 +185,7 @@ const HomePage: React.FC = () => {
             </div>
             <div className="text-center">
               <div className="text-4xl font-bold text-foreground mb-2">
-                {courses.reduce((acc, c) => acc + c.modules.reduce((m, mod) => m + mod.lessonIds.length, 0), 0)}
+                {courses.reduce((acc, c) => acc + (c.modules || []).reduce((m, mod) => m + (mod.lessonIds?.length || 0), 0), 0)}
               </div>
               <p className="text-sm text-muted-foreground">Aulas em Vídeo</p>
             </div>

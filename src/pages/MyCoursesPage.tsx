@@ -36,7 +36,7 @@ const MyCoursesPage: React.FC = () => {
 
   const getCourseProgress = (course: any) => {
     const progress = userProgressList.find(p => p.courseId === course.id);
-    const totalLessons = course.modules.reduce((acc: number, m: any) => acc + m.lessonIds.length, 0);
+    const totalLessons = (course.modules || []).reduce((acc: number, m: any) => acc + (m.lessonIds?.length || 0), 0);
     const completedLessons = progress?.completedLessons.length || 0;
     const percent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
     return { progress, totalLessons, completedLessons, percent };

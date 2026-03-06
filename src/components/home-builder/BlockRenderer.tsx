@@ -80,7 +80,8 @@ const BannerBlock: React.FC<{ data: BannerBlockData }> = ({ data }) => {
 const CoursesBlock: React.FC<{ data: CoursesBlockData }> = ({ data }) => {
   const { title, filterType, categoryId, courseId, layout, itemsPerRow, limit } = data;
   const { data: userProgressList = [] } = useUserProgress();
-  const { profile, isAdmin, isInstructor } = useAuth();
+  const { profile, isAdmin, isInstructor, isStudent } = useAuth();
+  const { data: studentCourseIds = [] } = useStudentCourseAccess();
   const carouselRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);

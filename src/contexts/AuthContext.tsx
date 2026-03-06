@@ -32,6 +32,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isInstructor: boolean;
   isTeamMember: boolean;
+  isStudent: boolean;
   role: UserRole | null;
   refreshProfile: () => Promise<void>;
 }

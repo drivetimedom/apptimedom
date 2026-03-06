@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMemberGlobalSettings } from '@/hooks/useTeamMembers';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/layout/GlobalSearch';
+import ProResourceModal from '@/components/student/ProResourceModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +22,8 @@ import {
   FileText,
   Menu,
   X,
-  DollarSign
+  DollarSign,
+  Sparkles
 } from 'lucide-react';
 import { Customization, defaultCustomization } from '@/lib/customization';
 import fallbackLogo from '@/assets/LOGO_TIME_DOM.png';

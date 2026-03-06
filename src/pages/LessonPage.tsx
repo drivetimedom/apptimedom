@@ -48,7 +48,6 @@ const LessonPage: React.FC = () => {
       navigate('/');
     }
   }, [canAccess, accessLoading, navigate]);
-  const navigate = useNavigate();
   const { toast } = useToast();
   const { logActivity } = useActivityLog();
   

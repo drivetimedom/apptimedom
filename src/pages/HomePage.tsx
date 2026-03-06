@@ -198,6 +198,16 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       </section>
+
+      {/* Locked Course Modal for Students */}
+      {lockedCourse && (
+        <LockedCourseModal
+          open={!!lockedCourse}
+          onClose={() => setLockedCourse(null)}
+          courseTitle={lockedCourse.title}
+          courseDescription={lockedCourse.description}
+        />
+      )}
     </div>
   );
 };

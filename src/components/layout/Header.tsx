@@ -33,10 +33,11 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization }) => {
-  const { user, profile, logout, isAdmin, isInstructor, isTeamMember } = useAuth();
+  const { user, profile, logout, isAdmin, isInstructor, isTeamMember, isStudent } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [proModalResource, setProModalResource] = useState<string | null>(null);
   
   const { data: tmSettings } = useTeamMemberGlobalSettings();
 
@@ -48,14 +49,16 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
   const allNavLinks = [
     { href: '/', label: 'Início', icon: LayoutDashboard, alwaysShow: true },
     { href: '/my-courses', label: 'Meus Cursos', icon: BookOpen, alwaysShow: true },
-    { href: '/hoff-circle', label: 'HOF CIRCLE', icon: BookOpen, tmKey: 'hof_circle_access' as const },
-    { href: '/financial-system', label: 'Calculadoras', icon: DollarSign, tmKey: 'calculators_access' as const },
-    { href: '/swipe-file', label: 'Swipe File', icon: FileText, tmKey: 'swipefile_access' as const },
+    { href: '/hoff-circle', label: 'HOF CIRCLE', icon: BookOpen, tmKey: 'hof_circle_access' as const, hideForStudent: true },
+    { href: '/financial-system', label: 'Calculadoras', icon: DollarSign, tmKey: 'calculators_access' as const, proForStudent: true },
+    { href: '/swipe-file', label: 'Swipe File', icon: FileText, tmKey: 'swipefile_access' as const, proForStudent: true },
   ];
 
-  // Filter links for team_member
+  // Filter links for team_member and student
   const navLinks = allNavLinks.filter(link => {
     if (link.alwaysShow) return true;
+    // Hide HOF Circle completely for students
+    if (isStudent && link.hideForStudent) return false;
     if (!isTeamMember) return true;
     if (!link.tmKey) return true;
     return tmSettings?.[link.tmKey] === true;

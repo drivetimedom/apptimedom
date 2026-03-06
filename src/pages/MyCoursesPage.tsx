@@ -1,18 +1,22 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourses } from '@/hooks/useCourses';
 import { useUserProgress } from '@/hooks/useUserProgress';
+import { useStudentCourseAccess } from '@/hooks/useStudentAccess';
 import MyCoursesCard from '@/components/courses/MyCoursesCard';
+import LockedCourseModal from '@/components/student/LockedCourseModal';
 import { BookOpen, Clock, Trophy, Home, ChevronRight, GraduationCap, ArrowDown, Loader2, CheckCircle2, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const MyCoursesPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, profile, isAdmin, isInstructor } = useAuth();
+  const { user, profile, isAdmin, isInstructor, isStudent } = useAuth();
+  const [lockedCourse, setLockedCourse] = useState<any>(null);
 
   const { data: courses = [], isLoading: coursesLoading } = useCourses();
   const { data: userProgressList = [], isLoading: progressLoading } = useUserProgress();
+  const { data: studentCourseIds = [] } = useStudentCourseAccess();
 
   const isLoading = coursesLoading || progressLoading;
 
@@ -23,6 +27,7 @@ const MyCoursesPage: React.FC = () => {
 
   const isCourseUnlocked = (course: any) => {
     if (isAdmin || isInstructor) return true;
+    if (isStudent) return studentCourseIds.includes(course.id);
     if (!course.locked) return true;
     return profile?.unlocked_courses?.includes(course.id) || false;
   };
@@ -31,7 +36,7 @@ const MyCoursesPage: React.FC = () => {
 
   const getCourseProgress = (course: any) => {
     const progress = userProgressList.find(p => p.courseId === course.id);
-    const totalLessons = course.modules.reduce((acc: number, m: any) => acc + m.lessonIds.length, 0);
+    const totalLessons = (course.modules || []).reduce((acc: number, m: any) => acc + (m.lessonIds?.length || 0), 0);
     const completedLessons = progress?.completedLessons.length || 0;
     const percent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
     return { progress, totalLessons, completedLessons, percent };

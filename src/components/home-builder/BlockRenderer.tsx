@@ -18,6 +18,7 @@ import VerticalCourseCard from '@/components/courses/VerticalCourseCard';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBanners } from '@/hooks/useBanners';
+import { useStudentCourseAccess } from '@/hooks/useStudentAccess';
 import HeroBannerCarousel from '@/components/home/HeroBannerCarousel';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -80,7 +81,8 @@ const BannerBlock: React.FC<{ data: BannerBlockData }> = ({ data }) => {
 const CoursesBlock: React.FC<{ data: CoursesBlockData }> = ({ data }) => {
   const { title, filterType, categoryId, courseId, layout, itemsPerRow, limit } = data;
   const { data: userProgressList = [] } = useUserProgress();
-  const { profile, isAdmin, isInstructor } = useAuth();
+  const { profile, isAdmin, isInstructor, isStudent } = useAuth();
+  const { data: studentCourseIds = [] } = useStudentCourseAccess();
   const carouselRef = useRef<HTMLDivElement>(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
@@ -108,6 +110,7 @@ const CoursesBlock: React.FC<{ data: CoursesBlockData }> = ({ data }) => {
 
   const isCourseUnlocked = (course: any) => {
     if (isAdmin || isInstructor) return true;
+    if (isStudent) return studentCourseIds.includes(course.id);
     if (!course.locked) return true;
     return profile?.unlocked_courses?.includes(course.id) || false;
   };
@@ -181,26 +184,36 @@ const CoursesBlock: React.FC<{ data: CoursesBlockData }> = ({ data }) => {
             className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 px-1" 
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {courses.map((course: any) => (
-              <VerticalCourseCard
-                key={course.id}
-                course={course}
-                progress={getProgress(course.id)}
-                isLocked={!isCourseUnlocked(course)}
-              />
-            ))}
+            {courses.map((course: any) => {
+              const locked = !isCourseUnlocked(course);
+              return (
+                <VerticalCourseCard
+                  key={course.id}
+                  course={course}
+                  progress={getProgress(course.id)}
+                  isLocked={locked}
+                  studentLocked={isStudent && locked}
+                  onStudentLockedClick={() => {}}
+                />
+              );
+            })}
           </div>
         </div>
       ) : (
         <div className={`grid ${gridCols[itemsPerRow] || gridCols[3]} gap-6`}>
-          {courses.map((course: any) => (
-            <VerticalCourseCard
-              key={course.id}
-              course={course}
-              progress={getProgress(course.id)}
-              isLocked={!isCourseUnlocked(course)}
-            />
-          ))}
+          {courses.map((course: any) => {
+            const locked = !isCourseUnlocked(course);
+            return (
+              <VerticalCourseCard
+                key={course.id}
+                course={course}
+                progress={getProgress(course.id)}
+                isLocked={locked}
+                studentLocked={isStudent && locked}
+                onStudentLockedClick={() => {}}
+              />
+            );
+          })}
         </div>
       )}
     </section>

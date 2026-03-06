@@ -54,7 +54,7 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
   const userProgress = progress || progressList.find(p => p.userId === user?.id && p.courseId === course.id);
   
   const completedLessons = userProgress?.completedLessons.length || 0;
-  const totalLessons = course.modules.reduce((acc, mod) => acc + mod.lessonIds.length, 0);
+  const totalLessons = (course.modules || []).reduce((acc, mod) => acc + (mod.lessonIds?.length || 0), 0);
   const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
   const hasStarted = completedLessons > 0;
 

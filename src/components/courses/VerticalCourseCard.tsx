@@ -110,8 +110,8 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
           </div>
         )}
         {studentLocked && (
-          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold uppercase backdrop-blur-sm z-10 flex items-center gap-1">
-            PRO
+          <div className="absolute top-3 left-3 w-9 h-9 rounded-full bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center z-10">
+            <Lock className="w-4 h-4 text-destructive" />
           </div>
         )}
         

@@ -163,7 +163,7 @@ export function useUpdateUserRole() {
       role
     }: { 
       userId: string;
-      role: 'admin' | 'instructor' | 'user' | 'team_member';
+      role: 'admin' | 'instructor' | 'user' | 'team_member' | 'student';
     }) => {
       // First, check if role exists
       const { data: existingRole, error: fetchError } = await supabase

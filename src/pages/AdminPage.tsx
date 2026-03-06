@@ -1009,6 +1009,8 @@ const AdminPage: React.FC = () => {
                           <SelectTrigger className={`w-28 h-7 text-xs border-0 ${
                             user.role === 'admin' ? 'bg-destructive/20 text-destructive' :
                             user.role === 'instructor' ? 'bg-warning/20 text-warning' :
+                            user.role === 'student' ? 'bg-orange-500/20 text-orange-700' :
+                            user.role === 'team_member' ? 'bg-emerald-500/20 text-emerald-700' :
                             'bg-info/20 text-info'
                           }`}>
                             <SelectValue />
@@ -1016,7 +1018,9 @@ const AdminPage: React.FC = () => {
                           <SelectContent className="bg-popover border-border">
                             <SelectItem value="admin">Admin</SelectItem>
                             <SelectItem value="instructor">Instrutor</SelectItem>
-                            <SelectItem value="user">Usuário</SelectItem>
+                            <SelectItem value="user">Médico</SelectItem>
+                            <SelectItem value="team_member">Equipe</SelectItem>
+                            <SelectItem value="student">Student</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>

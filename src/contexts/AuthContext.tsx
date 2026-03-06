@@ -258,6 +258,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin, 
       isInstructor,
       isTeamMember,
+      isStudent,
       role,
       refreshProfile,
     }}>

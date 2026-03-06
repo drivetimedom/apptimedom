@@ -8,6 +8,7 @@ import { useLessons } from '@/hooks/useLessons';
 import { useCourseProgress, useUpdateProgress } from '@/hooks/useUserProgress';
 import { useLessonComments, useAddComment } from '@/hooks/useLessonComments';
 import { useActivityLog } from '@/hooks/useActivityLog';
+import { useCanAccessCourse } from '@/hooks/useStudentAccess';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -39,6 +40,14 @@ const LessonPage: React.FC = () => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
   const { user, profile } = useAuth();
   const navigate = useNavigate();
+  const { data: canAccess, isLoading: accessLoading } = useCanAccessCourse(courseId);
+
+  // Redirect if student doesn't have access
+  useEffect(() => {
+    if (!accessLoading && canAccess === false) {
+      navigate('/');
+    }
+  }, [canAccess, accessLoading, navigate]);
   const { toast } = useToast();
   const { logActivity } = useActivityLog();
   

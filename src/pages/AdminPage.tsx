@@ -93,7 +93,8 @@ import AdminSwipeFileManager from '@/components/admin/AdminSwipeFileManager';
 import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
 import AdminTeamMembers from '@/components/admin/AdminTeamMembers';
-import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2 } from 'lucide-react';
+import AdminStudentsManager from '@/components/admin/AdminStudentsManager';
+import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap } from 'lucide-react';
 
 // Import database hooks
 import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course } from '@/hooks/useCourses';
@@ -786,6 +787,10 @@ const AdminPage: React.FC = () => {
               <UsersIcon2 className="w-4 h-4" />
               Equipes
             </TabsTrigger>
+            <TabsTrigger value="students" className="data-[state=active]:bg-accent gap-2">
+              <GraduationCap className="w-4 h-4" />
+              Students
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -1463,6 +1468,13 @@ const AdminPage: React.FC = () => {
                 Equipes Comerciais (Team Members)
               </h2>
               <AdminTeamMembers />
+            </div>
+          </TabsContent>
+
+          {/* Students Tab */}
+          <TabsContent value="students" className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <AdminStudentsManager />
             </div>
           </TabsContent>
         </Tabs>

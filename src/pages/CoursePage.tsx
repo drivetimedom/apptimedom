@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCourse } from '@/hooks/useCourses';
 import { useLessons } from '@/hooks/useLessons';
 import { useCourseProgress } from '@/hooks/useUserProgress';
+import { useCanAccessCourse } from '@/hooks/useStudentAccess';
+import LockedCourseModal from '@/components/student/LockedCourseModal';
 import { Button } from '@/components/ui/button';
 import {
   ChevronRight,
@@ -51,12 +53,28 @@ const CoursePage: React.FC = () => {
   const [editCourseOpen, setEditCourseOpen] = useState(false);
   const [createLessonOpen, setCreateLessonOpen] = useState(false);
   const [createModuleOpen, setCreateModuleOpen] = useState(false);
+  const [showLockedModal, setShowLockedModal] = useState(false);
 
   const { data: course, isLoading: courseLoading } = useCourse(courseId);
   const { data: allLessons = [], isLoading: lessonsLoading } = useLessons(courseId);
   const { data: userProgress } = useCourseProgress(courseId);
+  const { data: canAccess, isLoading: accessLoading } = useCanAccessCourse(courseId);
 
-  const isLoading = courseLoading || lessonsLoading;
+  const isLoading = courseLoading || lessonsLoading || accessLoading;
+
+  // If student doesn't have access, show locked modal
+  if (!isLoading && canAccess === false && course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <LockedCourseModal
+          open={true}
+          onClose={() => navigate('/')}
+          courseTitle={course.title}
+          courseDescription={course.description || undefined}
+        />
+      </div>
+    );
+  }
 
   const courseLessons = allLessons;
   const totalLessons = courseLessons.length;

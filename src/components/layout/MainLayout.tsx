@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useApplyCustomization } from '@/hooks/useApplyCustomization';
 
 const MainLayout: React.FC = () => {
-  const { user, profile, isLoading, logout, isAdmin, isTeamMember } = useAuth();
+  const { user, profile, isLoading, logout, isAdmin, isTeamMember, isStudent } = useAuth();
   const customization = useApplyCustomization();
   const location = useLocation();
   const { data: isSuspended } = useIsTeamMemberSuspended();
@@ -64,6 +64,15 @@ const MainLayout: React.FC = () => {
         </div>
       </div>
     );
+  }
+
+  // Block student from restricted routes
+  if (isStudent) {
+    const studentBlockedRoutes = ['/hoff-circle', '/financial-system', '/swipe-file', '/diagnostico', '/admin'];
+    const isBlocked = studentBlockedRoutes.some(r => location.pathname.startsWith(r));
+    if (isBlocked) {
+      return <Navigate to="/" replace />;
+    }
   }
 
   // Block team_member from restricted routes

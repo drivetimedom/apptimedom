@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMemberGlobalSettings } from '@/hooks/useTeamMembers';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/layout/GlobalSearch';
+import ProResourceModal from '@/components/student/ProResourceModal';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +22,8 @@ import {
   FileText,
   Menu,
   X,
-  DollarSign
+  DollarSign,
+  Sparkles
 } from 'lucide-react';
 import { Customization, defaultCustomization } from '@/lib/customization';
 import fallbackLogo from '@/assets/LOGO_TIME_DOM.png';
@@ -31,10 +33,11 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization }) => {
-  const { user, profile, logout, isAdmin, isInstructor, isTeamMember } = useAuth();
+  const { user, profile, logout, isAdmin, isInstructor, isTeamMember, isStudent } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [proModalResource, setProModalResource] = useState<string | null>(null);
   
   const { data: tmSettings } = useTeamMemberGlobalSettings();
 
@@ -46,14 +49,16 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
   const allNavLinks = [
     { href: '/', label: 'Início', icon: LayoutDashboard, alwaysShow: true },
     { href: '/my-courses', label: 'Meus Cursos', icon: BookOpen, alwaysShow: true },
-    { href: '/hoff-circle', label: 'HOF CIRCLE', icon: BookOpen, tmKey: 'hof_circle_access' as const },
-    { href: '/financial-system', label: 'Calculadoras', icon: DollarSign, tmKey: 'calculators_access' as const },
-    { href: '/swipe-file', label: 'Swipe File', icon: FileText, tmKey: 'swipefile_access' as const },
+    { href: '/hoff-circle', label: 'HOF CIRCLE', icon: BookOpen, tmKey: 'hof_circle_access' as const, hideForStudent: true },
+    { href: '/financial-system', label: 'Calculadoras', icon: DollarSign, tmKey: 'calculators_access' as const, proForStudent: true },
+    { href: '/swipe-file', label: 'Swipe File', icon: FileText, tmKey: 'swipefile_access' as const, proForStudent: true },
   ];
 
-  // Filter links for team_member
+  // Filter links for team_member and student
   const navLinks = allNavLinks.filter(link => {
     if (link.alwaysShow) return true;
+    // Hide HOF Circle completely for students
+    if (isStudent && link.hideForStudent) return false;
     if (!isTeamMember) return true;
     if (!link.tmKey) return true;
     return tmSettings?.[link.tmKey] === true;
@@ -81,19 +86,39 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActiveLink(link.href)
-                  ? 'bg-accent text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isProLocked = isStudent && link.proForStudent;
+            
+            if (isProLocked) {
+              return (
+                <button
+                  key={link.href}
+                  onClick={() => setProModalResource(link.label)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-1.5"
+                >
+                  {link.label}
+                  <span className="flex items-center gap-0.5 text-[10px] bg-gradient-to-r from-amber-500 to-orange-500 text-white px-1.5 py-0.5 rounded-full font-bold">
+                    <Sparkles className="w-2.5 h-2.5" />
+                    PRO
+                  </span>
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={link.href}
+                to={link.href}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActiveLink(link.href)
+                    ? 'bg-accent text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
           {isAdmin && (
             <Link
               to="/admin"
@@ -199,21 +224,45 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
               <GlobalSearch className="w-full" />
             </div>
             
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActiveLink(link.href)
-                    ? 'bg-accent text-foreground'
-                    : 'text-muted-foreground hover:bg-accent/50'
-                }`}
-              >
-                <link.icon className="w-5 h-5" />
-                <span>{link.label}</span>
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isProLocked = isStudent && link.proForStudent;
+              
+              if (isProLocked) {
+                return (
+                  <button
+                    key={link.href}
+                    onClick={() => {
+                      setProModalResource(link.label);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors text-muted-foreground hover:bg-accent/50 w-full text-left"
+                  >
+                    <link.icon className="w-5 h-5" />
+                    <span className="flex-1">{link.label}</span>
+                    <span className="flex items-center gap-0.5 text-[10px] bg-gradient-to-r from-amber-500 to-orange-500 text-white px-1.5 py-0.5 rounded-full font-bold">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      PRO
+                    </span>
+                  </button>
+                );
+              }
+
+              return (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActiveLink(link.href)
+                      ? 'bg-accent text-foreground'
+                      : 'text-muted-foreground hover:bg-accent/50'
+                  }`}
+                >
+                  <link.icon className="w-5 h-5" />
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
             {isAdmin && (
               <Link
                 to="/admin"
@@ -231,6 +280,13 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
           </div>
         </div>
       )}
+
+      {/* PRO Resource Modal */}
+      <ProResourceModal
+        open={!!proModalResource}
+        onClose={() => setProModalResource(null)}
+        resourceName={proModalResource || ''}
+      />
     </header>
   );
 };

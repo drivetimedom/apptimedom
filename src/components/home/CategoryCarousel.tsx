@@ -11,6 +11,8 @@ interface CategoryCarouselProps {
   users: User[];
   userProgress: Progress[];
   isCourseUnlocked: (course: Course) => boolean;
+  isStudent?: boolean;
+  onStudentLockedClick?: (course: Course) => void;
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -28,6 +30,8 @@ const CategoryCarousel: React.FC<CategoryCarouselProps> = ({
   users,
   userProgress,
   isCourseUnlocked,
+  isStudent = false,
+  onStudentLockedClick,
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -127,15 +131,20 @@ const CategoryCarousel: React.FC<CategoryCarouselProps> = ({
             msOverflowStyle: 'none',
           }}
         >
-          {courses.map(course => (
-            <VerticalCourseCard
-              key={course.id}
-              course={course}
-              instructor={getInstructor(course.instructorId)}
-              progress={getProgress(course.id)}
-              isLocked={!isCourseUnlocked(course)}
-            />
-          ))}
+          {courses.map(course => {
+            const locked = !isCourseUnlocked(course);
+            return (
+              <VerticalCourseCard
+                key={course.id}
+                course={course}
+                instructor={getInstructor(course.instructorId)}
+                progress={getProgress(course.id)}
+                isLocked={locked}
+                studentLocked={isStudent && locked}
+                onStudentLockedClick={onStudentLockedClick}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

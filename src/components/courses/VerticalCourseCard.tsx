@@ -25,7 +25,9 @@ interface VerticalCourseCardProps {
   progress?: Progress;
   isLocked?: boolean;
   badgeType?: string;
-  fixedWidth?: boolean; // Use fixed width for carousels, false for grids
+  fixedWidth?: boolean;
+  studentLocked?: boolean; // PRO badge for students
+  onStudentLockedClick?: (course: Course) => void;
 }
 
 const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({ 
@@ -34,7 +36,9 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
   progress,
   isLocked: isLockedProp,
   badgeType,
-  fixedWidth = true // Default to fixed width for backward compatibility
+  fixedWidth = true,
+  studentLocked = false,
+  onStudentLockedClick,
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -99,10 +103,15 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
         {/* Gradient Overlay (appears on hover) */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        {/* Lock Icon (if locked) */}
-        {isLocked && (
+        {/* Lock Icon or PRO Badge (if locked) */}
+        {isLocked && !studentLocked && (
           <div className="absolute top-3 left-3 w-9 h-9 rounded-full bg-card/90 backdrop-blur-sm border border-border flex items-center justify-center z-10">
             <Lock className="w-4 h-4 text-destructive" />
+          </div>
+        )}
+        {studentLocked && (
+          <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold uppercase backdrop-blur-sm z-10 flex items-center gap-1">
+            PRO
           </div>
         )}
         
@@ -175,6 +184,17 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
       </div>
     </div>
   );
+
+  if (studentLocked) {
+    return (
+      <div
+        onClick={() => onStudentLockedClick?.(course)}
+        className="group block flex-shrink-0 cursor-pointer"
+      >
+        {cardContent}
+      </div>
+    );
+  }
 
   if (isLocked) {
     return (

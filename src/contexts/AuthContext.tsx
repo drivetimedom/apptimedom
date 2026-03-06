@@ -19,7 +19,7 @@ export interface Profile {
   updated_at: string;
 }
 
-export type UserRole = 'admin' | 'instructor' | 'user' | 'team_member';
+export type UserRole = 'admin' | 'instructor' | 'user' | 'team_member' | 'student';
 
 interface AuthContextType {
   user: SupabaseUser | null;
@@ -32,6 +32,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isInstructor: boolean;
   isTeamMember: boolean;
+  isStudent: boolean;
   role: UserRole | null;
   refreshProfile: () => Promise<void>;
 }
@@ -243,6 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAdmin = role === 'admin';
   const isInstructor = role === 'instructor' || role === 'admin';
   const isTeamMember = role === 'team_member';
+  const isStudent = role === 'student';
 
   return (
     <AuthContext.Provider value={{ 
@@ -256,6 +258,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAdmin, 
       isInstructor,
       isTeamMember,
+      isStudent,
       role,
       refreshProfile,
     }}>

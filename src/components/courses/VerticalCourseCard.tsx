@@ -36,7 +36,9 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
   progress,
   isLocked: isLockedProp,
   badgeType,
-  fixedWidth = true // Default to fixed width for backward compatibility
+  fixedWidth = true,
+  studentLocked = false,
+  onStudentLockedClick,
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();

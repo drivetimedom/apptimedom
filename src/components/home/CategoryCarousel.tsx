@@ -11,6 +11,8 @@ interface CategoryCarouselProps {
   users: User[];
   userProgress: Progress[];
   isCourseUnlocked: (course: Course) => boolean;
+  isStudent?: boolean;
+  onStudentLockedClick?: (course: Course) => void;
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {

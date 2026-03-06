@@ -224,21 +224,45 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
               <GlobalSearch className="w-full" />
             </div>
             
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActiveLink(link.href)
-                    ? 'bg-accent text-foreground'
-                    : 'text-muted-foreground hover:bg-accent/50'
-                }`}
-              >
-                <link.icon className="w-5 h-5" />
-                <span>{link.label}</span>
-              </Link>
-            ))}
+            {navLinks.map((link) => {
+              const isProLocked = isStudent && link.proForStudent;
+              
+              if (isProLocked) {
+                return (
+                  <button
+                    key={link.href}
+                    onClick={() => {
+                      setProModalResource(link.label);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors text-muted-foreground hover:bg-accent/50 w-full text-left"
+                  >
+                    <link.icon className="w-5 h-5" />
+                    <span className="flex-1">{link.label}</span>
+                    <span className="flex items-center gap-0.5 text-[10px] bg-gradient-to-r from-amber-500 to-orange-500 text-white px-1.5 py-0.5 rounded-full font-bold">
+                      <Sparkles className="w-2.5 h-2.5" />
+                      PRO
+                    </span>
+                  </button>
+                );
+              }
+
+              return (
+                <Link
+                  key={link.href}
+                  to={link.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                    isActiveLink(link.href)
+                      ? 'bg-accent text-foreground'
+                      : 'text-muted-foreground hover:bg-accent/50'
+                  }`}
+                >
+                  <link.icon className="w-5 h-5" />
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
             {isAdmin && (
               <Link
                 to="/admin"
@@ -256,6 +280,13 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
           </div>
         </div>
       )}
+
+      {/* PRO Resource Modal */}
+      <ProResourceModal
+        open={!!proModalResource}
+        onClose={() => setProModalResource(null)}
+        resourceName={proModalResource || ''}
+      />
     </header>
   );
 };

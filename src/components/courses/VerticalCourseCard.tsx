@@ -185,6 +185,17 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
     </div>
   );
 
+  if (studentLocked) {
+    return (
+      <div
+        onClick={() => onStudentLockedClick?.(course)}
+        className="group block flex-shrink-0 cursor-pointer"
+      >
+        {cardContent}
+      </div>
+    );
+  }
+
   if (isLocked) {
     return (
       <Tooltip>

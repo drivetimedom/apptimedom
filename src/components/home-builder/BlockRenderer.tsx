@@ -184,14 +184,19 @@ const CoursesBlock: React.FC<{ data: CoursesBlockData }> = ({ data }) => {
             className="flex gap-5 overflow-x-auto scrollbar-hide pb-4 px-1" 
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {courses.map((course: any) => (
-              <VerticalCourseCard
-                key={course.id}
-                course={course}
-                progress={getProgress(course.id)}
-                isLocked={!isCourseUnlocked(course)}
-              />
-            ))}
+            {courses.map((course: any) => {
+              const locked = !isCourseUnlocked(course);
+              return (
+                <VerticalCourseCard
+                  key={course.id}
+                  course={course}
+                  progress={getProgress(course.id)}
+                  isLocked={locked}
+                  studentLocked={isStudent && locked}
+                  onStudentLockedClick={() => {}}
+                />
+              );
+            })}
           </div>
         </div>
       ) : (

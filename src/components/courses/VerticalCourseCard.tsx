@@ -25,7 +25,9 @@ interface VerticalCourseCardProps {
   progress?: Progress;
   isLocked?: boolean;
   badgeType?: string;
-  fixedWidth?: boolean; // Use fixed width for carousels, false for grids
+  fixedWidth?: boolean;
+  studentLocked?: boolean; // PRO badge for students
+  onStudentLockedClick?: (course: Course) => void;
 }
 
 const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({ 

@@ -1,18 +1,21 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCourses } from '@/hooks/useCourses';
 import { useCategories } from '@/hooks/useCategories';
 import { useActiveBanners } from '@/hooks/useBanners';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { useHomeBlocks } from '@/hooks/useHomeBlocks';
+import { useStudentCourseAccess } from '@/hooks/useStudentAccess';
 import HeroBannerCarousel from '@/components/home/HeroBannerCarousel';
 import CategoryCarousel from '@/components/home/CategoryCarousel';
 import VerticalCourseCard from '@/components/courses/VerticalCourseCard';
+import LockedCourseModal from '@/components/student/LockedCourseModal';
 import BlockRenderer from '@/components/home-builder/BlockRenderer';
 import { Gift, BookOpen, Loader2 } from 'lucide-react';
 
 const HomePage: React.FC = () => {
-  const { user, profile, isAdmin, isInstructor } = useAuth();
+  const { user, profile, isAdmin, isInstructor, isStudent } = useAuth();
+  const [lockedCourse, setLockedCourse] = useState<any>(null);
 
   // Fetch data from database
   const { data: banners = [], isLoading: bannersLoading } = useActiveBanners();
@@ -20,6 +23,7 @@ const HomePage: React.FC = () => {
   const { data: courses = [], isLoading: coursesLoading } = useCourses();
   const { data: userProgressList = [] } = useUserProgress();
   const { data: homeBlocks = [], isLoading: blocksLoading } = useHomeBlocks();
+  const { data: studentCourseIds = [] } = useStudentCourseAccess();
 
   const isLoading = bannersLoading || categoriesLoading || coursesLoading || blocksLoading;
 
@@ -52,6 +56,10 @@ const HomePage: React.FC = () => {
 
   const isCourseUnlocked = (course: any) => {
     if (isAdmin || isInstructor) return true;
+    // Student: check student_course_access
+    if (isStudent) {
+      return studentCourseIds.includes(course.id);
+    }
     if (!course.locked) return true;
     return profile?.unlocked_courses?.includes(course.id) || false;
   };

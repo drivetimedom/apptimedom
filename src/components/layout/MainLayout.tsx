@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useApplyCustomization } from '@/hooks/useApplyCustomization';
 
 const MainLayout: React.FC = () => {
-  const { user, profile, isLoading, logout, isAdmin, isTeamMember } = useAuth();
+  const { user, profile, isLoading, logout, isAdmin, isTeamMember, isStudent } = useAuth();
   const customization = useApplyCustomization();
   const location = useLocation();
   const { data: isSuspended } = useIsTeamMemberSuspended();

@@ -86,19 +86,39 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                isActiveLink(link.href)
-                  ? 'bg-accent text-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isProLocked = isStudent && link.proForStudent;
+            
+            if (isProLocked) {
+              return (
+                <button
+                  key={link.href}
+                  onClick={() => setProModalResource(link.label)}
+                  className="px-4 py-2 rounded-lg text-sm font-medium transition-colors text-muted-foreground hover:text-foreground hover:bg-accent/50 flex items-center gap-1.5"
+                >
+                  {link.label}
+                  <span className="flex items-center gap-0.5 text-[10px] bg-gradient-to-r from-amber-500 to-orange-500 text-white px-1.5 py-0.5 rounded-full font-bold">
+                    <Sparkles className="w-2.5 h-2.5" />
+                    PRO
+                  </span>
+                </button>
+              );
+            }
+
+            return (
+              <Link
+                key={link.href}
+                to={link.href}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActiveLink(link.href)
+                    ? 'bg-accent text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
           {isAdmin && (
             <Link
               to="/admin"

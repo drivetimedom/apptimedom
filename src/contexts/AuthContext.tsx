@@ -19,7 +19,7 @@ export interface Profile {
   updated_at: string;
 }
 
-export type UserRole = 'admin' | 'instructor' | 'user' | 'team_member';
+export type UserRole = 'admin' | 'instructor' | 'user' | 'team_member' | 'student';
 
 interface AuthContextType {
   user: SupabaseUser | null;

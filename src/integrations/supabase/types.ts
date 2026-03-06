@@ -966,6 +966,47 @@ export type Database = {
         }
         Relationships: []
       }
+      student_course_access: {
+        Row: {
+          course_id: string
+          granted_at: string | null
+          granted_by: string
+          id: string
+          purchase_info: Json | null
+          removed_at: string | null
+          removed_by: string | null
+          student_id: string
+        }
+        Insert: {
+          course_id: string
+          granted_at?: string | null
+          granted_by: string
+          id?: string
+          purchase_info?: Json | null
+          removed_at?: string | null
+          removed_by?: string | null
+          student_id: string
+        }
+        Update: {
+          course_id?: string
+          granted_at?: string | null
+          granted_by?: string
+          id?: string
+          purchase_info?: Json | null
+          removed_at?: string | null
+          removed_by?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_course_access_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       swipe_file_categories: {
         Row: {
           color: string
@@ -1362,7 +1403,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "instructor" | "user" | "team_member"
+      app_role: "admin" | "instructor" | "user" | "team_member" | "student"
       user_status:
         | "iniciante"
         | "primeiras-vendas"
@@ -1496,7 +1537,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "instructor", "user", "team_member"],
+      app_role: ["admin", "instructor", "user", "team_member", "student"],
       user_status: [
         "iniciante",
         "primeiras-vendas",

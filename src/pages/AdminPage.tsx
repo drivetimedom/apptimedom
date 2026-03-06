@@ -787,6 +787,10 @@ const AdminPage: React.FC = () => {
               <UsersIcon2 className="w-4 h-4" />
               Equipes
             </TabsTrigger>
+            <TabsTrigger value="students" className="data-[state=active]:bg-accent gap-2">
+              <GraduationCap className="w-4 h-4" />
+              Students
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}

@@ -1486,13 +1486,6 @@ const AdminPage: React.FC = () => {
               <AdminTeamMembers />
             </div>
           </TabsContent>
-
-          {/* Students Tab */}
-          <TabsContent value="students" className="space-y-6">
-            <div className="bg-card rounded-xl border border-border p-6">
-              <AdminStudentsManager />
-            </div>
-          </TabsContent>
         </Tabs>
       </div>
 

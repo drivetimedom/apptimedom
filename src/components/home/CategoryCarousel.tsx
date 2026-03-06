@@ -131,15 +131,20 @@ const CategoryCarousel: React.FC<CategoryCarouselProps> = ({
             msOverflowStyle: 'none',
           }}
         >
-          {courses.map(course => (
-            <VerticalCourseCard
-              key={course.id}
-              course={course}
-              instructor={getInstructor(course.instructorId)}
-              progress={getProgress(course.id)}
-              isLocked={!isCourseUnlocked(course)}
-            />
-          ))}
+          {courses.map(course => {
+            const locked = !isCourseUnlocked(course);
+            return (
+              <VerticalCourseCard
+                key={course.id}
+                course={course}
+                instructor={getInstructor(course.instructorId)}
+                progress={getProgress(course.id)}
+                isLocked={locked}
+                studentLocked={isStudent && locked}
+                onStudentLockedClick={onStudentLockedClick}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

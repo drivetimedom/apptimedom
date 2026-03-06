@@ -112,6 +112,9 @@ const AdminPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSendingAccess, setIsSendingAccess] = useState(false);
+  const [selectedStudentForCourses, setSelectedStudentForCourses] = useState<AdminUser | null>(null);
+  const [manageCoursesModalOpen, setManageCoursesModalOpen] = useState(false);
+  const [addCourseId, setAddCourseId] = useState('');
 
   // Database hooks for courses, categories, lessons, banners
   const { data: dbCourses = [], isLoading: coursesLoading } = useCourses();

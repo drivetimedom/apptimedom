@@ -21,7 +21,7 @@ export interface AdminUser {
   updated_at: string;
   blocked: boolean;
   // Joined from user_roles
-  role: 'admin' | 'instructor' | 'user' | 'team_member';
+  role: 'admin' | 'instructor' | 'user' | 'team_member' | 'student';
   active: boolean;
 }
 

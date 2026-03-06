@@ -109,6 +109,7 @@ const CoursesBlock: React.FC<{ data: CoursesBlockData }> = ({ data }) => {
 
   const isCourseUnlocked = (course: any) => {
     if (isAdmin || isInstructor) return true;
+    if (isStudent) return studentCourseIds.includes(course.id);
     if (!course.locked) return true;
     return profile?.unlocked_courses?.includes(course.id) || false;
   };

@@ -347,7 +347,7 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  const changeUserType = async (userId: string, newType: 'admin' | 'instructor' | 'user') => {
+  const changeUserType = async (userId: string, newType: 'admin' | 'instructor' | 'user' | 'team_member' | 'student') => {
     // Find the user to get their user_id
     const user = adminUsers.find(u => u.id === userId);
     if (!user) return;

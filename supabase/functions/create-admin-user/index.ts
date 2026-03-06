@@ -11,7 +11,7 @@ interface CreateUserRequest {
   email: string;
   password: string;
   name: string;
-  role?: "admin" | "instructor" | "user";
+  role?: "admin" | "instructor" | "user" | "student";
 }
 
 serve(async (req) => {

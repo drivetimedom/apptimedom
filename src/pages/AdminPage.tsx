@@ -948,7 +948,9 @@ const AdminPage: React.FC = () => {
                     <SelectItem value="all">Todos</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="instructor">Instrutor</SelectItem>
-                    <SelectItem value="user">Usuário</SelectItem>
+                    <SelectItem value="user">Médico</SelectItem>
+                    <SelectItem value="team_member">Equipe</SelectItem>
+                    <SelectItem value="student">Student</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={userStatusFilter} onValueChange={setUserStatusFilter}>

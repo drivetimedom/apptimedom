@@ -152,6 +152,8 @@ const AdminPage: React.FC = () => {
   const deleteUserMutation = useDeleteAdminUser();
   const toggleBlockedMutation = useToggleUserBlocked();
   const { logAction } = useAuditLog();
+  const addStudentCourseMutation = useAddStudentCourse();
+  const removeStudentCourseMutation = useRemoveStudentCourse();
 
   // Modal states
   const [userModalOpen, setUserModalOpen] = useState(false);

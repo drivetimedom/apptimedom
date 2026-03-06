@@ -140,6 +140,8 @@ const HomePage: React.FC = () => {
               users={[]}
               userProgress={userProgressList as any[]}
               isCourseUnlocked={isCourseUnlocked}
+              isStudent={isStudent}
+              onStudentLockedClick={(course) => setLockedCourse(course)}
             />
           );
         })}

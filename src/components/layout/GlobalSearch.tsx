@@ -1,10 +1,14 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCourses } from '@/hooks/useCourses';
 import { useLessons } from '@/hooks/useLessons';
+import { useStudentCourseAccess } from '@/hooks/useStudentAccess';
 import { Search, BookOpen, PlayCircle, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SearchResult {
   id: string;
@@ -16,6 +20,7 @@ interface SearchResult {
 
 const GlobalSearch: React.FC<{ className?: string }> = ({ className }) => {
   const navigate = useNavigate();
+  const { user, isAdmin, isInstructor, isStudent, isTeamMember, profile } = useAuth();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -23,6 +28,21 @@ const GlobalSearch: React.FC<{ className?: string }> = ({ className }) => {
 
   const { data: courses = [] } = useCourses();
   const { data: lessons = [] } = useLessons();
+  const { data: studentCourseIds = [] } = useStudentCourseAccess();
+
+  // Fetch team_member allowed courses
+  const { data: teamMemberSettings } = useQuery({
+    queryKey: ['team-member-global-settings'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('team_member_global_settings')
+        .select('allowed_course_ids')
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: isTeamMember,
+  });
 
   // Close on outside click
   useEffect(() => {
@@ -35,14 +55,32 @@ const GlobalSearch: React.FC<{ className?: string }> = ({ className }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  const accessibleCourseIds = useMemo(() => {
+    // Admin/instructor/regular user → all published courses
+    if (isAdmin || isInstructor || (!isStudent && !isTeamMember)) {
+      return null; // null = no filter
+    }
+    if (isStudent) {
+      return new Set(studentCourseIds);
+    }
+    if (isTeamMember && teamMemberSettings?.allowed_course_ids) {
+      return new Set(teamMemberSettings.allowed_course_ids);
+    }
+    return new Set<string>(); // empty = no access
+  }, [isAdmin, isInstructor, isStudent, isTeamMember, studentCourseIds, teamMemberSettings]);
+
   const results = useMemo<SearchResult[]>(() => {
     const q = query.trim().toLowerCase();
     if (q.length < 2) return [];
 
     const matched: SearchResult[] = [];
 
-    // Search courses
-    const publishedCourses = courses.filter(c => c.status === 'published');
+    const publishedCourses = courses.filter(c => {
+      if (c.status !== 'published') return false;
+      if (accessibleCourseIds === null) return true;
+      return accessibleCourseIds.has(c.id);
+    });
+
     for (const course of publishedCourses) {
       if (
         course.title.toLowerCase().includes(q) ||
@@ -59,13 +97,20 @@ const GlobalSearch: React.FC<{ className?: string }> = ({ className }) => {
       if (matched.length >= 20) break;
     }
 
-    // Search lessons
+    const accessibleCourseIdSet = accessibleCourseIds === null
+      ? null
+      : accessibleCourseIds;
+
     for (const lesson of lessons) {
+      if (accessibleCourseIdSet !== null && !accessibleCourseIdSet.has(lesson.courseId || '')) {
+        continue;
+      }
       if (
         lesson.title.toLowerCase().includes(q) ||
         lesson.description?.toLowerCase().includes(q)
       ) {
         const parentCourse = courses.find(c => c.id === lesson.courseId);
+        if (parentCourse?.status !== 'published') continue;
         matched.push({
           id: lesson.id,
           type: 'lesson',
@@ -78,7 +123,7 @@ const GlobalSearch: React.FC<{ className?: string }> = ({ className }) => {
     }
 
     return matched.slice(0, 15);
-  }, [query, courses, lessons]);
+  }, [query, courses, lessons, accessibleCourseIds]);
 
   const handleSelect = (result: SearchResult) => {
     setQuery('');

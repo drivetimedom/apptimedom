@@ -114,7 +114,7 @@ const PrescribedLessonsSection: React.FC<PrescribedLessonsSectionProps> = ({ use
       setShowSearch(false);
       setSearchQuery('');
       // Send notification to the student
-      const lesson = searchResults?.find((l: any) => l.id === lessonId);
+      const lesson = availableLessons?.find((l: any) => l.id === lessonId);
       sendNotification({
         userIds: [userId],
         type: 'prescribed_lesson',

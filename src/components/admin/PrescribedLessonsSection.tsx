@@ -108,11 +108,20 @@ const PrescribedLessonsSection: React.FC<PrescribedLessonsSectionProps> = ({ use
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, lessonId) => {
       queryClient.invalidateQueries({ queryKey: ['prescribed-lessons', userId] });
       toast({ title: 'Aula adicionada com sucesso!' });
       setShowSearch(false);
       setSearchQuery('');
+      // Send notification to the student
+      const lesson = searchResults?.find((l: any) => l.id === lessonId);
+      sendNotification({
+        userIds: [userId],
+        type: 'prescribed_lesson',
+        title: 'Nova aula prescrita para você!',
+        message: lesson ? `A aula "${lesson.title}" foi adicionada ao seu plano.` : 'Uma nova aula foi prescrita para você.',
+        link: lesson?.course_id ? `/course/${lesson.course_id}/lesson/${lessonId}` : undefined,
+      }).catch(() => {});
     },
     onError: (error: any) => {
       toast({ title: error.message || 'Erro ao adicionar aula', variant: 'destructive' });

@@ -94,7 +94,8 @@ import AdminSwipeFileManager from '@/components/admin/AdminSwipeFileManager';
 import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
 import AdminTeamMembers from '@/components/admin/AdminTeamMembers';
-import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap } from 'lucide-react';
+import AdminAnnouncementsManager from '@/components/admin/AdminAnnouncementsManager';
+import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone } from 'lucide-react';
 import { useAddStudentCourse, useRemoveStudentCourse } from '@/hooks/useStudentAccess';
 
 // Import database hooks
@@ -792,6 +793,10 @@ const AdminPage: React.FC = () => {
             <TabsTrigger value="team-members" className="data-[state=active]:bg-accent gap-2">
               <UsersIcon2 className="w-4 h-4" />
               Equipes
+            </TabsTrigger>
+            <TabsTrigger value="announcements" className="data-[state=active]:bg-accent gap-2">
+              <Megaphone className="w-4 h-4" />
+              Avisos
             </TabsTrigger>
           </TabsList>
 
@@ -1492,6 +1497,13 @@ const AdminPage: React.FC = () => {
                 Equipes Comerciais (Team Members)
               </h2>
               <AdminTeamMembers />
+            </div>
+          </TabsContent>
+
+          {/* Announcements Tab */}
+          <TabsContent value="announcements" className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <AdminAnnouncementsManager />
             </div>
           </TabsContent>
         </Tabs>

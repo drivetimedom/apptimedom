@@ -794,6 +794,10 @@ const AdminPage: React.FC = () => {
               <UsersIcon2 className="w-4 h-4" />
               Equipes
             </TabsTrigger>
+            <TabsTrigger value="announcements" className="data-[state=active]:bg-accent gap-2">
+              <Megaphone className="w-4 h-4" />
+              Avisos
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}

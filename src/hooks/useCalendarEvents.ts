@@ -113,9 +113,19 @@ export function useCalendarEvents() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
       toast({ title: 'Evento criado com sucesso!' });
+      
+      // Send notification to all users
+      const eventDate = data?.event_date ? new Date(data.event_date + 'T00:00:00').toLocaleDateString('pt-BR') : '';
+      sendNotification({
+        userIds: 'all',
+        type: 'new_event',
+        title: `Novo evento: ${data?.title || 'Evento'}`,
+        message: eventDate ? `Agendado para ${eventDate}` : undefined,
+        link: '/hof-circle',
+      }).catch(console.error);
     },
     onError: () => {
       toast({ title: 'Erro ao criar evento', variant: 'destructive' });

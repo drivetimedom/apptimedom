@@ -1511,6 +1511,13 @@ const AdminPage: React.FC = () => {
               <AdminAnnouncementsManager />
             </div>
           </TabsContent>
+
+          {/* Calendar Tab */}
+          <TabsContent value="calendar" className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <AdminCalendarManager />
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
 

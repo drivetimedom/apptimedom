@@ -3,6 +3,7 @@ import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsTeamMemberSuspended, useTeamMemberGlobalSettings } from '@/hooks/useTeamMembers';
 import Header from './Header';
+import AnnouncementPopup from './AnnouncementPopup';
 import { Loader2, ShieldX, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useApplyCustomization } from '@/hooks/useApplyCustomization';

@@ -799,6 +799,10 @@ const AdminPage: React.FC = () => {
               <Megaphone className="w-4 h-4" />
               Avisos
             </TabsTrigger>
+            <TabsTrigger value="calendar" className="data-[state=active]:bg-accent gap-2">
+              <CalendarDays className="w-4 h-4" />
+              Calendário
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}

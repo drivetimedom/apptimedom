@@ -95,7 +95,7 @@ import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
 import AdminTeamMembers from '@/components/admin/AdminTeamMembers';
 import AdminAnnouncementsManager from '@/components/admin/AdminAnnouncementsManager';
-import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap } from 'lucide-react';
+import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone } from 'lucide-react';
 import { useAddStudentCourse, useRemoveStudentCourse } from '@/hooks/useStudentAccess';
 
 // Import database hooks

@@ -97,6 +97,7 @@ const MainLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header customization={customization} />
+      <AnnouncementPopup />
       <main className="flex-1">
         <Outlet />
       </main>

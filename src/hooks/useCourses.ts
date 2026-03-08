@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { sendNotification } from '@/lib/notifications';
 
 export type ModuleType = 'aulas' | 'material';
 
@@ -162,6 +163,13 @@ export function useUpdateCourse() {
 
   return useMutation({
     mutationFn: async ({ id, ...course }: Partial<Course> & { id: string }) => {
+      // Check current status before updating
+      const { data: currentCourse } = await supabase
+        .from('courses')
+        .select('status, title')
+        .eq('id', id)
+        .single();
+
       const { data, error } = await supabase
         .from('courses')
         .update(transformToRow(course))
@@ -170,6 +178,18 @@ export function useUpdateCourse() {
         .single();
 
       if (error) throw error;
+
+      // If course was just published, notify all users
+      if (course.status === 'published' && currentCourse?.status !== 'published') {
+        sendNotification({
+          userIds: 'all',
+          type: 'new_course',
+          title: 'Novo curso disponível!',
+          message: `O curso "${currentCourse?.title || course.title}" acabou de ser publicado.`,
+          link: `/course/${id}`,
+        }).catch(() => {});
+      }
+
       return transformCourse(data);
     },
     onSuccess: () => {

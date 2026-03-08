@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { sendNotification } from '@/lib/notifications';
 import { Search, Plus, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -107,11 +108,20 @@ const PrescribedLessonsSection: React.FC<PrescribedLessonsSectionProps> = ({ use
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_data, lessonId) => {
       queryClient.invalidateQueries({ queryKey: ['prescribed-lessons', userId] });
       toast({ title: 'Aula adicionada com sucesso!' });
       setShowSearch(false);
       setSearchQuery('');
+      // Send notification to the student
+      const lesson = availableLessons?.find((l: any) => l.id === lessonId);
+      sendNotification({
+        userIds: [userId],
+        type: 'prescribed_lesson',
+        title: 'Nova aula prescrita para você!',
+        message: lesson ? `A aula "${lesson.title}" foi adicionada ao seu plano.` : 'Uma nova aula foi prescrita para você.',
+        link: lesson?.course_id ? `/course/${lesson.course_id}/lesson/${lessonId}` : undefined,
+      }).catch(() => {});
     },
     onError: (error: any) => {
       toast({ title: error.message || 'Erro ao adicionar aula', variant: 'destructive' });

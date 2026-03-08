@@ -95,7 +95,8 @@ import { AuditLogViewer } from '@/components/admin/AuditLogViewer';
 import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
 import AdminTeamMembers from '@/components/admin/AdminTeamMembers';
 import AdminAnnouncementsManager from '@/components/admin/AdminAnnouncementsManager';
-import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone } from 'lucide-react';
+import AdminCalendarManager from '@/components/admin/AdminCalendarManager';
+import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone, CalendarDays } from 'lucide-react';
 import { useAddStudentCourse, useRemoveStudentCourse } from '@/hooks/useStudentAccess';
 
 // Import database hooks
@@ -797,6 +798,10 @@ const AdminPage: React.FC = () => {
             <TabsTrigger value="announcements" className="data-[state=active]:bg-accent gap-2">
               <Megaphone className="w-4 h-4" />
               Avisos
+            </TabsTrigger>
+            <TabsTrigger value="calendar" className="data-[state=active]:bg-accent gap-2">
+              <CalendarDays className="w-4 h-4" />
+              Calendário
             </TabsTrigger>
           </TabsList>
 
@@ -1504,6 +1509,13 @@ const AdminPage: React.FC = () => {
           <TabsContent value="announcements" className="space-y-6">
             <div className="bg-card rounded-xl border border-border p-6">
               <AdminAnnouncementsManager />
+            </div>
+          </TabsContent>
+
+          {/* Calendar Tab */}
+          <TabsContent value="calendar" className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <AdminCalendarManager />
             </div>
           </TabsContent>
         </Tabs>

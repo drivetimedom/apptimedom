@@ -184,6 +184,63 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_events: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          end_time: string | null
+          event_date: string
+          event_time: string | null
+          id: string
+          is_recurring: boolean
+          location: string | null
+          meeting_link: string | null
+          recurrence_day: number | null
+          recurrence_end_date: string | null
+          recurrence_type: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_time?: string | null
+          event_date: string
+          event_time?: string | null
+          id?: string
+          is_recurring?: boolean
+          location?: string | null
+          meeting_link?: string | null
+          recurrence_day?: number | null
+          recurrence_end_date?: string | null
+          recurrence_type?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          end_time?: string | null
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          is_recurring?: boolean
+          location?: string | null
+          meeting_link?: string | null
+          recurrence_day?: number | null
+          recurrence_end_date?: string | null
+          recurrence_type?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           active: boolean

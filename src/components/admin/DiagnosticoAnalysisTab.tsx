@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Download, ArrowUpDown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, Download, ArrowUpDown, Filter } from 'lucide-react';
 import {
   Table,
   TableBody,

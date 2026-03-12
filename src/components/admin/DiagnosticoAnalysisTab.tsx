@@ -233,46 +233,51 @@ const DiagnosticoAnalysisTab: React.FC<Props> = ({ diagnosticos, profiles, isLoa
 
       <p className="text-sm text-muted-foreground">{filteredData.length} respostas encontradas</p>
 
-      <div className="border border-border rounded-lg overflow-auto max-h-[60vh]">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.map(col => (
-                <TableHead
-                  key={col.key}
-                  className="cursor-pointer whitespace-nowrap select-none hover:bg-muted/50"
-                  onClick={() => handleSort(col.key)}
-                >
-                  <div className="flex items-center gap-1">
-                    {col.label}
-                    {sortColumn === col.key && (
-                      <ArrowUpDown className="w-3 h-3" />
-                    )}
-                  </div>
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedData.length > 0 ? (
-              sortedData.map(row => (
-                <TableRow key={row.id}>
-                  {columns.map(col => (
-                    <TableCell key={col.key} className="whitespace-nowrap">
-                      {col.key === 'status' ? statusBadge(row.status) : String((row as any)[col.key] ?? '-')}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
+      <div className="border border-border rounded-lg overflow-hidden">
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+          <Table>
+            <TableHeader className="sticky top-0 bg-background z-20">
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center text-muted-foreground py-8">
-                  Nenhuma resposta encontrada
-                </TableCell>
+                {columns.map((col, index) => (
+                  <TableHead
+                    key={col.key}
+                    className={`cursor-pointer hover:bg-muted/50 ${index === 0 ? 'sticky left-0 bg-background z-30 border-r-2 border-border' : ''}`}
+                    onClick={() => handleSort(col.key)}
+                  >
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                      <span>{col.label}</span>
+                      {sortColumn === col.key && <ArrowUpDown className="w-3 h-3" />}
+                    </div>
+                  </TableHead>
+                ))}
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {sortedData.length > 0 ? (
+                sortedData.map(row => (
+                  <TableRow key={row.id}>
+                    {columns.map((col, colIndex) => (
+                      <TableCell
+                        key={col.key}
+                        className={`max-w-xs ${colIndex === 0 ? 'sticky left-0 bg-background z-10 border-r-2 border-border font-medium' : ''}`}
+                      >
+                        <div className="truncate" title={String((row as any)[col.key] ?? '-')}>
+                          {col.key === 'status' ? statusBadge(row.status) : String((row as any)[col.key] ?? '-')}
+                        </div>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="text-center text-muted-foreground py-8">
+                    Nenhuma resposta encontrada
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

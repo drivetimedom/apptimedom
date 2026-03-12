@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Download, ArrowUpDown } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Search, Download, ArrowUpDown, Filter } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -53,6 +54,7 @@ const QUESTION_LABELS: Record<string, string> = {
 const DiagnosticoAnalysisTab: React.FC<Props> = ({ diagnosticos, profiles, isLoading }) => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [sortColumn, setSortColumn] = useState('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -77,13 +79,19 @@ const DiagnosticoAnalysisTab: React.FC<Props> = ({ diagnosticos, profiles, isLoa
   }, [diagnosticos, profiles]);
 
   const filteredData = useMemo(() => {
-    if (!searchQuery) return tableData;
-    const q = searchQuery.toLowerCase();
-    return tableData.filter(row =>
-      row.name.toLowerCase().includes(q) ||
-      (row.email && row.email.toLowerCase().includes(q))
-    );
-  }, [tableData, searchQuery]);
+    let data = tableData;
+    if (statusFilter !== 'all') {
+      data = data.filter(row => row.status === statusFilter);
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      data = data.filter(row =>
+        row.name.toLowerCase().includes(q) ||
+        (row.email && row.email.toLowerCase().includes(q))
+      );
+    }
+    return data;
+  }, [tableData, searchQuery, statusFilter]);
 
   const sortedData = useMemo(() => {
     if (!sortColumn) return filteredData;
@@ -191,14 +199,31 @@ const DiagnosticoAnalysisTab: React.FC<Props> = ({ diagnosticos, profiles, isLoa
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome ou email..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex items-center gap-3 flex-1 flex-wrap">
+          <div className="relative min-w-[200px] max-w-sm flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome ou email..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                <SelectValue placeholder="Filtrar status" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="pendente">⏳ Pendente</SelectItem>
+              <SelectItem value="aprovado">✅ Aprovado</SelectItem>
+              <SelectItem value="ajustado">✏️ Ajustado</SelectItem>
+              <SelectItem value="reprovado">❌ Reprovado</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <Button onClick={handleExport} variant="outline" className="gap-2">
           <Download className="w-4 h-4" />
@@ -208,46 +233,51 @@ const DiagnosticoAnalysisTab: React.FC<Props> = ({ diagnosticos, profiles, isLoa
 
       <p className="text-sm text-muted-foreground">{filteredData.length} respostas encontradas</p>
 
-      <div className="border border-border rounded-lg overflow-auto max-h-[60vh]">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {columns.map(col => (
-                <TableHead
-                  key={col.key}
-                  className="cursor-pointer whitespace-nowrap select-none hover:bg-muted/50"
-                  onClick={() => handleSort(col.key)}
-                >
-                  <div className="flex items-center gap-1">
-                    {col.label}
-                    {sortColumn === col.key && (
-                      <ArrowUpDown className="w-3 h-3" />
-                    )}
-                  </div>
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {sortedData.length > 0 ? (
-              sortedData.map(row => (
-                <TableRow key={row.id}>
-                  {columns.map(col => (
-                    <TableCell key={col.key} className="whitespace-nowrap">
-                      {col.key === 'status' ? statusBadge(row.status) : String((row as any)[col.key] ?? '-')}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
+      <div className="border border-border rounded-lg overflow-hidden">
+        <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
+          <Table>
+            <TableHeader className="sticky top-0 bg-background z-20">
               <TableRow>
-                <TableCell colSpan={columns.length} className="text-center text-muted-foreground py-8">
-                  Nenhuma resposta encontrada
-                </TableCell>
+                {columns.map((col, index) => (
+                  <TableHead
+                    key={col.key}
+                    className={`cursor-pointer hover:bg-muted/50 ${index === 0 ? 'sticky left-0 bg-background z-30 border-r-2 border-border' : ''}`}
+                    onClick={() => handleSort(col.key)}
+                  >
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                      <span>{col.label}</span>
+                      {sortColumn === col.key && <ArrowUpDown className="w-3 h-3" />}
+                    </div>
+                  </TableHead>
+                ))}
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {sortedData.length > 0 ? (
+                sortedData.map(row => (
+                  <TableRow key={row.id}>
+                    {columns.map((col, colIndex) => (
+                      <TableCell
+                        key={col.key}
+                        className={`max-w-xs ${colIndex === 0 ? 'sticky left-0 bg-background z-10 border-r-2 border-border font-medium' : ''}`}
+                      >
+                        <div className="truncate" title={String((row as any)[col.key] ?? '-')}>
+                          {col.key === 'status' ? statusBadge(row.status) : String((row as any)[col.key] ?? '-')}
+                        </div>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="text-center text-muted-foreground py-8">
+                    Nenhuma resposta encontrada
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

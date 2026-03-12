@@ -462,7 +462,16 @@ const AdminDiagnosticos: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </TabsContent>
+
+      <TabsContent value="analysis">
+        <DiagnosticoAnalysisTab
+          diagnosticos={diagnosticos}
+          profiles={profiles}
+          isLoading={isLoading}
+        />
+      </TabsContent>
+    </Tabs>
   );
 };
 

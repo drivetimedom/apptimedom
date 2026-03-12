@@ -181,7 +181,16 @@ const AdminDiagnosticos: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <Tabs defaultValue="visualization" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="visualization">Visualização</TabsTrigger>
+        <TabsTrigger value="analysis" className="gap-2">
+          <TableIcon className="w-4 h-4" />
+          Análise
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="visualization" className="space-y-6">
       {/* Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-card border border-border rounded-lg p-4 text-center">

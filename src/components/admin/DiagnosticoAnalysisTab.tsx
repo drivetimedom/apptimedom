@@ -54,6 +54,7 @@ const QUESTION_LABELS: Record<string, string> = {
 const DiagnosticoAnalysisTab: React.FC<Props> = ({ diagnosticos, profiles, isLoading }) => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [sortColumn, setSortColumn] = useState('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 

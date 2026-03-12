@@ -17,7 +17,7 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
-  TableIcon,
+  Table2,
 } from 'lucide-react';
 import DiagnosticoAnalysisTab from './DiagnosticoAnalysisTab';
 import {

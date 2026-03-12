@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Target, 
   CheckCircle, 
@@ -16,7 +17,9 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
+  TableIcon,
 } from 'lucide-react';
+import DiagnosticoAnalysisTab from './DiagnosticoAnalysisTab';
 import {
   Dialog,
   DialogContent,

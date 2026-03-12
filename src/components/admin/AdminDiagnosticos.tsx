@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Target, 
   CheckCircle, 
@@ -16,7 +17,9 @@ import {
   BookOpen,
   ChevronDown,
   ChevronUp,
+  Table2,
 } from 'lucide-react';
+import DiagnosticoAnalysisTab from './DiagnosticoAnalysisTab';
 import {
   Dialog,
   DialogContent,
@@ -178,7 +181,16 @@ const AdminDiagnosticos: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <Tabs defaultValue="visualization" className="space-y-4">
+      <TabsList>
+        <TabsTrigger value="visualization">Visualização</TabsTrigger>
+        <TabsTrigger value="analysis" className="gap-2">
+          <Table2 className="w-4 h-4" />
+          Análise
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="visualization" className="space-y-6">
       {/* Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-card border border-border rounded-lg p-4 text-center">
@@ -450,7 +462,16 @@ const AdminDiagnosticos: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </TabsContent>
+
+      <TabsContent value="analysis">
+        <DiagnosticoAnalysisTab
+          diagnosticos={diagnosticos}
+          profiles={profiles}
+          isLoading={isLoading}
+        />
+      </TabsContent>
+    </Tabs>
   );
 };
 

@@ -79,13 +79,19 @@ const DiagnosticoAnalysisTab: React.FC<Props> = ({ diagnosticos, profiles, isLoa
   }, [diagnosticos, profiles]);
 
   const filteredData = useMemo(() => {
-    if (!searchQuery) return tableData;
-    const q = searchQuery.toLowerCase();
-    return tableData.filter(row =>
-      row.name.toLowerCase().includes(q) ||
-      (row.email && row.email.toLowerCase().includes(q))
-    );
-  }, [tableData, searchQuery]);
+    let data = tableData;
+    if (statusFilter !== 'all') {
+      data = data.filter(row => row.status === statusFilter);
+    }
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      data = data.filter(row =>
+        row.name.toLowerCase().includes(q) ||
+        (row.email && row.email.toLowerCase().includes(q))
+      );
+    }
+    return data;
+  }, [tableData, searchQuery, statusFilter]);
 
   const sortedData = useMemo(() => {
     if (!sortColumn) return filteredData;

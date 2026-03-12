@@ -199,14 +199,31 @@ const DiagnosticoAnalysisTab: React.FC<Props> = ({ diagnosticos, profiles, isLoa
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome ou email..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex items-center gap-3 flex-1 flex-wrap">
+          <div className="relative min-w-[200px] max-w-sm flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome ou email..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[180px]">
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                <SelectValue placeholder="Filtrar status" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="pendente">⏳ Pendente</SelectItem>
+              <SelectItem value="aprovado">✅ Aprovado</SelectItem>
+              <SelectItem value="ajustado">✏️ Ajustado</SelectItem>
+              <SelectItem value="reprovado">❌ Reprovado</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <Button onClick={handleExport} variant="outline" className="gap-2">
           <Download className="w-4 h-4" />

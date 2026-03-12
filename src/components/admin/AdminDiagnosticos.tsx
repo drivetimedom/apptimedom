@@ -185,7 +185,7 @@ const AdminDiagnosticos: React.FC = () => {
       <TabsList>
         <TabsTrigger value="visualization">Visualização</TabsTrigger>
         <TabsTrigger value="analysis" className="gap-2">
-          <TableIcon className="w-4 h-4" />
+          <Table2 className="w-4 h-4" />
           Análise
         </TabsTrigger>
       </TabsList>

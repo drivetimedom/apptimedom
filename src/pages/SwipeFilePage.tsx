@@ -179,13 +179,15 @@ const SwipeFilePage: React.FC = () => {
 
   const filteredProcesses = useMemo(() => {
     return nonFolderProcesses.filter(p => {
+      const query = searchQuery.toLowerCase();
       const matchesSearch = 
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.code || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.type || '').toLowerCase().includes(searchQuery.toLowerCase());
+        p.title.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        (p.content || '').toLowerCase().includes(query) ||
+        p.tags.some(t => t.toLowerCase().includes(query)) ||
+        p.category.toLowerCase().includes(query) ||
+        (p.code || '').toLowerCase().includes(query) ||
+        (p.type || '').toLowerCase().includes(query);
       
       const matchesCategory = selectedCategory === 'all' || p.categoryId === selectedCategory;
       const matchesType = selectedType === 'all' || p.typeId === selectedType;

@@ -804,6 +804,10 @@ const AdminPage: React.FC = () => {
               <CalendarDays className="w-4 h-4" />
               Calendário
             </TabsTrigger>
+            <TabsTrigger value="maria-requests" className="data-[state=active]:bg-accent gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Pedidos Maria
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}

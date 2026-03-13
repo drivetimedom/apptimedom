@@ -1523,6 +1523,13 @@ const AdminPage: React.FC = () => {
               <AdminCalendarManager />
             </div>
           </TabsContent>
+
+          {/* Maria Requests Tab */}
+          <TabsContent value="maria-requests" className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <AdminMariaRequests />
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
 

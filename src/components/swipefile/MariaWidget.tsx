@@ -133,8 +133,8 @@ const MariaWidget: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border" style={{ backgroundColor: '#4ade80' }}>
             <div>
-              <h3 className="text-sm font-semibold text-white">Maria</h3>
-              <p className="text-xs text-emerald-100">Consultora HOF Circle</p>
+              <h3 className="text-sm font-semibold" style={{ color: '#000' }}>Maria</h3>
+              <p className="text-xs" style={{ color: 'rgba(0,0,0,0.6)' }}>Consultora HOF Circle</p>
             </div>
             <button
               onClick={() => setIsOpen(false)}

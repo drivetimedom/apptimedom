@@ -168,7 +168,7 @@ const MariaWidget: React.FC = () => {
                         onClick={() => openMaterial(mat.code)}
                         className="w-full text-left rounded-lg border border-border bg-background hover:bg-accent p-2.5 transition-colors group"
                       >
-                        <span className="text-xs font-mono font-bold text-emerald-500">
+                        <span className="text-xs font-mono font-bold" style={{ color: '#4ade80' }}>
                           {mat.code}
                         </span>
                         {allMaterials && (

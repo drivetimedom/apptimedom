@@ -191,7 +191,10 @@ const MariaWidget: React.FC = () => {
                   <button
                     key={chip}
                     onClick={() => sendMessage(chip)}
-                    className="text-xs px-2.5 py-1.5 rounded-full border border-emerald-600/40 text-emerald-400 hover:bg-emerald-600/10 transition-colors"
+                    className="text-xs px-2.5 py-1.5 rounded-full border transition-colors"
+                    style={{ borderColor: 'rgba(74,222,128,0.4)', color: '#4ade80' }}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(74,222,128,0.1)')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
                     {chip}
                   </button>

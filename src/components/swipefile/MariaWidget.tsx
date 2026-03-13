@@ -131,14 +131,14 @@ const MariaWidget: React.FC = () => {
           className="fixed bottom-6 right-6 z-50 w-[380px] h-[520px] rounded-2xl border border-border bg-card shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-emerald-600">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border" style={{ backgroundColor: '#4ade80' }}>
             <div>
-              <h3 className="text-sm font-semibold text-white">Maria</h3>
-              <p className="text-xs text-emerald-100">Consultora HOF Circle</p>
+              <h3 className="text-sm font-semibold" style={{ color: '#000' }}>Maria</h3>
+              <p className="text-xs" style={{ color: 'rgba(0,0,0,0.6)' }}>Consultora HOF Circle</p>
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-white/80 hover:text-white transition-colors"
+              className="text-black/60 hover:text-black transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -151,9 +151,10 @@ const MariaWidget: React.FC = () => {
                 <div
                   className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'ml-auto bg-emerald-600 text-white'
+                      ? 'ml-auto text-black'
                       : 'bg-secondary text-foreground'
                   }`}
+                  style={msg.role === 'user' ? { backgroundColor: '#4ade80' } : undefined}
                 >
                   {msg.content}
                 </div>
@@ -167,7 +168,7 @@ const MariaWidget: React.FC = () => {
                         onClick={() => openMaterial(mat.code)}
                         className="w-full text-left rounded-lg border border-border bg-background hover:bg-accent p-2.5 transition-colors group"
                       >
-                        <span className="text-xs font-mono font-bold text-emerald-500">
+                        <span className="text-xs font-mono font-bold" style={{ color: '#4ade80' }}>
                           {mat.code}
                         </span>
                         {allMaterials && (
@@ -190,7 +191,10 @@ const MariaWidget: React.FC = () => {
                   <button
                     key={chip}
                     onClick={() => sendMessage(chip)}
-                    className="text-xs px-2.5 py-1.5 rounded-full border border-emerald-600/40 text-emerald-400 hover:bg-emerald-600/10 transition-colors"
+                    className="text-xs px-2.5 py-1.5 rounded-full border transition-colors"
+                    style={{ borderColor: 'rgba(74,222,128,0.4)', color: '#4ade80' }}
+                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'rgba(74,222,128,0.1)')}
+                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'transparent')}
                   >
                     {chip}
                   </button>
@@ -222,7 +226,8 @@ const MariaWidget: React.FC = () => {
               size="icon"
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || isLoading}
-              className="bg-emerald-600 hover:bg-emerald-500 shrink-0"
+              className="shrink-0 text-black hover:brightness-110"
+              style={{ backgroundColor: '#4ade80' }}
             >
               <Send className="w-4 h-4" />
             </Button>

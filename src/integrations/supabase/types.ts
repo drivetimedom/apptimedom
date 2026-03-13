@@ -1290,6 +1290,27 @@ export type Database = {
           },
         ]
       }
+      swipe_file_requests: {
+        Row: {
+          created_at: string
+          id: string
+          request_text: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          request_text: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          request_text?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       swipe_file_types: {
         Row: {
           color: string

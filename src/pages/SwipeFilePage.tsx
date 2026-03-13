@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import MariaWidget from '@/components/swipefile/MariaWidget';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { getCustomization } from '@/lib/customization';
@@ -686,6 +687,9 @@ const SwipeFilePage: React.FC = () => {
         onConfirm={confirmDelete}
         processTitle={deleteProcess?.title}
       />
+
+      {/* Maria Assistant Widget */}
+      <MariaWidget />
     </div>
   );
 };

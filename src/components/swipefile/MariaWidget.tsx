@@ -202,11 +202,12 @@ const MariaWidget: React.FC = () => {
               </div>
             )}
 
-            {/* Loading */}
+            {/* Typing indicator */}
             {isLoading && (
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Maria tá pensando...</span>
+              <div className="flex items-center gap-1.5 px-3 py-2 bg-secondary rounded-xl w-fit">
+                <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '0ms' }} />
+                <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '150ms' }} />
+                <span className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" style={{ animationDelay: '300ms' }} />
               </div>
             )}
           </div>

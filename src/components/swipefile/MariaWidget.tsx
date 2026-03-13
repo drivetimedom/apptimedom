@@ -131,7 +131,7 @@ const MariaWidget: React.FC = () => {
           className="fixed bottom-6 right-6 z-50 w-[380px] h-[520px] rounded-2xl border border-border bg-card shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-300"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-emerald-600">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border" style={{ backgroundColor: '#4ade80' }}>
             <div>
               <h3 className="text-sm font-semibold text-white">Maria</h3>
               <p className="text-xs text-emerald-100">Consultora HOF Circle</p>

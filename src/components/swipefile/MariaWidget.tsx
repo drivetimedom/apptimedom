@@ -105,24 +105,24 @@ const MariaWidget: React.FC = () => {
 
   return (
     <>
-      {/* Floating button */}
+      {/* Floating pill button */}
       {!isOpen && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
-                aria-label="Fala com a Maria"
-              >
-                <MessageCircle className="w-6 h-6" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              <p>Fala com a Maria</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-50 h-12 px-4 rounded-full flex items-center gap-3 shadow-lg hover:shadow-xl transition-all duration-200 hover:brightness-110"
+          style={{ backgroundColor: '#4ade80' }}
+          aria-label="Falar com a Maria"
+        >
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+            style={{ backgroundColor: 'rgba(0,0,0,0.15)', color: '#000000' }}
+          >
+            M
+          </div>
+          <span className="text-sm font-semibold pr-1" style={{ color: '#000000' }}>
+            Falar com a Maria
+          </span>
+        </button>
       )}
 
       {/* Chat panel */}

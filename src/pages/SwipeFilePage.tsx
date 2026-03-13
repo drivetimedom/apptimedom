@@ -687,6 +687,9 @@ const SwipeFilePage: React.FC = () => {
         onConfirm={confirmDelete}
         processTitle={deleteProcess?.title}
       />
+
+      {/* Maria Assistant Widget */}
+      <MariaWidget />
     </div>
   );
 };

@@ -226,7 +226,8 @@ const MariaWidget: React.FC = () => {
               size="icon"
               onClick={() => sendMessage(input)}
               disabled={!input.trim() || isLoading}
-              className="bg-emerald-600 hover:bg-emerald-500 shrink-0"
+              className="shrink-0 text-black hover:brightness-110"
+              style={{ backgroundColor: '#4ade80' }}
             >
               <Send className="w-4 h-4" />
             </Button>

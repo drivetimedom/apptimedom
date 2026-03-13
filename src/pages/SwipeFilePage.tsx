@@ -330,7 +330,7 @@ const SwipeFilePage: React.FC = () => {
     if (selectedCategory !== 'all' && selectedCategoryData) {
       return `Buscar em ${selectedCategoryData.name}...`;
     }
-    return 'Buscar por código, título...';
+    return 'Buscar por código, título, descrição, tags ou conteúdo...';
   }, [selectedCategory, selectedType, selectedCategoryData, selectedTypeData]);
 
   return (

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePartnershipIds } from '@/hooks/usePartnerships';
 import type { DespesasFixas, HoraClinica, Procedimento, Parametros, DadosPE, MCProcedimento, PlanoMetas } from '@/stores/financialStore';
 
 // Types for the financial data stored in JSONB
@@ -26,22 +27,26 @@ export interface FinancialDataRow {
 // Fetch user's financial data
 export function useFinancialData() {
   const { user } = useAuth();
+  const { data: partnerIds } = usePartnershipIds(user?.id);
 
   return useQuery({
-    queryKey: ['financial-data', user?.id],
+    queryKey: ['financial-data', user?.id, partnerIds],
     queryFn: async () => {
-      if (!user?.id) return null;
+      if (!user?.id || !partnerIds) return null;
 
+      // Get financial data for all partners
       const { data, error } = await supabase
         .from('financial_data')
         .select('*')
-        .eq('user_id', user.id)
+        .in('user_id', partnerIds)
+        .order('updated_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (error) throw error;
       return data as FinancialDataRow | null;
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && !!partnerIds,
   });
 }
 

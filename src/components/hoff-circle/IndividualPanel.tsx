@@ -3,9 +3,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { User as UserIcon, Star, TrendingUp, Zap, Crown, Flame, Video } from 'lucide-react';
+import { User as UserIcon, Star, TrendingUp, Zap, Crown, Flame, Video, Users } from 'lucide-react';
 import MeetingsStudentModal from './MeetingsStudent';
 import { useHofMaps } from '@/hooks/useHofMaps';
+import { usePartnerDetails } from '@/hooks/usePartnerships';
 
 type UserStatus = 'iniciante' | 'primeiras-vendas' | 'intermediario' | 'avancado' | 'elite';
 
@@ -41,6 +42,7 @@ const IndividualPanel: React.FC = () => {
   const { profile, user } = useAuth();
   const [showMeetings, setShowMeetings] = useState(false);
   const { data: maps } = useHofMaps();
+  const { data: partners } = usePartnerDetails(user?.id);
   
   // Get status from profile data (set by admin) or default
   const userStatus: UserStatus = profile?.status || 'iniciante';
@@ -103,6 +105,18 @@ const IndividualPanel: React.FC = () => {
             </div>
           )}
 
+          {/* Partners */}
+          {partners && partners.length > 0 && (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <Users className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Sociedade</p>
+                <p className="text-xs text-muted-foreground">
+                  Dados compartilhados com: {partners.map(p => p.name).join(', ')}
+                </p>
+              </div>
+            </div>
+          )}
           {/* Meetings Button */}
           <div className="pt-2">
             <Button

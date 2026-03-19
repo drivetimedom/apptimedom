@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -98,6 +99,8 @@ import AdminAnnouncementsManager from '@/components/admin/AdminAnnouncementsMana
 import AdminCalendarManager from '@/components/admin/AdminCalendarManager';
 import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone, CalendarDays, MessageSquare } from 'lucide-react';
 import AdminMariaRequests from '@/components/admin/AdminMariaRequests';
+import ManagePartnersModal from '@/components/admin/ManagePartnersModal';
+import { useAllPartnerships } from '@/hooks/usePartnerships';
 import { useAddStudentCourse, useRemoveStudentCourse } from '@/hooks/useStudentAccess';
 
 // Import database hooks
@@ -119,6 +122,8 @@ const AdminPage: React.FC = () => {
   const [selectedStudentForCourses, setSelectedStudentForCourses] = useState<AdminUser | null>(null);
   const [manageCoursesModalOpen, setManageCoursesModalOpen] = useState(false);
   const [addCourseId, setAddCourseId] = useState('');
+  const [partnerModalUser, setPartnerModalUser] = useState<{ id: string; name: string } | null>(null);
+  const { data: allPartnerships = [] } = useAllPartnerships();
 
   // Database hooks for courses, categories, lessons, banners
   const { data: dbCourses = [], isLoading: coursesLoading } = useCourses();
@@ -1020,7 +1025,15 @@ const AdminPage: React.FC = () => {
                             <AvatarImage src={user.avatar} />
                             <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                           </Avatar>
-                          <span className="font-medium text-foreground">{user.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-foreground">{user.name}</span>
+                            {allPartnerships.some((p: any) => p.primary_user_id === user.user_id || p.partner_user_id === user.user_id) && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">
+                                <Users className="w-3 h-3 mr-0.5" />
+                                Sócio
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{user.email}</TableCell>
@@ -1090,6 +1103,15 @@ const AdminPage: React.FC = () => {
                                 Gerenciar Cursos
                               </DropdownMenuItem>
                             )}
+                            {user.role === 'user' && (
+                              <DropdownMenuItem
+                                onClick={() => setPartnerModalUser({ id: user.user_id, name: user.name })}
+                                className="cursor-pointer"
+                              >
+                                <Users className="w-4 h-4 mr-2" />
+                                Gerenciar Sócios
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem 
                               onClick={() => handleResendAccess(user)} 
                               className="cursor-pointer"
@@ -1130,6 +1152,16 @@ const AdminPage: React.FC = () => {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Manage Partners Modal */}
+            {partnerModalUser && (
+              <ManagePartnersModal
+                userId={partnerModalUser.id}
+                userName={partnerModalUser.name}
+                isOpen={!!partnerModalUser}
+                onClose={() => setPartnerModalUser(null)}
+              />
+            )}
           </TabsContent>
 
           {/* Courses Tab */}

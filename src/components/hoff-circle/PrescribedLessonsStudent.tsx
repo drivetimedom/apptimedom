@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePartnershipIds } from '@/hooks/usePartnerships';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -9,16 +10,17 @@ import { Star, Play, Clock, X } from 'lucide-react';
 
 const PrescribedLessonsStudent: React.FC = () => {
   const { user } = useAuth();
+  const { data: partnerIds } = usePartnershipIds(user?.id);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
 
   const { data: prescriptions = [], isLoading } = useQuery({
-    queryKey: ['my-prescribed-lessons', user?.id],
+    queryKey: ['my-prescribed-lessons', user?.id, partnerIds],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id || !partnerIds) return [];
       const { data, error } = await supabase
         .from('lesson_prescriptions')
         .select('id, lesson_id')
-        .eq('user_id', user.id)
+        .in('user_id', partnerIds)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -41,7 +43,7 @@ const PrescribedLessonsStudent: React.FC = () => {
         return { ...p, lesson, courseName: course?.title || 'Curso' };
       }).filter(p => p.lesson);
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && !!partnerIds,
   });
 
   if (isLoading || prescriptions.length === 0) return null;

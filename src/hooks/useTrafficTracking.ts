@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePartnershipIds } from '@/hooks/usePartnerships';
 
 // Types
 export interface TrafficTrackingWeek {
@@ -33,22 +34,23 @@ export interface TrafficTrackingInput {
 // Fetch user's traffic tracking data
 export function useTrafficTracking() {
   const { user } = useAuth();
+  const { data: partnerIds } = usePartnershipIds(user?.id);
 
   return useQuery({
-    queryKey: ['traffic-tracking', user?.id],
+    queryKey: ['traffic-tracking', user?.id, partnerIds],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id || !partnerIds) return [];
 
       const { data, error } = await supabase
         .from('traffic_tracking')
         .select('*')
-        .eq('user_id', user.id)
+        .in('user_id', partnerIds)
         .order('week_start', { ascending: false });
 
       if (error) throw error;
       return (data || []) as TrafficTrackingWeek[];
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && !!partnerIds,
   });
 }
 

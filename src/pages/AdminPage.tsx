@@ -121,6 +121,8 @@ const AdminPage: React.FC = () => {
   const [selectedStudentForCourses, setSelectedStudentForCourses] = useState<AdminUser | null>(null);
   const [manageCoursesModalOpen, setManageCoursesModalOpen] = useState(false);
   const [addCourseId, setAddCourseId] = useState('');
+  const [partnerModalUser, setPartnerModalUser] = useState<{ id: string; name: string } | null>(null);
+  const { data: allPartnerships = [] } = useAllPartnerships();
 
   // Database hooks for courses, categories, lessons, banners
   const { data: dbCourses = [], isLoading: coursesLoading } = useCourses();

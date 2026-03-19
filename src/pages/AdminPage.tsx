@@ -1103,6 +1103,15 @@ const AdminPage: React.FC = () => {
                                 Gerenciar Cursos
                               </DropdownMenuItem>
                             )}
+                            {user.role === 'user' && (
+                              <DropdownMenuItem
+                                onClick={() => setPartnerModalUser({ id: user.user_id, name: user.name })}
+                                className="cursor-pointer"
+                              >
+                                <Users className="w-4 h-4 mr-2" />
+                                Gerenciar Sócios
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem 
                               onClick={() => handleResendAccess(user)} 
                               className="cursor-pointer"

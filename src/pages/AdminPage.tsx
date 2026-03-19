@@ -1142,6 +1142,16 @@ const AdminPage: React.FC = () => {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Manage Partners Modal */}
+            {partnerModalUser && (
+              <ManagePartnersModal
+                userId={partnerModalUser.id}
+                userName={partnerModalUser.name}
+                isOpen={!!partnerModalUser}
+                onClose={() => setPartnerModalUser(null)}
+              />
+            )}
           </TabsContent>
 
           {/* Courses Tab */}

@@ -1024,7 +1024,15 @@ const AdminPage: React.FC = () => {
                             <AvatarImage src={user.avatar} />
                             <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                           </Avatar>
-                          <span className="font-medium text-foreground">{user.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-foreground">{user.name}</span>
+                            {allPartnerships.some((p: any) => p.primary_user_id === user.user_id || p.partner_user_id === user.user_id) && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary">
+                                <Users className="w-3 h-3 mr-0.5" />
+                                Sócio
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{user.email}</TableCell>

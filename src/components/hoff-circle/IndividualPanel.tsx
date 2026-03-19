@@ -3,9 +3,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { User as UserIcon, Star, TrendingUp, Zap, Crown, Flame, Video } from 'lucide-react';
+import { User as UserIcon, Star, TrendingUp, Zap, Crown, Flame, Video, Users } from 'lucide-react';
 import MeetingsStudentModal from './MeetingsStudent';
 import { useHofMaps } from '@/hooks/useHofMaps';
+import { usePartnerDetails } from '@/hooks/usePartnerships';
 
 type UserStatus = 'iniciante' | 'primeiras-vendas' | 'intermediario' | 'avancado' | 'elite';
 

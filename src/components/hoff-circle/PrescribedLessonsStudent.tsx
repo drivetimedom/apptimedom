@@ -10,16 +10,17 @@ import { Star, Play, Clock, X } from 'lucide-react';
 
 const PrescribedLessonsStudent: React.FC = () => {
   const { user } = useAuth();
+  const { data: partnerIds } = usePartnershipIds(user?.id);
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
 
   const { data: prescriptions = [], isLoading } = useQuery({
-    queryKey: ['my-prescribed-lessons', user?.id],
+    queryKey: ['my-prescribed-lessons', user?.id, partnerIds],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id || !partnerIds) return [];
       const { data, error } = await supabase
         .from('lesson_prescriptions')
         .select('id, lesson_id')
-        .eq('user_id', user.id)
+        .in('user_id', partnerIds)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

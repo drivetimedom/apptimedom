@@ -43,7 +43,7 @@ const PrescribedLessonsStudent: React.FC = () => {
         return { ...p, lesson, courseName: course?.title || 'Curso' };
       }).filter(p => p.lesson);
     },
-    enabled: !!user?.id,
+    enabled: !!user?.id && !!partnerIds,
   });
 
   if (isLoading || prescriptions.length === 0) return null;

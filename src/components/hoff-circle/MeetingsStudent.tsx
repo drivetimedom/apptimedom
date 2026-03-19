@@ -14,21 +14,22 @@ interface MeetingsStudentModalProps {
 
 const MeetingsStudentModal: React.FC<MeetingsStudentModalProps> = ({ isOpen, onClose }) => {
   const { user } = useAuth();
+  const { data: partnerIds } = usePartnershipIds(user?.id);
   const [selectedRecording, setSelectedRecording] = useState<any>(null);
 
   const { data: recordings = [], isLoading } = useQuery({
-    queryKey: ['my-meetings', user?.id],
+    queryKey: ['my-meetings', user?.id, partnerIds],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id || !partnerIds) return [];
       const { data, error } = await supabase
         .from('meeting_recordings')
         .select('*')
-        .eq('user_id', user.id)
+        .in('user_id', partnerIds)
         .order('meeting_date', { ascending: false });
       if (error) throw error;
       return data || [];
     },
-    enabled: !!user?.id && isOpen,
+    enabled: !!user?.id && !!partnerIds && isOpen,
   });
 
   return (

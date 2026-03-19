@@ -1067,6 +1067,30 @@ export type Database = {
         }
         Relationships: []
       }
+      partnerships: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          id: string
+          partner_user_id: string
+          primary_user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          id?: string
+          partner_user_id: string
+          primary_user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          partner_user_id?: string
+          primary_user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           activation_plan: Json | null
@@ -1566,6 +1590,7 @@ export type Database = {
       }
     }
     Functions: {
+      get_partnership_ids: { Args: { user_uuid: string }; Returns: string[] }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]

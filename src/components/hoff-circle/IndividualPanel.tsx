@@ -105,6 +105,18 @@ const IndividualPanel: React.FC = () => {
             </div>
           )}
 
+          {/* Partners */}
+          {partners && partners.length > 0 && (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <Users className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Sociedade</p>
+                <p className="text-xs text-muted-foreground">
+                  Dados compartilhados com: {partners.map(p => p.name).join(', ')}
+                </p>
+              </div>
+            </div>
+          )}
           {/* Meetings Button */}
           <div className="pt-2">
             <Button

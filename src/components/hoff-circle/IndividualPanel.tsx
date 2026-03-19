@@ -42,6 +42,7 @@ const IndividualPanel: React.FC = () => {
   const { profile, user } = useAuth();
   const [showMeetings, setShowMeetings] = useState(false);
   const { data: maps } = useHofMaps();
+  const { data: partners } = usePartnerDetails(user?.id);
   
   // Get status from profile data (set by admin) or default
   const userStatus: UserStatus = profile?.status || 'iniciante';

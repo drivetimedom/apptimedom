@@ -516,6 +516,8 @@ const AdminCommercialTracking: React.FC = () => {
                 </div>
               </CardHeader>
 
+              <PartnershipBanner userId={selectedStudent.user_id} />
+
               <CardContent className="pt-6">
                 {/* Stacked Layout - Commercial on top, Activation below */}
                 <div className="space-y-6">

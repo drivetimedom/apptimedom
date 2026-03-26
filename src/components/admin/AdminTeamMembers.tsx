@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Plus, Search, Loader2, Ban, CheckCircle, Trash2, Settings, UserPlus } from 'lucide-react';
+import { Users, Plus, Search, Loader2, Ban, CheckCircle, Trash2, Settings, UserPlus, Send } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const AdminTeamMembers: React.FC = () => {

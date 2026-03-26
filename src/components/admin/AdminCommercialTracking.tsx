@@ -116,7 +116,7 @@ const PartnershipBanner: React.FC<{ userId: string }> = ({ userId }) => {
   const { data: partners } = usePartnerDetails(userId);
   if (!partners || partners.length === 0) return null;
   return (
-    <div className="mx-6 mt-4 flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-300">
+    <div className="mx-6 mt-4 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">
       <Users className="w-4 h-4 shrink-0" />
       <span>
         <strong>Sociedade:</strong> Este médico compartilha dados com{' '}

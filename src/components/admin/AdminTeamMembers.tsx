@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Users, Plus, Search, Loader2, Ban, CheckCircle, Trash2, Settings, UserPlus } from 'lucide-react';
+import { Users, Plus, Search, Loader2, Ban, CheckCircle, Trash2, Settings, UserPlus, Send } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const AdminTeamMembers: React.FC = () => {
@@ -39,6 +39,33 @@ const AdminTeamMembers: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSendingAccess, setIsSendingAccess] = useState(false);
+
+  const handleResendAccess = async (member: TeamMember) => {
+    if (isSendingAccess) return;
+    const confirmResend = window.confirm(
+      `Reenviar credenciais de acesso para ${member.member_email}?\n\nUma nova senha temporária será gerada e enviada por email.`
+    );
+    if (!confirmResend) return;
+
+    setIsSendingAccess(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('resend-access', {
+        body: {
+          userId: member.member_id,
+          email: member.member_email || '',
+          name: member.member_name || '',
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: '✅ Credenciais reenviadas!', description: `Email enviado para ${member.member_email}` });
+    } catch (error: any) {
+      toast({ title: 'Erro ao reenviar credenciais', description: error.message || 'Tente novamente.', variant: 'destructive' });
+    } finally {
+      setIsSendingAccess(false);
+    }
+  };
 
   // Data
   const { data: teamMembers = [], isLoading: loadingTeams } = useAdminTeamMembers();
@@ -126,6 +153,15 @@ const AdminTeamMembers: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleResendAccess(member)}
+                          disabled={isSendingAccess}
+                          className="gap-1"
+                        >
+                          <Send className="w-3 h-3" /> Reenviar Acesso
+                        </Button>
                         {member.status === 'active' ? (
                           <Button
                             variant="outline"

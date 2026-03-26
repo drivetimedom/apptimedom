@@ -32,6 +32,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import ExcelJS from 'exceljs';
 import ActivationPlanReadOnly from './ActivationPlanReadOnly';
+import { usePartnerDetails } from '@/hooks/usePartnerships';
 import EducationalDataSection from './EducationalDataSection';
 import { useAllCommercialTracking, CommercialTrackingWeek } from '@/hooks/useCommercialTracking';
 import { useAllTrafficTracking, TrafficTrackingWeek } from '@/hooks/useTrafficTracking';
@@ -110,6 +111,20 @@ function useProfiles() {
     },
   });
 }
+
+const PartnershipBanner: React.FC<{ userId: string }> = ({ userId }) => {
+  const { data: partners } = usePartnerDetails(userId);
+  if (!partners || partners.length === 0) return null;
+  return (
+    <div className="mx-6 mt-4 flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/10 p-3 text-sm text-primary">
+      <Users className="w-4 h-4 shrink-0" />
+      <span>
+        <strong>Sociedade:</strong> Este médico compartilha dados com{' '}
+        {partners.map(p => p.name).join(', ')}. Os dados exibidos incluem registros de todos os sócios.
+      </span>
+    </div>
+  );
+};
 
 const AdminCommercialTracking: React.FC = () => {
   const { toast } = useToast();
@@ -514,6 +529,8 @@ const AdminCommercialTracking: React.FC = () => {
                   </Badge>
                 </div>
               </CardHeader>
+
+              <PartnershipBanner userId={selectedStudent.user_id} />
 
               <CardContent className="pt-6">
                 {/* Stacked Layout - Commercial on top, Activation below */}

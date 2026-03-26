@@ -39,6 +39,33 @@ const AdminTeamMembers: React.FC = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSendingAccess, setIsSendingAccess] = useState(false);
+
+  const handleResendAccess = async (member: TeamMember) => {
+    if (isSendingAccess) return;
+    const confirmResend = window.confirm(
+      `Reenviar credenciais de acesso para ${member.member_email}?\n\nUma nova senha temporária será gerada e enviada por email.`
+    );
+    if (!confirmResend) return;
+
+    setIsSendingAccess(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('resend-access', {
+        body: {
+          userId: member.member_id,
+          email: member.member_email || '',
+          name: member.member_name || '',
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: '✅ Credenciais reenviadas!', description: `Email enviado para ${member.member_email}` });
+    } catch (error: any) {
+      toast({ title: 'Erro ao reenviar credenciais', description: error.message || 'Tente novamente.', variant: 'destructive' });
+    } finally {
+      setIsSendingAccess(false);
+    }
+  };
 
   // Data
   const { data: teamMembers = [], isLoading: loadingTeams } = useAdminTeamMembers();

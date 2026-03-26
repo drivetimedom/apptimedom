@@ -153,6 +153,15 @@ const AdminTeamMembers: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleResendAccess(member)}
+                          disabled={isSendingAccess}
+                          className="gap-1"
+                        >
+                          <Send className="w-3 h-3" /> Reenviar Acesso
+                        </Button>
                         {member.status === 'active' ? (
                           <Button
                             variant="outline"

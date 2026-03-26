@@ -126,7 +126,7 @@ const PartnershipBanner: React.FC<{ userId: string }> = ({ userId }) => {
   );
 };
 
-
+const AdminCommercialTracking: React.FC = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');

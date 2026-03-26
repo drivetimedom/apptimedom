@@ -32,6 +32,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import ExcelJS from 'exceljs';
 import ActivationPlanReadOnly from './ActivationPlanReadOnly';
+import { usePartnerDetails } from '@/hooks/usePartnerships';
 import EducationalDataSection from './EducationalDataSection';
 import { useAllCommercialTracking, CommercialTrackingWeek } from '@/hooks/useCommercialTracking';
 import { useAllTrafficTracking, TrafficTrackingWeek } from '@/hooks/useTrafficTracking';

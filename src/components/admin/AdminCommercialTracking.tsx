@@ -112,7 +112,21 @@ function useProfiles() {
   });
 }
 
-const AdminCommercialTracking: React.FC = () => {
+const PartnershipBanner: React.FC<{ userId: string }> = ({ userId }) => {
+  const { data: partners } = usePartnerDetails(userId);
+  if (!partners || partners.length === 0) return null;
+  return (
+    <div className="mx-6 mt-4 flex items-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 p-3 text-sm text-blue-300">
+      <Users className="w-4 h-4 shrink-0" />
+      <span>
+        <strong>Sociedade:</strong> Este médico compartilha dados com{' '}
+        {partners.map(p => p.name).join(', ')}. Os dados exibidos incluem registros de todos os sócios.
+      </span>
+    </div>
+  );
+};
+
+
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');

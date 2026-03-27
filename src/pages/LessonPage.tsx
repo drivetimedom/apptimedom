@@ -487,39 +487,58 @@ const LessonPage: React.FC = () => {
               </div>
 
               <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
-                {courseLessons.map((lesson, idx) => {
-                  const isCurrentLesson = lesson.id === lessonId;
-                  const isLessonCompleted = completedLessons.includes(lesson.id);
+                {(() => {
+                  const sortedModules = [...(course.modules || [])].sort((a, b) => a.order - b.order);
+                  const moduleMap: Record<string, typeof sortedModules[0]> = {};
+                  sortedModules.forEach(m => { moduleMap[m.id] = m; });
+                  let lastModuleId = '';
+                  let lessonCounter = 0;
 
-                  return (
-                    <Link
-                      key={lesson.id}
-                      to={`/course/${courseId}/lesson/${lesson.id}`}
-                      className={`flex items-center space-x-3 p-4 border-b border-border transition-colors ${
-                        isCurrentLesson 
-                          ? 'bg-accent border-l-4 border-l-primary' 
-                          : 'hover:bg-accent/50'
-                      }`}
-                    >
-                      <div className="flex-shrink-0">
-                        {isLessonCompleted ? (
-                          <CheckCircle className="w-5 h-5 text-success" />
-                        ) : isCurrentLesson ? (
-                          <Play className="w-5 h-5 text-foreground" />
-                        ) : lesson.locked ? (
-                          <Lock className="w-5 h-5 text-destructive" />
-                        ) : (
-                          <Circle className="w-5 h-5 text-muted-foreground" />
+                  return courseLessons.map((lesson) => {
+                    const showModuleHeader = lesson.moduleId !== lastModuleId;
+                    lastModuleId = lesson.moduleId;
+                    lessonCounter++;
+                    const moduleName = moduleMap[lesson.moduleId]?.title;
+                    const isCurrentLesson = lesson.id === lessonId;
+                    const isLessonCompleted = completedLessons.includes(lesson.id);
+
+                    return (
+                      <React.Fragment key={lesson.id}>
+                        {showModuleHeader && moduleName && (
+                          <div className="px-4 py-2.5 bg-muted/50 border-b border-border sticky top-0 z-[1]">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide truncate">
+                              {moduleName}
+                            </p>
+                          </div>
                         )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`text-sm truncate ${isCurrentLesson ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-                          {idx + 1}. {lesson.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{lesson.duration}</p>
-                      </div>
-                    </Link>
-                  );
+                        <Link
+                          to={`/course/${courseId}/lesson/${lesson.id}`}
+                          className={`flex items-center space-x-3 p-4 border-b border-border transition-colors ${
+                            isCurrentLesson
+                              ? 'bg-accent border-l-4 border-l-primary'
+                              : 'hover:bg-accent/50'
+                          }`}
+                        >
+                          <div className="flex-shrink-0">
+                            {isLessonCompleted ? (
+                              <CheckCircle className="w-5 h-5 text-success" />
+                            ) : isCurrentLesson ? (
+                              <Play className="w-5 h-5 text-foreground" />
+                            ) : lesson.locked ? (
+                              <Lock className="w-5 h-5 text-destructive" />
+                            ) : (
+                              <Circle className="w-5 h-5 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm truncate ${isCurrentLesson ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                              {lessonCounter}. {lesson.title}
+                            </p>
+                            <p className="text-xs text-muted-foreground">{lesson.duration}</p>
+                          </div>
+                        </Link>
+                      </React.Fragment>
+                    );
                 })}
               </div>
 

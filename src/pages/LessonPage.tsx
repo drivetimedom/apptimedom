@@ -459,8 +459,7 @@ const LessonPage: React.FC = () => {
                       </div>
                     </div>
                   );
-                  });
-                })()}
+                })}
                 {lessonComments.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     Nenhuma dúvida ainda. Seja o primeiro a comentar!

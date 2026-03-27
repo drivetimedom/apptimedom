@@ -538,7 +538,8 @@ const LessonPage: React.FC = () => {
                         </Link>
                       </React.Fragment>
                     );
-                })}
+                  });
+                })()}
               </div>
 
               <div className="p-4 border-t border-border space-y-3">

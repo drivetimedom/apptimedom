@@ -87,10 +87,20 @@ const LessonPage: React.FC = () => {
     return map;
   }, [commenterProfiles]);
 
-  const courseLessons = useMemo(
-    () => [...lessonsFromDb].sort((a, b) => a.order - b.order),
-    [lessonsFromDb]
-  );
+  const courseLessons = useMemo(() => {
+    if (!course) return [...lessonsFromDb].sort((a, b) => a.order - b.order);
+    // Build a map of module id -> module order for correct cross-module sorting
+    const moduleOrderMap: Record<string, number> = {};
+    (course.modules || []).forEach((m) => {
+      moduleOrderMap[m.id] = m.order;
+    });
+    return [...lessonsFromDb].sort((a, b) => {
+      const moduleOrderA = moduleOrderMap[a.moduleId] ?? 0;
+      const moduleOrderB = moduleOrderMap[b.moduleId] ?? 0;
+      if (moduleOrderA !== moduleOrderB) return moduleOrderA - moduleOrderB;
+      return a.order - b.order;
+    });
+  }, [lessonsFromDb, course]);
   const currentLesson = courseLessons.find(l => l.id === lessonId);
 
   // Error toasts

@@ -193,8 +193,10 @@ export function useUpdateCourse() {
 
       return transformCourse(data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['course', data.id] });
+      queryClient.invalidateQueries({ queryKey: ['lessons'] });
       toast({ title: 'Curso atualizado com sucesso!' });
     },
     onError: (error) => {

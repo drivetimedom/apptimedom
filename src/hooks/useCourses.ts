@@ -147,8 +147,9 @@ export function useCreateCourse() {
       if (error) throw error;
       return transformCourse(data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['course', data.id] });
       toast({ title: 'Curso criado com sucesso!' });
     },
     onError: (error) => {

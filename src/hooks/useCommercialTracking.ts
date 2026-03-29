@@ -152,6 +152,7 @@ export function useUpdateCommercialTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['commercial-tracking-all'] });
     },
     onError: (error: any) => {
       console.error('[useUpdateCommercialTracking] error', error);

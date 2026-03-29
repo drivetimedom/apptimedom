@@ -218,8 +218,10 @@ export function useDeleteCourse() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, courseId) => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['course', courseId] });
+      queryClient.invalidateQueries({ queryKey: ['lessons'] });
       toast({ title: 'Curso excluído com sucesso!' });
     },
     onError: (error) => {

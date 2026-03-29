@@ -180,6 +180,8 @@ export function useRemoveStudentCourse() {
       toast.success('Curso removido');
       queryClient.invalidateQueries({ queryKey: ['admin-students'] });
       queryClient.invalidateQueries({ queryKey: ['student-courses-admin'] });
+      queryClient.invalidateQueries({ queryKey: ['student-course-access'] });
+      queryClient.invalidateQueries({ queryKey: ['can-access-course'] });
     },
     onError: () => {
       toast.error('Erro ao remover curso');

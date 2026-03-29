@@ -177,6 +177,7 @@ export function useDeleteCommercialTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['commercial-tracking-all'] });
       toast({ title: 'Semana excluída!' });
     },
     onError: (error: any) => {

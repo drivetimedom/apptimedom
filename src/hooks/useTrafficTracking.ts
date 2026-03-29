@@ -185,6 +185,7 @@ export function useDeleteTrafficTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['traffic-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['traffic-tracking-all'] });
       toast({ title: 'Período excluído!' });
     },
     onError: (error: any) => {

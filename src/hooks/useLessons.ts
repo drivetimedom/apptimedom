@@ -182,6 +182,7 @@ export function useDeleteLesson() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lessons'] });
+      queryClient.invalidateQueries({ queryKey: ['lesson'] });
       toast({ title: 'Aula excluída com sucesso!' });
     },
     onError: (error) => {

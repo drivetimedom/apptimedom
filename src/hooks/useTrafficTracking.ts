@@ -121,6 +121,7 @@ export function useCreateTrafficTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['traffic-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['traffic-tracking-all'] });
       toast({ title: 'Período adicionado!' });
     },
     onError: (error: any) => {

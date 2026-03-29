@@ -115,6 +115,7 @@ export function useCreateCommercialTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['commercial-tracking-all'] });
       toast({ title: 'Semana adicionada!' });
     },
     onError: (error: any) => {

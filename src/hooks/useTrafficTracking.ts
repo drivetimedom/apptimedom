@@ -160,6 +160,7 @@ export function useUpdateTrafficTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['traffic-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['traffic-tracking-all'] });
     },
     onError: (error: any) => {
       console.error('[useUpdateTrafficTracking] error', error);

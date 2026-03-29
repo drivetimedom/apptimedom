@@ -115,6 +115,7 @@ export function useCreateCommercialTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['commercial-tracking-all'] });
       toast({ title: 'Semana adicionada!' });
     },
     onError: (error: any) => {
@@ -151,6 +152,7 @@ export function useUpdateCommercialTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['commercial-tracking-all'] });
     },
     onError: (error: any) => {
       console.error('[useUpdateCommercialTracking] error', error);
@@ -175,6 +177,7 @@ export function useDeleteCommercialTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commercial-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['commercial-tracking-all'] });
       toast({ title: 'Semana excluída!' });
     },
     onError: (error: any) => {

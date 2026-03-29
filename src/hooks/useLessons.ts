@@ -153,8 +153,12 @@ export function useUpdateLesson() {
       if (error) throw error;
       return transformLesson(data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['lessons'] });
+      queryClient.invalidateQueries({ queryKey: ['lesson', data.id] });
+      if (data.courseId) {
+        queryClient.invalidateQueries({ queryKey: ['lessons', data.courseId] });
+      }
       toast({ title: 'Aula atualizada com sucesso!' });
     },
     onError: (error) => {
@@ -178,6 +182,7 @@ export function useDeleteLesson() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lessons'] });
+      queryClient.invalidateQueries({ queryKey: ['lesson'] });
       toast({ title: 'Aula excluída com sucesso!' });
     },
     onError: (error) => {

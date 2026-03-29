@@ -147,8 +147,9 @@ export function useCreateCourse() {
       if (error) throw error;
       return transformCourse(data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['course', data.id] });
       toast({ title: 'Curso criado com sucesso!' });
     },
     onError: (error) => {
@@ -192,8 +193,10 @@ export function useUpdateCourse() {
 
       return transformCourse(data);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['course', data.id] });
+      queryClient.invalidateQueries({ queryKey: ['lessons'] });
       toast({ title: 'Curso atualizado com sucesso!' });
     },
     onError: (error) => {
@@ -215,8 +218,10 @@ export function useDeleteCourse() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, courseId) => {
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['course', courseId] });
+      queryClient.invalidateQueries({ queryKey: ['lessons'] });
       toast({ title: 'Curso excluído com sucesso!' });
     },
     onError: (error) => {

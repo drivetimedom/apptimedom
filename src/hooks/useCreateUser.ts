@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CreateUserParams {
@@ -16,6 +17,7 @@ interface CreateUserResult {
 
 export function useCreateUser() {
   const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const createUser = async (params: CreateUserParams): Promise<CreateUserResult> => {
     setIsLoading(true);
@@ -38,6 +40,11 @@ export function useCreateUser() {
       if (data?.error) {
         return { success: false, error: data.error };
       }
+
+      // Invalidate all user-related queries so lists update automatically
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-students'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-team-members'] });
 
       return { 
         success: true, 

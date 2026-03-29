@@ -121,6 +121,7 @@ export function useCreateTrafficTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['traffic-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['traffic-tracking-all'] });
       toast({ title: 'Período adicionado!' });
     },
     onError: (error: any) => {
@@ -159,6 +160,7 @@ export function useUpdateTrafficTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['traffic-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['traffic-tracking-all'] });
     },
     onError: (error: any) => {
       console.error('[useUpdateTrafficTracking] error', error);
@@ -183,6 +185,7 @@ export function useDeleteTrafficTracking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['traffic-tracking'] });
+      queryClient.invalidateQueries({ queryKey: ['traffic-tracking-all'] });
       toast({ title: 'Período excluído!' });
     },
     onError: (error: any) => {

@@ -127,7 +127,6 @@ serve(async (req) => {
     });
 
     const data = await res.json();
-    const responseBody = await res.text();
 
     return new Response(
       JSON.stringify(data),

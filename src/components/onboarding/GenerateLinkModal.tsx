@@ -39,7 +39,7 @@ const GenerateLinkModal = ({ open, onClose }: GenerateLinkModalProps) => {
 
       if (error) throw error;
 
-      const link = `${window.location.origin}/onboard/${code}`;
+      const link = `https://alunos.timedom.com.br/onboard/${code}`;
       setGeneratedLink(link);
       return data;
     },

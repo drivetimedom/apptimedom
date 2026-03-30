@@ -277,8 +277,8 @@ const CreateAccessModal = ({ open, onClose, onSuccess, submission }: CreateAcces
             </div>
 
             {sendEmail && (
-              <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
-                <p className="text-sm text-green-700 dark:text-green-400 flex items-center gap-2">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+                <p className="text-sm text-primary flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   Email enviado com as credenciais para {submission?.email}
                 </p>

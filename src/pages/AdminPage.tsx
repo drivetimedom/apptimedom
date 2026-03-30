@@ -99,6 +99,7 @@ import AdminAnnouncementsManager from '@/components/admin/AdminAnnouncementsMana
 import AdminCalendarManager from '@/components/admin/AdminCalendarManager';
 import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone, CalendarDays, MessageSquare } from 'lucide-react';
 import AdminMariaRequests from '@/components/admin/AdminMariaRequests';
+import AdminOnboardingManager from '@/components/admin/AdminOnboardingManager';
 import ManagePartnersModal from '@/components/admin/ManagePartnersModal';
 import { useAllPartnerships } from '@/hooks/usePartnerships';
 import { useAddStudentCourse, useRemoveStudentCourse } from '@/hooks/useStudentAccess';

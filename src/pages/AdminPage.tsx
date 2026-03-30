@@ -814,6 +814,10 @@ const AdminPage: React.FC = () => {
               <MessageSquare className="w-4 h-4" />
               Pedidos Maria
             </TabsTrigger>
+            <TabsTrigger value="onboarding" className="data-[state=active]:bg-accent gap-2">
+              <UserPlus className="w-4 h-4" />
+              Onboarding
+            </TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}

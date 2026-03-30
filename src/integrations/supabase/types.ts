@@ -1067,6 +1067,203 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_links: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          submission_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          submission_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          submission_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_links_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "onboarding_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_submissions: {
+        Row: {
+          accepted_data_usage: boolean
+          accepted_terms: boolean
+          access_created_at: string | null
+          access_created_by: string | null
+          address_city: string
+          address_complement: string | null
+          address_neighborhood: string
+          address_number: string
+          address_state: string
+          address_street: string
+          address_zip: string
+          avg_ticket: number
+          birth_date: string
+          clinic_address_city: string
+          clinic_address_complement: string | null
+          clinic_address_neighborhood: string
+          clinic_address_number: string
+          clinic_address_state: string
+          clinic_address_street: string
+          clinic_address_zip: string
+          clinic_cnpj: string
+          clinic_legal_name: string
+          clinic_name: string
+          commercial_mastery: string
+          contract_docx_url: string | null
+          contract_duration: string | null
+          contract_generated_at: string | null
+          contract_generated_by: string | null
+          cpf: string
+          created_at: string | null
+          declared_truthfulness: boolean
+          email: string
+          full_name: string
+          general_notes: string | null
+          has_positioning: string
+          id: string
+          main_difficulty: string
+          patient_source: string
+          payment_method: string | null
+          peak_revenue: number
+          phone: string
+          revenue_avg_3months: number
+          rg: string
+          status: string
+          submitted_at: string | null
+          target_revenue_6months: number
+          team_size: string
+          technical_responsible: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accepted_data_usage?: boolean
+          accepted_terms?: boolean
+          access_created_at?: string | null
+          access_created_by?: string | null
+          address_city: string
+          address_complement?: string | null
+          address_neighborhood: string
+          address_number: string
+          address_state: string
+          address_street: string
+          address_zip: string
+          avg_ticket: number
+          birth_date: string
+          clinic_address_city: string
+          clinic_address_complement?: string | null
+          clinic_address_neighborhood: string
+          clinic_address_number: string
+          clinic_address_state: string
+          clinic_address_street: string
+          clinic_address_zip: string
+          clinic_cnpj: string
+          clinic_legal_name: string
+          clinic_name: string
+          commercial_mastery: string
+          contract_docx_url?: string | null
+          contract_duration?: string | null
+          contract_generated_at?: string | null
+          contract_generated_by?: string | null
+          cpf: string
+          created_at?: string | null
+          declared_truthfulness?: boolean
+          email: string
+          full_name: string
+          general_notes?: string | null
+          has_positioning: string
+          id?: string
+          main_difficulty: string
+          patient_source: string
+          payment_method?: string | null
+          peak_revenue: number
+          phone: string
+          revenue_avg_3months: number
+          rg: string
+          status?: string
+          submitted_at?: string | null
+          target_revenue_6months: number
+          team_size: string
+          technical_responsible: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accepted_data_usage?: boolean
+          accepted_terms?: boolean
+          access_created_at?: string | null
+          access_created_by?: string | null
+          address_city?: string
+          address_complement?: string | null
+          address_neighborhood?: string
+          address_number?: string
+          address_state?: string
+          address_street?: string
+          address_zip?: string
+          avg_ticket?: number
+          birth_date?: string
+          clinic_address_city?: string
+          clinic_address_complement?: string | null
+          clinic_address_neighborhood?: string
+          clinic_address_number?: string
+          clinic_address_state?: string
+          clinic_address_street?: string
+          clinic_address_zip?: string
+          clinic_cnpj?: string
+          clinic_legal_name?: string
+          clinic_name?: string
+          commercial_mastery?: string
+          contract_docx_url?: string | null
+          contract_duration?: string | null
+          contract_generated_at?: string | null
+          contract_generated_by?: string | null
+          cpf?: string
+          created_at?: string | null
+          declared_truthfulness?: boolean
+          email?: string
+          full_name?: string
+          general_notes?: string | null
+          has_positioning?: string
+          id?: string
+          main_difficulty?: string
+          patient_source?: string
+          payment_method?: string | null
+          peak_revenue?: number
+          phone?: string
+          revenue_avg_3months?: number
+          rg?: string
+          status?: string
+          submitted_at?: string | null
+          target_revenue_6months?: number
+          team_size?: string
+          technical_responsible?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       partnerships: {
         Row: {
           created_at: string | null

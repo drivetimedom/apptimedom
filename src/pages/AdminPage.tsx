@@ -97,7 +97,7 @@ import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
 import AdminTeamMembers from '@/components/admin/AdminTeamMembers';
 import AdminAnnouncementsManager from '@/components/admin/AdminAnnouncementsManager';
 import AdminCalendarManager from '@/components/admin/AdminCalendarManager';
-import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone, CalendarDays, MessageSquare } from 'lucide-react';
+import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone, CalendarDays, MessageSquare, UserPlus } from 'lucide-react';
 import AdminMariaRequests from '@/components/admin/AdminMariaRequests';
 import AdminOnboardingManager from '@/components/admin/AdminOnboardingManager';
 import ManagePartnersModal from '@/components/admin/ManagePartnersModal';

@@ -97,8 +97,9 @@ import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
 import AdminTeamMembers from '@/components/admin/AdminTeamMembers';
 import AdminAnnouncementsManager from '@/components/admin/AdminAnnouncementsManager';
 import AdminCalendarManager from '@/components/admin/AdminCalendarManager';
-import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone, CalendarDays, MessageSquare } from 'lucide-react';
+import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone, CalendarDays, MessageSquare, UserPlus } from 'lucide-react';
 import AdminMariaRequests from '@/components/admin/AdminMariaRequests';
+import AdminOnboardingManager from '@/components/admin/AdminOnboardingManager';
 import ManagePartnersModal from '@/components/admin/ManagePartnersModal';
 import { useAllPartnerships } from '@/hooks/usePartnerships';
 import { useAddStudentCourse, useRemoveStudentCourse } from '@/hooks/useStudentAccess';
@@ -812,6 +813,10 @@ const AdminPage: React.FC = () => {
             <TabsTrigger value="maria-requests" className="data-[state=active]:bg-accent gap-2">
               <MessageSquare className="w-4 h-4" />
               Pedidos Maria
+            </TabsTrigger>
+            <TabsTrigger value="onboarding" className="data-[state=active]:bg-accent gap-2">
+              <UserPlus className="w-4 h-4" />
+              Onboarding
             </TabsTrigger>
           </TabsList>
 
@@ -1560,6 +1565,13 @@ const AdminPage: React.FC = () => {
           <TabsContent value="maria-requests" className="space-y-6">
             <div className="bg-card rounded-xl border border-border p-6">
               <AdminMariaRequests />
+            </div>
+          </TabsContent>
+
+          {/* Onboarding Tab */}
+          <TabsContent value="onboarding" className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <AdminOnboardingManager />
             </div>
           </TabsContent>
         </Tabs>

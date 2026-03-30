@@ -229,8 +229,8 @@ const CreateAccessModal = ({ open, onClose, onSuccess, submission }: CreateAcces
           /* Sucesso */
           <div className="space-y-6 py-2">
             <div className="flex justify-center">
-              <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center">
-                <CheckCircle className="w-8 h-8 text-green-500" />
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-primary" />
               </div>
             </div>
 

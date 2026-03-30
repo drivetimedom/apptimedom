@@ -208,9 +208,16 @@ const OnboardingForm = () => {
     <div className="min-h-screen bg-white">
       {/* Header fixo */}
       <div className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-gray-100 z-10">
-        <div className="max-w-2xl mx-auto px-6 py-6">
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Cadastro HOF Circle</h1>
-          <p className="text-sm text-gray-500 mt-1">Complete as informações abaixo</p>
+        <div className="max-w-2xl mx-auto px-6 py-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Cadastro HOF Circle</h1>
+            <p className="text-sm text-gray-500 mt-1">Complete as informações abaixo</p>
+          </div>
+          <img
+            src="http://timedom.com.br/wp-content/uploads/2026/03/LOGO_TIME_DOM-Copia.png"
+            alt="Time Dom"
+            className="h-8 object-contain"
+          />
         </div>
       </div>
 

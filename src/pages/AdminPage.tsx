@@ -1567,6 +1567,13 @@ const AdminPage: React.FC = () => {
               <AdminMariaRequests />
             </div>
           </TabsContent>
+
+          {/* Onboarding Tab */}
+          <TabsContent value="onboarding" className="space-y-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <AdminOnboardingManager />
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
 

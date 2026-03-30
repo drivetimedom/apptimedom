@@ -27,6 +27,8 @@ import ProfilePage from "@/pages/ProfilePage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import DiagnosticoPage from "@/pages/DiagnosticoPage";
 import NotFound from "@/pages/NotFound";
+import OnboardingForm from "@/pages/OnboardingForm";
+import OnboardingSuccess from "@/pages/OnboardingSuccess";
 
 // Initialize seed data
 seedData();

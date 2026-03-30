@@ -257,7 +257,7 @@ const CreateAccessModal = ({ open, onClose, onSuccess, submission }: CreateAcces
                     size="sm"
                     onClick={() => copyToClipboard(createdCredentials.email, 'email')}
                   >
-                    {copiedField === 'email' ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    {copiedField === 'email' ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
                   </Button>
                 </div>
                 <div className="flex items-center justify-between">

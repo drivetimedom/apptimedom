@@ -1,14 +1,12 @@
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { FileText, Users } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { FileText, Users } from 'lucide-react';
 
 interface ViewSubmissionModalProps {
   open: boolean;
@@ -28,84 +26,149 @@ const ViewSubmissionModal = ({ open, onClose, submission, onGenerateContract, on
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>📋 Dados de {submission.full_name}</DialogTitle>
+          <DialogTitle>📋 {submission.full_name}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 text-sm">
           {/* Dados Pessoais */}
           <section>
-            <h3 className="font-semibold text-base mb-2">👤 Dados Pessoais</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <div><span className="text-muted-foreground">Nome:</span> {submission.full_name}</div>
-              <div><span className="text-muted-foreground">CPF:</span> {submission.cpf}</div>
-              <div><span className="text-muted-foreground">RG:</span> {submission.rg}</div>
-              <div><span className="text-muted-foreground">Nascimento:</span> {submission.birth_date}</div>
-              <div><span className="text-muted-foreground">Email:</span> {submission.email}</div>
-              <div><span className="text-muted-foreground">Telefone:</span> {submission.phone}</div>
+            <h3 className="font-semibold text-base mb-3">👤 Dados Pessoais</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-muted-foreground text-xs">Nome</p>
+                <p className="font-medium">{submission.full_name}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">CPF</p>
+                <p className="font-medium">{submission.cpf}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">RG</p>
+                <p className="font-medium">{submission.rg}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Data Nascimento</p>
+                <p className="font-medium">{submission.birth_date ? new Date(submission.birth_date).toLocaleDateString('pt-BR') : '-'}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Email</p>
+                <p className="font-medium">{submission.email}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Telefone</p>
+                <p className="font-medium">{submission.phone}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-muted-foreground text-xs">Endereço</p>
+                <p className="font-medium">
+                  {submission.address_street}, {submission.address_number}
+                  {submission.address_complement ? ` - ${submission.address_complement}` : ''}
+                  , {submission.address_neighborhood}, {submission.address_city}/{submission.address_state} - CEP: {submission.address_zip}
+                </p>
+              </div>
             </div>
           </section>
 
-          {/* Endereço */}
+          {/* Dados Clínica */}
           <section>
-            <h3 className="font-semibold text-base mb-2">📍 Endereço</h3>
-            <p>
-              {submission.address_street}, {submission.address_number}
-              {submission.address_complement ? ` - ${submission.address_complement}` : ''}
-              , {submission.address_neighborhood} - {submission.address_city}/{submission.address_state} - CEP: {submission.address_zip}
-            </p>
-          </section>
-
-          {/* Clínica */}
-          <section>
-            <h3 className="font-semibold text-base mb-2">🏥 Clínica</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <div><span className="text-muted-foreground">Nome Fantasia:</span> {submission.clinic_name}</div>
-              <div><span className="text-muted-foreground">Razão Social:</span> {submission.clinic_legal_name}</div>
-              <div><span className="text-muted-foreground">CNPJ:</span> {submission.clinic_cnpj}</div>
-              <div><span className="text-muted-foreground">Resp. Técnico:</span> {submission.technical_responsible}</div>
+            <h3 className="font-semibold text-base mb-3">🏥 Dados da Clínica</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-muted-foreground text-xs">Nome Fantasia</p>
+                <p className="font-medium">{submission.clinic_name}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Razão Social</p>
+                <p className="font-medium">{submission.clinic_legal_name}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">CNPJ</p>
+                <p className="font-medium">{submission.clinic_cnpj}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Responsável Técnico</p>
+                <p className="font-medium">{submission.technical_responsible}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-muted-foreground text-xs">Endereço da Clínica</p>
+                <p className="font-medium">
+                  {submission.clinic_address_street}, {submission.clinic_address_number}
+                  {submission.clinic_address_complement ? ` - ${submission.clinic_address_complement}` : ''}
+                  , {submission.clinic_address_neighborhood}, {submission.clinic_address_city}/{submission.clinic_address_state} - CEP: {submission.clinic_address_zip}
+                </p>
+              </div>
             </div>
-            <p className="mt-2">
-              {submission.clinic_address_street}, {submission.clinic_address_number}
-              {submission.clinic_address_complement ? ` - ${submission.clinic_address_complement}` : ''}
-              , {submission.clinic_address_neighborhood} - {submission.clinic_address_city}/{submission.clinic_address_state} - CEP: {submission.clinic_address_zip}
-            </p>
           </section>
 
           {/* Diagnóstico */}
           <section>
-            <h3 className="font-semibold text-base mb-2">📊 Diagnóstico</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <div><span className="text-muted-foreground">Faturamento médio 3m:</span> {formatCurrency(submission.revenue_avg_3months)}</div>
-              <div><span className="text-muted-foreground">Ticket médio:</span> {formatCurrency(submission.avg_ticket)}</div>
-              <div><span className="text-muted-foreground">Pico faturamento:</span> {formatCurrency(submission.peak_revenue)}</div>
-              <div><span className="text-muted-foreground">Meta 6 meses:</span> {formatCurrency(submission.target_revenue_6months)}</div>
-              <div><span className="text-muted-foreground">Equipe:</span> {submission.team_size}</div>
-              <div><span className="text-muted-foreground">Posicionamento:</span> {submission.has_positioning}</div>
-              <div><span className="text-muted-foreground">Fonte pacientes:</span> {submission.patient_source}</div>
-              <div><span className="text-muted-foreground">Dificuldade:</span> {submission.main_difficulty}</div>
-              <div><span className="text-muted-foreground">Domínio comercial:</span> {submission.commercial_mastery}</div>
+            <h3 className="font-semibold text-base mb-3">📊 Diagnóstico</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-muted-foreground text-xs">Faturamento médio (3 meses)</p>
+                <p className="font-medium">{formatCurrency(submission.revenue_avg_3months)}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Ticket médio</p>
+                <p className="font-medium">{formatCurrency(submission.avg_ticket)}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Pico de faturamento</p>
+                <p className="font-medium">{formatCurrency(submission.peak_revenue)}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Meta 6 meses</p>
+                <p className="font-medium">{formatCurrency(submission.target_revenue_6months)}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Equipe</p>
+                <p className="font-medium">{submission.team_size}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Posicionamento</p>
+                <p className="font-medium">{submission.has_positioning}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Origem pacientes</p>
+                <p className="font-medium">{submission.patient_source}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Dificuldade principal</p>
+                <p className="font-medium">{submission.main_difficulty}</p>
+              </div>
+              <div>
+                <p className="text-muted-foreground text-xs">Domínio comercial</p>
+                <p className="font-medium">{submission.commercial_mastery}</p>
+              </div>
             </div>
             {submission.general_notes && (
-              <div className="mt-2">
-                <span className="text-muted-foreground">Notas:</span> {submission.general_notes}
+              <div className="mt-3">
+                <p className="text-muted-foreground text-xs">Observações</p>
+                <p className="font-medium">{submission.general_notes}</p>
               </div>
             )}
           </section>
 
           {/* Ações */}
-          <div className="flex gap-2 pt-4 border-t">
+          <div className="flex gap-2 pt-4 border-t flex-wrap">
+            <Button variant="outline" onClick={onClose}>
+              Fechar
+            </Button>
+
             {submission.status === 'pending' && (
               <Button onClick={onGenerateContract} className="gap-2">
                 <FileText className="w-4 h-4" />
                 Gerar Contrato
               </Button>
             )}
+
             {['contract_generated', 'sent_to_autentique', 'signed'].includes(submission.status) && !submission.user_id && (
               <Button onClick={onCreateAccess} className="gap-2">
                 <Users className="w-4 h-4" />
                 Criar Acesso
               </Button>
             )}
+
             {submission.contract_docx_url && (
               <Button variant="outline" onClick={() => window.open(submission.contract_docx_url, '_blank')}>
                 📥 Baixar Contrato

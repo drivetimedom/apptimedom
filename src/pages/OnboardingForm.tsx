@@ -13,7 +13,7 @@ import { Loader2 } from 'lucide-react';
 const OnboardingForm = () => {
   const { code } = useParams();
   const navigate = useNavigate();
-
+  
   const [formData, setFormData] = useState({
     full_name: '',
     cpf: '',
@@ -28,17 +28,6 @@ const OnboardingForm = () => {
     address_city: '',
     address_state: '',
     address_zip: '',
-    clinic_name: '',
-    clinic_legal_name: '',
-    clinic_cnpj: '',
-    clinic_address_street: '',
-    clinic_address_number: '',
-    clinic_address_complement: '',
-    clinic_address_neighborhood: '',
-    clinic_address_city: '',
-    clinic_address_state: '',
-    clinic_address_zip: '',
-    technical_responsible: '',
     revenue_avg_3months: '',
     avg_ticket: '',
     peak_revenue: '',
@@ -53,6 +42,8 @@ const OnboardingForm = () => {
     accepted_data_usage: false,
     declared_truthfulness: false,
   });
+
+  const [errors, setErrors] = useState<any>({});
 
   // Validate link
   const { data: linkData, isLoading: linkLoading, error: linkError } = useQuery({
@@ -77,31 +68,84 @@ const OnboardingForm = () => {
     retry: false,
   });
 
-  // Input masks
-  const maskCPF = (value: string) => {
-    const d = value.replace(/\D/g, '').slice(0, 11);
-    return d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+  // Validações
+  const validateCPF = (cpf: string): boolean => {
+    const cleaned = cpf.replace(/\D/g, '');
+    if (cleaned.length !== 11) return false;
+    if (/^(\d)\1{10}$/.test(cleaned)) return false;
+    
+    let sum = 0;
+    let remainder;
+    
+    for (let i = 1; i <= 9; i++) {
+      sum += parseInt(cleaned.substring(i - 1, i)) * (11 - i);
+    }
+    
+    remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cleaned.substring(9, 10))) return false;
+    
+    sum = 0;
+    for (let i = 1; i <= 10; i++) {
+      sum += parseInt(cleaned.substring(i - 1, i)) * (12 - i);
+    }
+    
+    remainder = (sum * 10) % 11;
+    if (remainder === 10 || remainder === 11) remainder = 0;
+    if (remainder !== parseInt(cleaned.substring(10, 11))) return false;
+    
+    return true;
   };
 
-  const maskCNPJ = (value: string) => {
-    const d = value.replace(/\D/g, '').slice(0, 14);
-    return d.replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+  const validateEmail = (email: string): boolean => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
   };
 
-  const maskPhone = (value: string) => {
-    const d = value.replace(/\D/g, '').slice(0, 11);
-    return d.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+  // Máscaras
+  const handleCPFChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 11);
+    const masked = cleaned.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    setFormData({ ...formData, cpf: masked });
+    
+    if (cleaned.length === 11) {
+      if (!validateCPF(masked)) {
+        setErrors({ ...errors, cpf: 'CPF inválido' });
+      } else {
+        const { cpf, ...rest } = errors;
+        setErrors(rest);
+      }
+    }
   };
 
-  const maskCEP = (value: string) => {
-    const d = value.replace(/\D/g, '').slice(0, 8);
-    return d.replace(/(\d{5})(\d{1,3})$/, '$1-$2');
+  const handlePhoneChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 11);
+    const masked = cleaned.replace(/(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})$/, '$1-$2');
+    setFormData({ ...formData, phone: masked });
+  };
+
+  const handleCEPChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 8);
+    const masked = cleaned.replace(/(\d{5})(\d{1,3})$/, '$1-$2');
+    setFormData({ ...formData, address_zip: masked });
+  };
+
+  const handleEmailChange = (value: string) => {
+    setFormData({ ...formData, email: value });
+    
+    if (value && !validateEmail(value)) {
+      setErrors({ ...errors, email: 'Email inválido' });
+    } else {
+      const { email, ...rest } = errors;
+      setErrors(rest);
+    }
   };
 
   const updateField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Submeter formulário
   const submitForm = useMutation({
     mutationFn: async () => {
       if (!formData.accepted_terms || !formData.accepted_data_usage || !formData.declared_truthfulness) {
@@ -124,17 +168,17 @@ const OnboardingForm = () => {
           address_city: formData.address_city,
           address_state: formData.address_state,
           address_zip: formData.address_zip,
-          clinic_name: formData.clinic_name,
-          clinic_legal_name: formData.clinic_legal_name,
-          clinic_cnpj: formData.clinic_cnpj,
-          clinic_address_street: formData.clinic_address_street,
-          clinic_address_number: formData.clinic_address_number,
-          clinic_address_complement: formData.clinic_address_complement || null,
-          clinic_address_neighborhood: formData.clinic_address_neighborhood,
-          clinic_address_city: formData.clinic_address_city,
-          clinic_address_state: formData.clinic_address_state,
-          clinic_address_zip: formData.clinic_address_zip,
-          technical_responsible: formData.technical_responsible,
+          clinic_name: formData.full_name,
+          clinic_legal_name: formData.full_name,
+          clinic_cnpj: '00.000.000/0000-00',
+          clinic_address_street: formData.address_street,
+          clinic_address_number: formData.address_number,
+          clinic_address_complement: formData.address_complement || null,
+          clinic_address_neighborhood: formData.address_neighborhood,
+          clinic_address_city: formData.address_city,
+          clinic_address_state: formData.address_state,
+          clinic_address_zip: formData.address_zip,
+          technical_responsible: formData.full_name,
           revenue_avg_3months: parseFloat(formData.revenue_avg_3months) || 0,
           avg_ticket: parseFloat(formData.avg_ticket) || 0,
           peak_revenue: parseFloat(formData.peak_revenue) || 0,
@@ -175,12 +219,28 @@ const OnboardingForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const newErrors: any = {};
+    
+    if (!validateCPF(formData.cpf)) {
+      newErrors.cpf = 'CPF inválido';
+    }
+    
+    if (!validateEmail(formData.email)) {
+      newErrors.email = 'Email inválido';
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      toast.error('Por favor, corrija os campos inválidos');
+      return;
+    }
+    
     submitForm.mutate();
   };
 
-  // Shared input styles for the white/light theme
   const inputClass = "mt-2 h-11 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-gray-400 focus-visible:ring-offset-0";
-  const selectClass = "mt-2 w-full h-11 px-3 border border-gray-200 rounded-md bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-400";
+  const selectClass = "mt-2 w-full h-11 px-3 border border-gray-200 rounded-md bg-white text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400";
   const labelClass = "text-sm font-medium text-gray-700";
 
   if (linkLoading) {
@@ -223,45 +283,95 @@ const OnboardingForm = () => {
 
       <div className="max-w-2xl mx-auto px-6 py-12">
         <form onSubmit={handleSubmit} className="space-y-16">
-
+          
           {/* Dados Pessoais */}
           <section>
             <div className="mb-8">
               <h2 className="text-lg font-semibold text-gray-900 mb-1">Dados Pessoais</h2>
               <p className="text-sm text-gray-500">Informações básicas de identificação</p>
             </div>
-
+            
             <div className="space-y-6">
               <div>
                 <Label htmlFor="full_name" className={labelClass}>Nome Completo</Label>
-                <Input id="full_name" value={formData.full_name} onChange={e => updateField('full_name', e.target.value)} className={inputClass} required />
+                <Input
+                  id="full_name"
+                  value={formData.full_name}
+                  onChange={(e) => updateField('full_name', e.target.value)}
+                  className={inputClass}
+                  required
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="cpf" className={labelClass}>CPF</Label>
-                  <Input id="cpf" value={formData.cpf} onChange={e => updateField('cpf', maskCPF(e.target.value))} placeholder="000.000.000-00" maxLength={14} className={inputClass} required />
+                  <Input
+                    id="cpf"
+                    value={formData.cpf}
+                    onChange={(e) => handleCPFChange(e.target.value)}
+                    placeholder="000.000.000-00"
+                    maxLength={14}
+                    className={`${inputClass} ${errors.cpf ? 'border-red-500' : ''}`}
+                    required
+                  />
+                  {errors.cpf && (
+                    <p className="text-xs text-red-500 mt-1">{errors.cpf}</p>
+                  )}
                 </div>
+
                 <div>
                   <Label htmlFor="rg" className={labelClass}>RG</Label>
-                  <Input id="rg" value={formData.rg} onChange={e => updateField('rg', e.target.value)} className={inputClass} required />
+                  <Input
+                    id="rg"
+                    value={formData.rg}
+                    onChange={(e) => updateField('rg', e.target.value)}
+                    className={inputClass}
+                    required
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <Label htmlFor="birth_date" className={labelClass}>Data de Nascimento</Label>
-                  <Input id="birth_date" type="date" value={formData.birth_date} onChange={e => updateField('birth_date', e.target.value)} className={inputClass} required />
+                  <Input
+                    id="birth_date"
+                    type="date"
+                    value={formData.birth_date}
+                    onChange={(e) => updateField('birth_date', e.target.value)}
+                    className={inputClass}
+                    required
+                  />
                 </div>
+
                 <div>
                   <Label htmlFor="phone" className={labelClass}>Telefone</Label>
-                  <Input id="phone" value={formData.phone} onChange={e => updateField('phone', maskPhone(e.target.value))} placeholder="(00) 00000-0000" maxLength={15} className={inputClass} required />
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    placeholder="(00) 00000-0000"
+                    maxLength={15}
+                    className={inputClass}
+                    required
+                  />
                 </div>
               </div>
 
               <div>
                 <Label htmlFor="email" className={labelClass}>Email</Label>
-                <Input id="email" type="email" value={formData.email} onChange={e => updateField('email', e.target.value)} className={inputClass} required />
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  className={`${inputClass} ${errors.email ? 'border-red-500' : ''}`}
+                  required
+                />
+                {errors.email && (
+                  <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+                )}
               </div>
             </div>
           </section>
@@ -272,7 +382,7 @@ const OnboardingForm = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-1">Endereço Residencial</h2>
               <p className="text-sm text-gray-500">Seu endereço pessoal</p>
             </div>
-
+            
             <div className="space-y-6">
               <div className="grid grid-cols-3 gap-6">
                 <div className="col-span-2">
@@ -307,82 +417,7 @@ const OnboardingForm = () => {
                 </div>
                 <div>
                   <Label htmlFor="address_zip" className={labelClass}>CEP</Label>
-                  <Input id="address_zip" value={formData.address_zip} onChange={e => updateField('address_zip', maskCEP(e.target.value))} placeholder="00000-000" maxLength={9} className={inputClass} required />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Dados da Clínica */}
-          <section>
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold text-gray-900 mb-1">Dados da Clínica</h2>
-              <p className="text-sm text-gray-500">Informações da sua empresa</p>
-            </div>
-
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="clinic_name" className={labelClass}>Nome Fantasia</Label>
-                  <Input id="clinic_name" value={formData.clinic_name} onChange={e => updateField('clinic_name', e.target.value)} className={inputClass} required />
-                </div>
-                <div>
-                  <Label htmlFor="clinic_legal_name" className={labelClass}>Razão Social</Label>
-                  <Input id="clinic_legal_name" value={formData.clinic_legal_name} onChange={e => updateField('clinic_legal_name', e.target.value)} className={inputClass} required />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <Label htmlFor="clinic_cnpj" className={labelClass}>CNPJ</Label>
-                  <Input id="clinic_cnpj" value={formData.clinic_cnpj} onChange={e => updateField('clinic_cnpj', maskCNPJ(e.target.value))} placeholder="00.000.000/0000-00" maxLength={18} className={inputClass} required />
-                </div>
-                <div>
-                  <Label htmlFor="technical_responsible" className={labelClass}>Responsável Técnico</Label>
-                  <Input id="technical_responsible" value={formData.technical_responsible} onChange={e => updateField('technical_responsible', e.target.value)} className={inputClass} required />
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-6">Endereço da Clínica</h3>
-
-                <div className="space-y-6">
-                  <div className="grid grid-cols-3 gap-6">
-                    <div className="col-span-2">
-                      <Label htmlFor="clinic_address_street" className={labelClass}>Rua</Label>
-                      <Input id="clinic_address_street" value={formData.clinic_address_street} onChange={e => updateField('clinic_address_street', e.target.value)} className={inputClass} required />
-                    </div>
-                    <div>
-                      <Label htmlFor="clinic_address_number" className={labelClass}>Número</Label>
-                      <Input id="clinic_address_number" value={formData.clinic_address_number} onChange={e => updateField('clinic_address_number', e.target.value)} className={inputClass} required />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <Label htmlFor="clinic_address_complement" className={labelClass}>Complemento</Label>
-                      <Input id="clinic_address_complement" value={formData.clinic_address_complement} onChange={e => updateField('clinic_address_complement', e.target.value)} className={inputClass} placeholder="Opcional" />
-                    </div>
-                    <div>
-                      <Label htmlFor="clinic_address_neighborhood" className={labelClass}>Bairro</Label>
-                      <Input id="clinic_address_neighborhood" value={formData.clinic_address_neighborhood} onChange={e => updateField('clinic_address_neighborhood', e.target.value)} className={inputClass} required />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-6">
-                    <div>
-                      <Label htmlFor="clinic_address_city" className={labelClass}>Cidade</Label>
-                      <Input id="clinic_address_city" value={formData.clinic_address_city} onChange={e => updateField('clinic_address_city', e.target.value)} className={inputClass} required />
-                    </div>
-                    <div>
-                      <Label htmlFor="clinic_address_state" className={labelClass}>Estado</Label>
-                      <Input id="clinic_address_state" value={formData.clinic_address_state} onChange={e => updateField('clinic_address_state', e.target.value.toUpperCase())} maxLength={2} placeholder="SP" className={inputClass} required />
-                    </div>
-                    <div>
-                      <Label htmlFor="clinic_address_zip" className={labelClass}>CEP</Label>
-                      <Input id="clinic_address_zip" value={formData.clinic_address_zip} onChange={e => updateField('clinic_address_zip', maskCEP(e.target.value))} placeholder="00000-000" maxLength={9} className={inputClass} required />
-                    </div>
-                  </div>
+                  <Input id="address_zip" value={formData.address_zip} onChange={e => handleCEPChange(e.target.value)} placeholder="00000-000" maxLength={9} className={inputClass} required />
                 </div>
               </div>
             </div>
@@ -394,34 +429,67 @@ const OnboardingForm = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-1">Diagnóstico Inicial</h2>
               <p className="text-sm text-gray-500">Informações sobre sua clínica e objetivos</p>
             </div>
-
+            
             <div className="space-y-6">
               <div>
                 <Label htmlFor="revenue_avg_3months" className={labelClass}>
                   1. Qual foi seu faturamento médio nos últimos 3 meses?
                 </Label>
-                <Input id="revenue_avg_3months" type="number" step="0.01" value={formData.revenue_avg_3months} onChange={e => updateField('revenue_avg_3months', e.target.value)} placeholder="10000.00" className={inputClass} required />
+                <Input
+                  id="revenue_avg_3months"
+                  type="number"
+                  step="0.01"
+                  value={formData.revenue_avg_3months}
+                  onChange={(e) => updateField('revenue_avg_3months', e.target.value)}
+                  placeholder="10000.00"
+                  className={inputClass}
+                  required
+                />
               </div>
 
               <div>
                 <Label htmlFor="avg_ticket" className={labelClass}>
                   2. Qual é seu ticket médio hoje?
                 </Label>
-                <Input id="avg_ticket" type="number" step="0.01" value={formData.avg_ticket} onChange={e => updateField('avg_ticket', e.target.value)} placeholder="1500.00" className={inputClass} required />
+                <Input
+                  id="avg_ticket"
+                  type="number"
+                  step="0.01"
+                  value={formData.avg_ticket}
+                  onChange={(e) => updateField('avg_ticket', e.target.value)}
+                  placeholder="1500.00"
+                  className={inputClass}
+                  required
+                />
               </div>
 
               <div>
                 <Label htmlFor="peak_revenue" className={labelClass}>
                   3. Qual foi o seu pico de faturamento em um mês?
                 </Label>
-                <Input id="peak_revenue" type="number" step="0.01" value={formData.peak_revenue} onChange={e => updateField('peak_revenue', e.target.value)} placeholder="15000.00" className={inputClass} required />
+                <Input
+                  id="peak_revenue"
+                  type="number"
+                  step="0.01"
+                  value={formData.peak_revenue}
+                  onChange={(e) => updateField('peak_revenue', e.target.value)}
+                  placeholder="15000.00"
+                  className={inputClass}
+                  required
+                />
               </div>
 
               <div>
                 <Label htmlFor="team_size" className={labelClass}>
                   4. Você trabalha sozinha ou tem equipe?
                 </Label>
-                <select id="team_size" value={formData.team_size} onChange={e => updateField('team_size', e.target.value)} className={selectClass} required>
+                <select
+                  id="team_size"
+                  value={formData.team_size}
+                  onChange={(e) => updateField('team_size', e.target.value)}
+                  className={selectClass}
+                  required
+                >
                   <option value="">Selecione</option>
                   <option value="Sozinha">Sozinha</option>
                   <option value="1 assistente">1 assistente</option>
@@ -433,7 +501,13 @@ const OnboardingForm = () => {
                 <Label htmlFor="has_positioning" className={labelClass}>
                   5. Você tem procedimento de referência definido e posicionamento claro no Instagram?
                 </Label>
-                <select id="has_positioning" value={formData.has_positioning} onChange={e => updateField('has_positioning', e.target.value)} className={selectClass} required>
+                <select
+                  id="has_positioning"
+                  value={formData.has_positioning}
+                  onChange={(e) => updateField('has_positioning', e.target.value)}
+                  className={selectClass}
+                  required
+                >
                   <option value="">Selecione</option>
                   <option value="Sim">Sim</option>
                   <option value="Não">Não</option>
@@ -445,7 +519,13 @@ const OnboardingForm = () => {
                 <Label htmlFor="patient_source" className={labelClass}>
                   6. De onde vêm a maioria dos seus pacientes hoje?
                 </Label>
-                <select id="patient_source" value={formData.patient_source} onChange={e => updateField('patient_source', e.target.value)} className={selectClass} required>
+                <select
+                  id="patient_source"
+                  value={formData.patient_source}
+                  onChange={(e) => updateField('patient_source', e.target.value)}
+                  className={selectClass}
+                  required
+                >
                   <option value="">Selecione</option>
                   <option value="Só indicação e base de pacientes">Só indicação e base de pacientes</option>
                   <option value="Tenho tráfego pago rodando">Tenho tráfego pago rodando</option>
@@ -457,7 +537,13 @@ const OnboardingForm = () => {
                 <Label htmlFor="main_difficulty" className={labelClass}>
                   7. Sua dificuldade principal é:
                 </Label>
-                <select id="main_difficulty" value={formData.main_difficulty} onChange={e => updateField('main_difficulty', e.target.value)} className={selectClass} required>
+                <select
+                  id="main_difficulty"
+                  value={formData.main_difficulty}
+                  onChange={(e) => updateField('main_difficulty', e.target.value)}
+                  className={selectClass}
+                  required
+                >
                   <option value="">Selecione</option>
                   <option value="Falta demanda">Falta demanda</option>
                   <option value="Tenho demanda mas não converto">Tenho demanda mas não converto</option>
@@ -469,7 +555,13 @@ const OnboardingForm = () => {
                 <Label htmlFor="commercial_mastery" className={labelClass}>
                   8. Você domina processo comercial (script, follow-up, quebra de objeções)?
                 </Label>
-                <select id="commercial_mastery" value={formData.commercial_mastery} onChange={e => updateField('commercial_mastery', e.target.value)} className={selectClass} required>
+                <select
+                  id="commercial_mastery"
+                  value={formData.commercial_mastery}
+                  onChange={(e) => updateField('commercial_mastery', e.target.value)}
+                  className={selectClass}
+                  required
+                >
                   <option value="">Selecione</option>
                   <option value="Sim">Sim</option>
                   <option value="Não">Não</option>
@@ -481,14 +573,30 @@ const OnboardingForm = () => {
                 <Label htmlFor="target_revenue_6months" className={labelClass}>
                   9. Qual faturamento você quer alcançar nos próximos 6 meses?
                 </Label>
-                <Input id="target_revenue_6months" type="number" step="0.01" value={formData.target_revenue_6months} onChange={e => updateField('target_revenue_6months', e.target.value)} placeholder="50000.00" className={inputClass} required />
+                <Input
+                  id="target_revenue_6months"
+                  type="number"
+                  step="0.01"
+                  value={formData.target_revenue_6months}
+                  onChange={(e) => updateField('target_revenue_6months', e.target.value)}
+                  placeholder="50000.00"
+                  className={inputClass}
+                  required
+                />
               </div>
 
               <div>
                 <Label htmlFor="general_notes" className={labelClass}>
                   10. Considerações gerais (opcional)
                 </Label>
-                <Textarea id="general_notes" value={formData.general_notes} onChange={e => updateField('general_notes', e.target.value)} placeholder="Conte-nos algo que não conseguiu preencher acima..." rows={4} className="mt-2 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:ring-gray-400" />
+                <Textarea
+                  id="general_notes"
+                  value={formData.general_notes}
+                  onChange={(e) => updateField('general_notes', e.target.value)}
+                  placeholder="Conte-nos algo que não conseguiu preencher acima..."
+                  rows={4}
+                  className="mt-2 bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
+                />
               </div>
             </div>
           </section>
@@ -499,18 +607,21 @@ const OnboardingForm = () => {
               <h2 className="text-lg font-semibold text-gray-900 mb-1">Termos e Condições</h2>
               <p className="text-sm text-gray-500">Leia e aceite os termos</p>
             </div>
-
+            
             <div className="space-y-4 bg-gray-50 rounded-lg p-6">
               <label className="flex items-start gap-3 cursor-pointer">
                 <Checkbox
                   checked={formData.accepted_terms}
-                  onCheckedChange={(checked) => updateField('accepted_terms', checked as boolean)}
-                  className="mt-0.5 border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                  onCheckedChange={(checked) => 
+                    setFormData({ ...formData, accepted_terms: checked as boolean })
+                  }
+                  required
+                  className="mt-0.5"
                 />
                 <span className="text-sm leading-relaxed text-gray-700">
-                  Ao marcar esta opção, declaro que li e aceito os termos de contratação,
-                  autorizando o início imediato da prestação de serviços. Estou ciente de
-                  que o prazo de 7 dias para cancelamento inicia-se a partir deste aceite,
+                  Ao marcar esta opção, declaro que li e aceito os termos de contratação, 
+                  autorizando o início imediato da prestação de serviços. Estou ciente de 
+                  que o prazo de 7 dias para cancelamento inicia-se a partir deste aceite, 
                   conforme previsto no Art. 49 do Código de Defesa do Consumidor.
                 </span>
               </label>
@@ -518,11 +629,14 @@ const OnboardingForm = () => {
               <label className="flex items-start gap-3 cursor-pointer">
                 <Checkbox
                   checked={formData.accepted_data_usage}
-                  onCheckedChange={(checked) => updateField('accepted_data_usage', checked as boolean)}
-                  className="mt-0.5 border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                  onCheckedChange={(checked) => 
+                    setFormData({ ...formData, accepted_data_usage: checked as boolean })
+                  }
+                  required
+                  className="mt-0.5"
                 />
                 <span className="text-sm text-gray-700">
-                  Estou ciente que as informações fornecidas serão utilizadas para
+                  Estou ciente que as informações fornecidas serão utilizadas para 
                   elaboração do contrato
                 </span>
               </label>
@@ -530,8 +644,11 @@ const OnboardingForm = () => {
               <label className="flex items-start gap-3 cursor-pointer">
                 <Checkbox
                   checked={formData.declared_truthfulness}
-                  onCheckedChange={(checked) => updateField('declared_truthfulness', checked as boolean)}
-                  className="mt-0.5 border-gray-300 data-[state=checked]:bg-gray-900 data-[state=checked]:border-gray-900"
+                  onCheckedChange={(checked) => 
+                    setFormData({ ...formData, declared_truthfulness: checked as boolean })
+                  }
+                  required
+                  className="mt-0.5"
                 />
                 <span className="text-sm text-gray-700">
                   Declaro que todas as informações são verdadeiras
@@ -541,21 +658,14 @@ const OnboardingForm = () => {
           </section>
 
           {/* Botão Submit */}
-          <div className="pt-8 pb-16">
+          <div className="pt-8">
             <Button
               type="submit"
               size="lg"
               disabled={submitForm.isPending}
-              className="w-full h-12 text-base font-medium bg-gray-900 hover:bg-gray-800 text-white rounded-lg"
+              className="w-full h-12 text-base font-medium"
             >
-              {submitForm.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Enviando cadastro...
-                </>
-              ) : (
-                'Enviar Cadastro'
-              )}
+              {submitForm.isPending ? 'Enviando cadastro...' : 'Enviar Cadastro'}
             </Button>
           </div>
         </form>

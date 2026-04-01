@@ -90,7 +90,7 @@ const SwipeFilePage: React.FC = () => {
     }));
   }, [materials]);
 
-  // Read URL params on load and when processes load
+  // Read URL params on load and when processes or searchParams change
   useEffect(() => {
     const processoId = searchParams.get('processo');
     if (processoId && processes.length > 0) {
@@ -101,8 +101,7 @@ const SwipeFilePage: React.FC = () => {
         setIsModalOpen(true);
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [processes]);
+  }, [processes, searchParams]);
 
   const scrollToContent = () => {
     document.getElementById('swipefile-content')?.scrollIntoView({ behavior: 'smooth' });

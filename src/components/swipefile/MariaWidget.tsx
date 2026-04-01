@@ -97,6 +97,7 @@ const MariaWidget: React.FC = () => {
     if (!allMaterials) return;
     const material = allMaterials.find(m => m.code === code);
     if (material) {
+      setIsOpen(false);
       setSearchParams({ processo: material.id });
     }
   };

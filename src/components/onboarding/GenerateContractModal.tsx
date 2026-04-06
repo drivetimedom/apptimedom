@@ -50,6 +50,7 @@ const GenerateContractModal = ({ open, onClose, onSuccess, submission }: Generat
       const doc = new Docxtemplater(zip, {
         paragraphLoop: true,
         linebreaks: true,
+        delimiters: { start: '{{', end: '}}' },
       });
 
       // 3. Fill template data

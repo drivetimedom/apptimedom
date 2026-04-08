@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.swipe-file-assistant]
 verify_jwt = false
+
+[functions.submit-onboarding]
+verify_jwt = false

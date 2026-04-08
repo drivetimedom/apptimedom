@@ -152,9 +152,7 @@ const OnboardingForm = () => {
         throw new Error('Você deve aceitar todos os termos obrigatórios');
       }
 
-      const { data, error } = await supabase
-        .from('onboarding_submissions' as any)
-        .insert({
+      const submissionPayload = {
           full_name: formData.full_name,
           cpf: formData.cpf,
           rg: formData.rg,
@@ -193,17 +191,19 @@ const OnboardingForm = () => {
           accepted_data_usage: formData.accepted_data_usage,
           declared_truthfulness: formData.declared_truthfulness,
           status: 'pending',
-        } as any)
-        .select()
-        .single();
+      };
+
+      const { data, error } = await supabase.functions.invoke('submit-onboarding', {
+        body: {
+          code,
+          submission: submissionPayload,
+        },
+      });
 
       if (error) throw error;
 
-      if (code && data) {
-        await supabase
-          .from('onboarding_links' as any)
-          .update({ submission_id: (data as any).id, is_active: false } as any)
-          .eq('code', code);
+      if (data?.error) {
+        throw new Error(data.error);
       }
 
       return data;

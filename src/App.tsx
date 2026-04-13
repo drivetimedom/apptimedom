@@ -49,6 +49,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/onboard/:code" element={<OnboardingForm />} />
             <Route path="/onboard/success" element={<OnboardingSuccess />} />
+            <Route path="/termos" element={<TermosPage />} />
             
             {/* Protected routes */}
             <Route element={<MainLayout />}>

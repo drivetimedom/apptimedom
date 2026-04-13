@@ -619,7 +619,10 @@ const OnboardingForm = () => {
                   className="mt-0.5"
                 />
                 <span className="text-sm leading-relaxed text-gray-700">
-                  Ao marcar esta opção, declaro que li e aceito os termos de contratação, 
+                  Ao marcar esta opção, declaro que li e aceito os{' '}
+                  <a href="/termos" target="_blank" rel="noopener noreferrer" className="text-black font-medium underline hover:text-gray-600 transition-colors">
+                    termos de contratação
+                  </a>, 
                   autorizando o início imediato da prestação de serviços. Estou ciente de 
                   que o prazo de 7 dias para cancelamento inicia-se a partir deste aceite, 
                   conforme previsto no Art. 49 do Código de Defesa do Consumidor.

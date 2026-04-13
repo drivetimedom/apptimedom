@@ -27,23 +27,23 @@ const TermosPage = () => {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground text-center tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-bold text-black text-center tracking-tight">
           Termos de Contratação – Mentoria HOF Circle
         </h1>
 
         {/* Subtitle */}
-        <p className="text-muted-foreground text-center mt-4 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
+        <p className="text-gray-500 text-center mt-4 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
           Leia atentamente as condições abaixo antes de prosseguir com sua participação na mentoria.
         </p>
 
-        <Separator className="my-10 bg-border/50" />
+        <Separator className="my-10 bg-gray-200" />
 
         {/* Content */}
         <div className="space-y-6">
           {termos.map((paragrafo, index) => (
             <p
               key={index}
-              className="text-foreground/90 text-sm md:text-base leading-7 md:leading-8"
+              className="text-black/85 text-sm md:text-base leading-7 md:leading-8"
             >
               {paragrafo}
             </p>
@@ -51,14 +51,14 @@ const TermosPage = () => {
         </div>
 
         {/* Highlight box */}
-        <div className="mt-12 rounded-lg border border-border/60 bg-card/60 backdrop-blur-sm p-6 md:p-8">
-          <p className="text-foreground text-sm md:text-base font-medium text-center leading-7">
+        <div className="mt-12 rounded-lg border border-gray-200 bg-gray-50 p-6 md:p-8">
+          <p className="text-black text-sm md:text-base font-medium text-center leading-7">
             Ao permanecer na mentoria e utilizar seus recursos, você declara concordância integral com estes termos.
           </p>
         </div>
 
         {/* Footer */}
-        <p className="text-text-subtle text-xs text-center mt-12">
+        <p className="text-gray-400 text-xs text-center mt-12">
           © {new Date().getFullYear()} Time Dom. Todos os direitos reservados.
         </p>
       </div>

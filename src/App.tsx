@@ -29,6 +29,7 @@ import DiagnosticoPage from "@/pages/DiagnosticoPage";
 import NotFound from "@/pages/NotFound";
 import OnboardingForm from "@/pages/OnboardingForm";
 import OnboardingSuccess from "@/pages/OnboardingSuccess";
+import TermosPage from "@/pages/TermosPage";
 
 // Initialize seed data
 seedData();
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/onboard/:code" element={<OnboardingForm />} />
             <Route path="/onboard/success" element={<OnboardingSuccess />} />
+            <Route path="/termos" element={<TermosPage />} />
             
             {/* Protected routes */}
             <Route element={<MainLayout />}>

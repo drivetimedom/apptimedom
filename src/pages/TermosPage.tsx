@@ -15,7 +15,7 @@ const termos = [
 
 const TermosPage = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <div className="max-w-3xl mx-auto px-6 py-12 md:py-20">
         {/* Logo */}
         <div className="flex justify-center mb-12">

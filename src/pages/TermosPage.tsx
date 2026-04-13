@@ -1,7 +1,7 @@
 import { Separator } from "@/components/ui/separator";
 
 const termos = [
-  "A Mentoria HOF Circle possui duração de 12 (doze) meses, incluindo encontros online em grupo, suporte contínuo via WhatsApp e acesso à área de membros com gravações e materiais exclusivos pelo período de até 1 (um) ano.",
+  "A Mentoria HOF Circle possui duração estipulado no momento da contratação, incluindo encontros online em grupo, suporte contínuo via WhatsApp e acesso à área de membros com gravações e materiais exclusivos pelo período de vigência.",
   "As reuniões são previamente agendadas e comunicadas com antecedência. O não comparecimento não garante reposição, sendo a sessão considerada como realizada.",
   "A mentoria possui caráter educacional e estratégico, configurando-se como obrigação de meio. Isso significa que os resultados dependem exclusivamente da aplicação prática das estratégias por parte do mentorado.",
   "Ao realizar a contratação e/ou acessar qualquer recurso da mentoria (como grupo, plataforma ou conteúdos), considera-se iniciado o serviço, não sendo aplicável reembolso de valores pagos, em razão da natureza do serviço e da reserva de vaga.",

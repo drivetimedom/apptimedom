@@ -29,6 +29,7 @@ import DiagnosticoPage from "@/pages/DiagnosticoPage";
 import NotFound from "@/pages/NotFound";
 import OnboardingForm from "@/pages/OnboardingForm";
 import OnboardingSuccess from "@/pages/OnboardingSuccess";
+import TermosPage from "@/pages/TermosPage";
 
 // Initialize seed data
 seedData();

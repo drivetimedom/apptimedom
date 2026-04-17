@@ -26,6 +26,7 @@ import ImportProcessesPage from "@/pages/ImportProcessesPage";
 import ProfilePage from "@/pages/ProfilePage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import DiagnosticoPage from "@/pages/DiagnosticoPage";
+import FerramentasPage from "@/pages/FerramentasPage";
 import NotFound from "@/pages/NotFound";
 import OnboardingForm from "@/pages/OnboardingForm";
 import OnboardingSuccess from "@/pages/OnboardingSuccess";
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/hoff-circle" element={<HoffCirclePage />} />
               <Route path="/financial-system" element={<FinancialSystemPage />} />
               <Route path="/diagnostico" element={<DiagnosticoPage />} />
+              <Route path="/ferramentas" element={<FerramentasPage />} />
               <Route path="/perfil" element={<ProfilePage />} />
               <Route path="/meu-perfil" element={<ProfilePage />} />
               <Route path="/admin" element={<AdminPage />} />

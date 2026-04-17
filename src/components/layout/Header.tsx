@@ -22,7 +22,10 @@ import {
   Menu,
   X,
   DollarSign,
-  Sparkles
+  Sparkles,
+  Wrench,
+  ChevronDown,
+  ExternalLink
 } from 'lucide-react';
 import NotificationDropdown from '@/components/layout/NotificationDropdown';
 import { Customization, defaultCustomization } from '@/lib/customization';
@@ -119,6 +122,46 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
               </Link>
             );
           })}
+
+          {/* Ferramentas Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 outline-none ${
+                  isActiveLink('/ferramentas')
+                    ? 'bg-accent text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                }`}
+              >
+                Ferramentas
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-72 bg-popover border-border">
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-accent flex-col items-start gap-1 py-3"
+                onClick={() => navigate('/ferramentas')}
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <Wrench className="w-4 h-4 text-primary" />
+                  <span className="font-medium text-foreground">Ver todas as ferramentas</span>
+                </div>
+                <span className="text-xs text-muted-foreground pl-6">Recursos de IA da plataforma</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuItem
+                className="cursor-pointer focus:bg-accent flex-col items-start gap-1 py-3"
+                onClick={() => window.open('https://planejador.timedom.com.br', '_blank', 'noopener,noreferrer')}
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <span className="font-medium text-foreground flex-1">Planejadora de Campanha</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                </div>
+                <span className="text-xs text-muted-foreground">Monte sua campanha de paciente modelo</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {isAdmin && (
             <Link
               to="/admin"
@@ -260,6 +303,18 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
                 </Link>
               );
             })}
+            <Link
+              to="/ferramentas"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                isActiveLink('/ferramentas')
+                  ? 'bg-accent text-foreground'
+                  : 'text-muted-foreground hover:bg-accent/50'
+              }`}
+            >
+              <Wrench className="w-5 h-5" />
+              <span>Ferramentas</span>
+            </Link>
             {isAdmin && (
               <Link
                 to="/admin"

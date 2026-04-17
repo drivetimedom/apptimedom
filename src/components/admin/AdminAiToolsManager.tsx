@@ -12,6 +12,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Plus, Edit, Trash2, ExternalLink, Wrench } from 'lucide-react';
+import { IconPicker } from './IconPicker';
 
 const emptyForm = {
   name: '',
@@ -168,11 +169,10 @@ const AdminAiToolsManager: React.FC = () => {
                 />
               </div>
               <div>
-                <Label>Ícone (Lucide)</Label>
-                <Input
+                <Label>Ícone</Label>
+                <IconPicker
                   value={form.icon}
-                  onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                  placeholder="Sparkles"
+                  onChange={(icon) => setForm({ ...form, icon })}
                 />
               </div>
             </div>

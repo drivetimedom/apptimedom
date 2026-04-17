@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMemberGlobalSettings } from '@/hooks/useTeamMembers';
+import { useAiTools } from '@/hooks/useAiTools';
 import { Button } from '@/components/ui/button';
 import GlobalSearch from '@/components/layout/GlobalSearch';
 import ProResourceModal from '@/components/student/ProResourceModal';
@@ -43,6 +44,7 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
   const [proModalResource, setProModalResource] = useState<string | null>(null);
   
   const { data: tmSettings } = useTeamMemberGlobalSettings();
+  const { data: aiTools = [] } = useAiTools();
 
   const handleLogout = () => {
     logout();
@@ -149,16 +151,23 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
                 <span className="text-xs text-muted-foreground pl-6">Recursos de IA da plataforma</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-border" />
-              <DropdownMenuItem
-                className="cursor-pointer focus:bg-accent flex-col items-start gap-1 py-3"
-                onClick={() => window.open('https://planejador.timedom.com.br', '_blank', 'noopener,noreferrer')}
-              >
-                <div className="flex items-center gap-2 w-full">
-                  <span className="font-medium text-foreground flex-1">Planejadora de Campanha</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
-                </div>
-                <span className="text-xs text-muted-foreground">Monte sua campanha de paciente modelo</span>
-              </DropdownMenuItem>
+              {aiTools.length === 0 ? (
+                <div className="px-2 py-2 text-xs text-muted-foreground">Nenhuma ferramenta disponível</div>
+              ) : (
+                aiTools.map((tool) => (
+                  <DropdownMenuItem
+                    key={tool.id}
+                    className="cursor-pointer focus:bg-accent flex-col items-start gap-1 py-3"
+                    onClick={() => window.open(tool.link, '_blank', 'noopener,noreferrer')}
+                  >
+                    <div className="flex items-center gap-2 w-full">
+                      <span className="font-medium text-foreground flex-1">{tool.name}</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
+                    </div>
+                    <span className="text-xs text-muted-foreground">{tool.description}</span>
+                  </DropdownMenuItem>
+                ))
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
 

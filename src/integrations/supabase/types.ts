@@ -77,6 +77,45 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_tools: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          link: string
+          name: string
+          order_index: number
+          tag: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description: string
+          icon?: string
+          id?: string
+          link: string
+          name: string
+          order_index?: number
+          tag?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          link?: string
+          name?: string
+          order_index?: number
+          tag?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       announcement_dismissals: {
         Row: {
           announcement_id: string

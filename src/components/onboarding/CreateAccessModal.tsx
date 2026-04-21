@@ -292,6 +292,9 @@ const CreateAccessModal = ({ open, onClose, onSuccess, submission }: CreateAcces
               <p>✅ Diagnóstico está salvo (visível só pra você)</p>
               <p>✅ Todos os cursos liberados automaticamente</p>
               <p>✅ Pode prescrever planos e aulas normalmente</p>
+              <p className="text-xs text-muted-foreground pt-2 border-t mt-2">
+                ℹ️ O usuário aparece na aba <strong>Usuários</strong> do painel admin (não na aba "Alunos", que é específica para cursos avulsos).
+              </p>
             </div>
 
             <div className="flex justify-end">

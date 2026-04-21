@@ -171,6 +171,7 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
               )}
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
 
           {isAdmin && (
             <Link

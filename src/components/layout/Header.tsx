@@ -314,18 +314,20 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
                 </Link>
               );
             })}
-            <Link
-              to="/ferramentas"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                isActiveLink('/ferramentas')
-                  ? 'bg-accent text-foreground'
-                  : 'text-muted-foreground hover:bg-accent/50'
-              }`}
-            >
-              <Wrench className="w-5 h-5" />
-              <span>Ferramentas</span>
-            </Link>
+            {isAdmin && (
+              <Link
+                to="/ferramentas"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  isActiveLink('/ferramentas')
+                    ? 'bg-accent text-foreground'
+                    : 'text-muted-foreground hover:bg-accent/50'
+                }`}
+              >
+                <Wrench className="w-5 h-5" />
+                <span>Ferramentas</span>
+              </Link>
+            )}
             {isAdmin && (
               <Link
                 to="/admin"

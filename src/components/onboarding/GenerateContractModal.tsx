@@ -100,8 +100,14 @@ const GenerateContractModal = ({ open, onClose, onSuccess, submission }: Generat
         mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       });
 
-      // 5. Upload
-      const fileName = `contrato_${submission.full_name.toLowerCase().replace(/\s+/g, '_')}_${Date.now()}.docx`;
+      // 5. Upload — sanitize filename: remove accents and special chars (Supabase Storage requires ASCII keys)
+      const sanitizedName = submission.full_name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // remove accents
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_') // replace non-alphanumeric with underscore
+        .replace(/^_+|_+$/g, ''); // trim underscores
+      const fileName = `contrato_${sanitizedName}_${Date.now()}.docx`;
 
       const { error: uploadError } = await supabase.storage
         .from('generated-contracts')

@@ -125,7 +125,8 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
             );
           })}
 
-          {/* Ferramentas Dropdown */}
+          {/* Ferramentas Dropdown - admin only (em teste) */}
+          {isAdmin && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button

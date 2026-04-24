@@ -388,9 +388,13 @@ const SwipeFilePage: React.FC = () => {
             </Button>
             {isAdmin && (
               <>
-                <Button onClick={handleCreate} variant="outline" size="lg" className="gap-2">
+                <Button onClick={() => handleCreate()} variant="outline" size="lg" className="gap-2">
                   <Plus className="w-4 h-4" />
                   Novo Processo
+                </Button>
+                <Button onClick={() => handleCreate('Pasta')} variant="outline" size="lg" className="gap-2">
+                  <FolderIcon className="w-4 h-4" />
+                  Nova Metodologia
                 </Button>
                 <Button onClick={() => navigate('/admin/import-processes')} variant="outline" size="lg" className="gap-2">
                   <Upload className="w-4 h-4" />

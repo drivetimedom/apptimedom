@@ -52,6 +52,7 @@ const SwipeFilePage: React.FC = () => {
   const [selectedProcess, setSelectedProcess] = useState<SwipeProcess | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateMode, setIsCreateMode] = useState(false);
+  const [createDefaultType, setCreateDefaultType] = useState<string | undefined>(undefined);
   const [deleteProcess, setDeleteProcess] = useState<SwipeProcess | null>(null);
 
   // Fetch data from Supabase

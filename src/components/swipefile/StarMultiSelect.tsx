@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Star, Plus, Loader2 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Star, Plus, Loader2, Search } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,6 +52,20 @@ const StarMultiSelect: React.FC<StarMultiSelectProps> = ({
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return items;
+    const q = searchQuery.toLowerCase();
+    return items.filter((item) => item.name.toLowerCase().includes(q));
+  }, [items, searchQuery]);
+
+  const selectedNotInFiltered = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return items.filter(
+      (item) => selectedIds.includes(item.id) && !filteredItems.some((f) => f.id === item.id)
+    );
+  }, [items, selectedIds, filteredItems, searchQuery]);
 
   const handleCreate = async () => {
     if (!newItemName.trim()) {
@@ -119,55 +133,127 @@ const StarMultiSelect: React.FC<StarMultiSelectProps> = ({
       {items.length === 0 && !allowCreate ? (
         <p className="text-sm text-muted-foreground py-2">{emptyMessage}</p>
       ) : (
-        <div className="space-y-1 max-h-48 overflow-y-auto border border-border rounded-lg p-2">
-          {items.map((item) => {
-            const isSelected = selectedIds.includes(item.id);
-            const isFeatured = featuredIds.includes(item.id);
+        <div className="border border-border rounded-lg overflow-hidden">
+          {/* Search input */}
+          {items.length > 0 && (
+            <div className="relative border-b border-border bg-muted/30">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar..."
+                className="border-0 pl-9 h-9 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 rounded-none text-sm"
+              />
+            </div>
+          )}
 
-            return (
-              <div
-                key={item.id}
-                className="flex items-center gap-3 p-2 hover:bg-accent rounded-md transition-colors"
-              >
-                <Checkbox
-                  checked={isSelected}
-                  onCheckedChange={(checked) => {
-                    if (!checked) {
-                      onFeaturedChange(featuredIds.filter((id) => id !== item.id));
-                      onSelectionChange(selectedIds.filter((id) => id !== item.id));
-                    } else {
-                      onSelectionChange([...selectedIds, item.id]);
-                    }
-                  }}
-                />
-                {item.icon && <span className="text-sm">{item.icon}</span>}
-                <span className="flex-1 text-sm text-foreground truncate">{item.name}</span>
-                {isSelected && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7 p-0"
-                    onClick={() => {
-                      onFeaturedChange(
-                        isFeatured
-                          ? featuredIds.filter((id) => id !== item.id)
-                          : [...featuredIds, item.id]
+          <div className="space-y-1 max-h-48 overflow-y-auto p-2">
+            {filteredItems.length === 0 && selectedNotInFiltered.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-3 text-center">
+                Nenhum resultado para "{searchQuery}"
+              </p>
+            ) : (
+              <>
+                {filteredItems.map((item) => {
+                  const isSelected = selectedIds.includes(item.id);
+                  const isFeatured = featuredIds.includes(item.id);
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-3 p-2 hover:bg-accent rounded-md transition-colors"
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => {
+                          if (!checked) {
+                            onFeaturedChange(featuredIds.filter((id) => id !== item.id));
+                            onSelectionChange(selectedIds.filter((id) => id !== item.id));
+                          } else {
+                            onSelectionChange([...selectedIds, item.id]);
+                          }
+                        }}
+                      />
+                      {item.icon && <span className="text-sm">{item.icon}</span>}
+                      <span className="flex-1 text-sm text-foreground truncate">{item.name}</span>
+                      {isSelected && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={() => {
+                            onFeaturedChange(
+                              isFeatured
+                                ? featuredIds.filter((id) => id !== item.id)
+                                : [...featuredIds, item.id]
+                            );
+                          }}
+                        >
+                          <Star
+                            className={`w-4 h-4 ${
+                              isFeatured
+                                ? 'fill-yellow-400 text-yellow-400'
+                                : 'text-muted-foreground'
+                            }`}
+                          />
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Selected items hidden by current search filter */}
+                {selectedNotInFiltered.length > 0 && (
+                  <>
+                    <div className="px-2 pt-2 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                      Selecionados ocultos pela busca
+                    </div>
+                    {selectedNotInFiltered.map((item) => {
+                      const isFeatured = featuredIds.includes(item.id);
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-3 p-2 hover:bg-accent rounded-md transition-colors opacity-80"
+                        >
+                          <Checkbox
+                            checked
+                            onCheckedChange={() => {
+                              onFeaturedChange(featuredIds.filter((id) => id !== item.id));
+                              onSelectionChange(selectedIds.filter((id) => id !== item.id));
+                            }}
+                          />
+                          {item.icon && <span className="text-sm">{item.icon}</span>}
+                          <span className="flex-1 text-sm text-foreground truncate">{item.name}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0"
+                            onClick={() => {
+                              onFeaturedChange(
+                                isFeatured
+                                  ? featuredIds.filter((id) => id !== item.id)
+                                  : [...featuredIds, item.id]
+                              );
+                            }}
+                          >
+                            <Star
+                              className={`w-4 h-4 ${
+                                isFeatured
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-muted-foreground'
+                              }`}
+                            />
+                          </Button>
+                        </div>
                       );
-                    }}
-                  >
-                    <Star
-                      className={`w-4 h-4 ${
-                        isFeatured
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : 'text-muted-foreground'
-                      }`}
-                    />
-                  </Button>
+                    })}
+                  </>
                 )}
-              </div>
-            );
-          })}
+              </>
+            )}
+          </div>
         </div>
       )}
 

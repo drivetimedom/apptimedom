@@ -218,7 +218,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
         description: '',
         code: '',
         category: '',
-        type: 'Processo',
+        type: defaultType || 'Processo',
         tags: '',
         content: '',
         links: '',
@@ -230,7 +230,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
       setFeaturedProcessIds([]);
       setIsEditing(true);
     }
-  }, [process, isCreateMode]);
+  }, [process, isCreateMode, defaultType]);
 
   // Compute sorted non-folder processes by code for navigation
   const sortedProcesses = useMemo(() => {

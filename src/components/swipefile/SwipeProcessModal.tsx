@@ -128,6 +128,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
   isAdmin,
   categories,
   isCreateMode = false,
+  defaultType,
   onOpenProcess,
 }) => {
   const { toast } = useToast();

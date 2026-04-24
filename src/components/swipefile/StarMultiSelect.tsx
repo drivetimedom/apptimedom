@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Star, Plus, Loader2 } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Star, Plus, Loader2, Search } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

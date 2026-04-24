@@ -52,6 +52,20 @@ const StarMultiSelect: React.FC<StarMultiSelectProps> = ({
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newItemName, setNewItemName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return items;
+    const q = searchQuery.toLowerCase();
+    return items.filter((item) => item.name.toLowerCase().includes(q));
+  }, [items, searchQuery]);
+
+  const selectedNotInFiltered = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    return items.filter(
+      (item) => selectedIds.includes(item.id) && !filteredItems.some((f) => f.id === item.id)
+    );
+  }, [items, selectedIds, filteredItems, searchQuery]);
 
   const handleCreate = async () => {
     if (!newItemName.trim()) {

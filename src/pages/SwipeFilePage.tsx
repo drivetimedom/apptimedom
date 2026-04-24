@@ -319,6 +319,7 @@ const SwipeFilePage: React.FC = () => {
     setIsModalOpen(false);
     setSelectedProcess(null);
     setIsCreateMode(false);
+    setCreateDefaultType(undefined);
     setSearchParams({});
   }, [setSearchParams]);
 

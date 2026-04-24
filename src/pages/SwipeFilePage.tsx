@@ -679,6 +679,7 @@ const SwipeFilePage: React.FC = () => {
         isAdmin={isAdmin}
         categories={categories}
         isCreateMode={isCreateMode}
+        defaultType={createDefaultType}
         onOpenProcess={(proc) => {
           setSelectedProcess(proc);
           setIsCreateMode(false);

@@ -658,7 +658,7 @@ const SwipeFilePage: React.FC = () => {
                       : 'Aguarde novos conteúdos'}
                 </p>
                 {isAdmin && !searchQuery && (
-                  <Button onClick={handleCreate} className="gap-2">
+                  <Button onClick={() => handleCreate()} className="gap-2">
                     <Plus className="w-4 h-4" />
                     Novo Material
                   </Button>

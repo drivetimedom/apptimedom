@@ -46,6 +46,7 @@ interface SwipeProcessModalProps {
   isAdmin: boolean;
   categories: string[];
   isCreateMode?: boolean;
+  defaultType?: string;
   onOpenProcess?: (process: SwipeProcess) => void;
 }
 

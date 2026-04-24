@@ -46,6 +46,7 @@ interface SwipeProcessModalProps {
   isAdmin: boolean;
   categories: string[];
   isCreateMode?: boolean;
+  defaultType?: string;
   onOpenProcess?: (process: SwipeProcess) => void;
 }
 
@@ -127,6 +128,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
   isAdmin,
   categories,
   isCreateMode = false,
+  defaultType,
   onOpenProcess,
 }) => {
   const { toast } = useToast();
@@ -216,7 +218,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
         description: '',
         code: '',
         category: '',
-        type: 'Processo',
+        type: defaultType || 'Processo',
         tags: '',
         content: '',
         links: '',
@@ -228,7 +230,7 @@ const SwipeProcessModal: React.FC<SwipeProcessModalProps> = ({
       setFeaturedProcessIds([]);
       setIsEditing(true);
     }
-  }, [process, isCreateMode]);
+  }, [process, isCreateMode, defaultType]);
 
   // Compute sorted non-folder processes by code for navigation
   const sortedProcesses = useMemo(() => {

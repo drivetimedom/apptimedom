@@ -52,6 +52,7 @@ const SwipeFilePage: React.FC = () => {
   const [selectedProcess, setSelectedProcess] = useState<SwipeProcess | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateMode, setIsCreateMode] = useState(false);
+  const [createDefaultType, setCreateDefaultType] = useState<string | undefined>(undefined);
   const [deleteProcess, setDeleteProcess] = useState<SwipeProcess | null>(null);
 
   // Fetch data from Supabase
@@ -227,9 +228,10 @@ const SwipeFilePage: React.FC = () => {
     setSearchParams({ processo: process.id });
   }, [setSearchParams]);
 
-  const handleCreate = useCallback(() => {
+  const handleCreate = useCallback((defaultType?: string) => {
     setSelectedProcess(null);
     setIsCreateMode(true);
+    setCreateDefaultType(defaultType);
     setIsModalOpen(true);
   }, []);
 
@@ -317,6 +319,7 @@ const SwipeFilePage: React.FC = () => {
     setIsModalOpen(false);
     setSelectedProcess(null);
     setIsCreateMode(false);
+    setCreateDefaultType(undefined);
     setSearchParams({});
   }, [setSearchParams]);
 
@@ -386,9 +389,13 @@ const SwipeFilePage: React.FC = () => {
             </Button>
             {isAdmin && (
               <>
-                <Button onClick={handleCreate} variant="outline" size="lg" className="gap-2">
+                <Button onClick={() => handleCreate()} variant="outline" size="lg" className="gap-2">
                   <Plus className="w-4 h-4" />
                   Novo Processo
+                </Button>
+                <Button onClick={() => handleCreate('Pasta')} variant="outline" size="lg" className="gap-2">
+                  <FolderIcon className="w-4 h-4" />
+                  Nova Metodologia
                 </Button>
                 <Button onClick={() => navigate('/admin/import-processes')} variant="outline" size="lg" className="gap-2">
                   <Upload className="w-4 h-4" />
@@ -652,7 +659,7 @@ const SwipeFilePage: React.FC = () => {
                       : 'Aguarde novos conteúdos'}
                 </p>
                 {isAdmin && !searchQuery && (
-                  <Button onClick={handleCreate} className="gap-2">
+                  <Button onClick={() => handleCreate()} className="gap-2">
                     <Plus className="w-4 h-4" />
                     Novo Material
                   </Button>
@@ -672,6 +679,7 @@ const SwipeFilePage: React.FC = () => {
         isAdmin={isAdmin}
         categories={categories}
         isCreateMode={isCreateMode}
+        defaultType={createDefaultType}
         onOpenProcess={(proc) => {
           setSelectedProcess(proc);
           setIsCreateMode(false);

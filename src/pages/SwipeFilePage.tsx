@@ -228,9 +228,10 @@ const SwipeFilePage: React.FC = () => {
     setSearchParams({ processo: process.id });
   }, [setSearchParams]);
 
-  const handleCreate = useCallback(() => {
+  const handleCreate = useCallback((defaultType?: string) => {
     setSelectedProcess(null);
     setIsCreateMode(true);
+    setCreateDefaultType(defaultType);
     setIsModalOpen(true);
   }, []);
 

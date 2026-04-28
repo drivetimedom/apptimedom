@@ -58,7 +58,11 @@ const GenerateContractModal = ({ open, onClose, onSuccess, submission }: Generat
         full_name: submission.full_name,
         cpf: submission.cpf,
         rg: submission.rg,
-        birth_date: new Date(submission.birth_date).toLocaleDateString('pt-BR'),
+        birth_date: (() => {
+          // Evita problemas de timezone: parse manual de YYYY-MM-DD
+          const [y, m, d] = String(submission.birth_date).split('T')[0].split('-');
+          return `${d}/${m}/${y}`;
+        })(),
         email: submission.email,
         phone: submission.phone,
         address_full: `${submission.address_street}, ${submission.address_number}${submission.address_complement ? ' - ' + submission.address_complement : ''}, ${submission.address_neighborhood}, ${submission.address_city}/${submission.address_state}, CEP ${submission.address_zip}`,

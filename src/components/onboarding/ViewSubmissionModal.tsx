@@ -48,7 +48,7 @@ const ViewSubmissionModal = ({ open, onClose, submission, onGenerateContract, on
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Data Nascimento</p>
-                <p className="font-medium">{submission.birth_date ? new Date(submission.birth_date).toLocaleDateString('pt-BR') : '-'}</p>
+                <p className="font-medium">{submission.birth_date ? (() => { const [y,m,d] = String(submission.birth_date).split('T')[0].split('-'); return `${d}/${m}/${y}`; })() : '-'}</p>
               </div>
               <div>
                 <p className="text-muted-foreground text-xs">Email</p>

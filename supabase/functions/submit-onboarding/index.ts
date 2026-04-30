@@ -84,6 +84,38 @@ serve(async (req) => {
       throw updateError;
     }
 
+    try {
+      const nomeAluno = submission?.nome_completo || submission?.nome || submission?.full_name;
+      const emailAluno = submission?.email;
+      const whatsappAluno = submission?.whatsapp || submission?.telefone || submission?.phone;
+
+      if (emailAluno) {
+        const gestaoResponse = await fetch(
+          'https://jwtsusupavtkrlelpcqv.supabase.co/functions/v1/receive-onboarding',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-webhook-secret': 'timedom2026secure',
+            },
+            body: JSON.stringify({
+              nome: nomeAluno,
+              email: emailAluno,
+              whatsapp: whatsappAluno,
+            }),
+          }
+        );
+
+        if (!gestaoResponse.ok) {
+          console.error('Erro ao sincronizar com sistema de gestão:', await gestaoResponse.text());
+        } else {
+          console.log('Sincronizado com sistema de gestão com sucesso');
+        }
+      }
+    } catch (syncError) {
+      console.error('Erro na sincronização com gestão (não crítico):', syncError);
+    }
+
     return new Response(JSON.stringify({ success: true, submissionId: createdSubmission.id }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

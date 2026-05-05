@@ -32,6 +32,12 @@ const AdminPrescriptionsPanel: React.FC = () => {
   const [selectedProfile, setSelectedProfile] = useState<ProfileData | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ type: 'remove-map' | 'remove-challenge'; profileId: string; challengeId?: string } | null>(null);
   const [saving, setSaving] = useState(false);
+  const [showNewPrescription, setShowNewPrescription] = useState(false);
+  const [newPrescSearch, setNewPrescSearch] = useState('');
+  const [newPrescUserId, setNewPrescUserId] = useState<string | null>(null);
+  const [newPrescMap, setNewPrescMap] = useState<string>('none');
+  const [newPrescChallenges, setNewPrescChallenges] = useState<string[]>([]);
+  const [savingNew, setSavingNew] = useState(false);
 
   const { data: maps = [] } = useHofMaps();
   const { data: challenges = [] } = useHofChallenges();

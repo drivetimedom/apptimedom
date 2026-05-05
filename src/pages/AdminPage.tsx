@@ -917,6 +917,9 @@ const AdminPage: React.FC = () => {
                 <Button onClick={() => openBannerDialog()} variant="outline" className="gap-2">
                   <Plus className="w-4 h-4" /> Novo Banner
                 </Button>
+                <Button onClick={() => setActiveTab('prescriptions')} variant="outline" className="gap-2">
+                  <ClipboardCheck className="w-4 h-4" /> Prescrições
+                </Button>
               </div>
             </div>
 

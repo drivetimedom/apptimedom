@@ -830,8 +830,13 @@ const AdminPage: React.FC = () => {
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="prescriptions">
+            <AdminPrescriptionsPanel />
+          </TabsContent>
+
           <TabsContent value="ai-tools">
             <AdminAiToolsManager />
+          </TabsContent>
           </TabsContent>
 
           {/* Dashboard Tab */}

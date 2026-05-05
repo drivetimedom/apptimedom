@@ -824,6 +824,10 @@ const AdminPage: React.FC = () => {
               <Wrench className="w-4 h-4" />
               Ferramentas IA
             </TabsTrigger>
+            <TabsTrigger value="prescriptions" className="data-[state=active]:bg-accent gap-2">
+              <ClipboardCheck className="w-4 h-4" />
+              Prescrições
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="ai-tools">

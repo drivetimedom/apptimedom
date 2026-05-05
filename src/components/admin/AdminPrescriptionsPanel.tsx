@@ -213,11 +213,16 @@ const AdminPrescriptionsPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">Prescrições</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Visão geral de mapas e protocolos prescritos para cada usuário ({prescribedProfiles.length} usuários com prescrições)
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-foreground">Prescrições</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Visão geral de mapas e protocolos prescritos para cada usuário ({prescribedProfiles.length} usuários com prescrições)
+          </p>
+        </div>
+        <Button onClick={() => setShowNewPrescription(true)} className="gap-2">
+          <Plus className="w-4 h-4" /> Nova Prescrição
+        </Button>
       </div>
 
       {/* Filters */}

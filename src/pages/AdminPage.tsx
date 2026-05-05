@@ -757,74 +757,74 @@ const AdminPage: React.FC = () => {
       <div className="container py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-card border border-border mb-8 flex flex-nowrap overflow-x-auto h-auto p-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
-            <TabsTrigger value="dashboard" className="data-[state=active]:bg-accent">
+            <TabsTrigger value="dashboard" className="data-[state=active]:bg-accent whitespace-nowrap shrink-0">
               Dashboard
             </TabsTrigger>
-            <TabsTrigger value="users" className="data-[state=active]:bg-accent">
+            <TabsTrigger value="users" className="data-[state=active]:bg-accent whitespace-nowrap shrink-0">
               Usuários
             </TabsTrigger>
-            <TabsTrigger value="courses" className="data-[state=active]:bg-accent">
+            <TabsTrigger value="courses" className="data-[state=active]:bg-accent whitespace-nowrap shrink-0">
               Cursos
             </TabsTrigger>
-            <TabsTrigger value="banners" className="data-[state=active]:bg-accent">
+            <TabsTrigger value="banners" className="data-[state=active]:bg-accent whitespace-nowrap shrink-0">
               Banners
             </TabsTrigger>
-            <TabsTrigger value="categories" className="data-[state=active]:bg-accent">
+            <TabsTrigger value="categories" className="data-[state=active]:bg-accent whitespace-nowrap shrink-0">
               Categorias
             </TabsTrigger>
-            <TabsTrigger value="maps" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="maps" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <Map className="w-4 h-4" />
               Mapas
             </TabsTrigger>
-            <TabsTrigger value="challenges" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="challenges" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <Trophy className="w-4 h-4" />
               Protocolos
             </TabsTrigger>
-            <TabsTrigger value="swipefile" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="swipefile" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <FileText className="w-4 h-4" />
               Swipe File
             </TabsTrigger>
-            <TabsTrigger value="activation-templates" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="activation-templates" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <ClipboardList className="w-4 h-4" />
               Planos de Ativação
             </TabsTrigger>
-            <TabsTrigger value="customization" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="customization" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <Palette className="w-4 h-4" />
               Personalização
             </TabsTrigger>
-            <TabsTrigger value="commercial" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="commercial" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <TrendingUp className="w-4 h-4" />
               Acompanhamento
             </TabsTrigger>
-            <TabsTrigger value="diagnosticos" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="diagnosticos" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <Stethoscope className="w-4 h-4" />
               Diagnósticos
             </TabsTrigger>
-            <TabsTrigger value="team-members" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="team-members" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <UsersIcon2 className="w-4 h-4" />
               Equipes
             </TabsTrigger>
-            <TabsTrigger value="announcements" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="announcements" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <Megaphone className="w-4 h-4" />
               Avisos
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="calendar" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <CalendarDays className="w-4 h-4" />
               Calendário
             </TabsTrigger>
-            <TabsTrigger value="maria-requests" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="maria-requests" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <MessageSquare className="w-4 h-4" />
               Pedidos Maria
             </TabsTrigger>
-            <TabsTrigger value="onboarding" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="onboarding" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <UserPlus className="w-4 h-4" />
               Onboarding
             </TabsTrigger>
-            <TabsTrigger value="ai-tools" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="ai-tools" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <Wrench className="w-4 h-4" />
               Ferramentas IA
             </TabsTrigger>
-            <TabsTrigger value="prescriptions" className="data-[state=active]:bg-accent gap-2">
+            <TabsTrigger value="prescriptions" className="data-[state=active]:bg-accent gap-2 whitespace-nowrap shrink-0">
               <ClipboardCheck className="w-4 h-4" />
               Prescrições
             </TabsTrigger>

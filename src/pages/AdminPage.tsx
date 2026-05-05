@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -120,6 +120,16 @@ const AdminPage: React.FC = () => {
   const { toast } = useToast();
   const { createUser, isLoading: isCreatingUser } = useCreateUser();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const tabsListRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll the active tab into view when it changes
+  useEffect(() => {
+    if (!tabsListRef.current) return;
+    const activeEl = tabsListRef.current.querySelector('[data-state="active"]') as HTMLElement;
+    if (activeEl) {
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [activeTab]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSendingAccess, setIsSendingAccess] = useState(false);
   const [selectedStudentForCourses, setSelectedStudentForCourses] = useState<AdminUser | null>(null);
@@ -756,7 +766,7 @@ const AdminPage: React.FC = () => {
 
       <div className="container py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-card border border-border mb-8 flex flex-nowrap overflow-x-auto h-auto p-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+          <TabsList ref={tabsListRef} className="bg-card border border-border mb-8 flex flex-nowrap overflow-x-auto h-auto p-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-accent whitespace-nowrap shrink-0">
               Dashboard
             </TabsTrigger>

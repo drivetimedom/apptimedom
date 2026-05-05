@@ -756,7 +756,7 @@ const AdminPage: React.FC = () => {
 
       <div className="container py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-card border border-border mb-8 flex-wrap h-auto p-1">
+          <TabsList className="bg-card border border-border mb-8 flex flex-nowrap overflow-x-auto h-auto p-1 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
             <TabsTrigger value="dashboard" className="data-[state=active]:bg-accent">
               Dashboard
             </TabsTrigger>

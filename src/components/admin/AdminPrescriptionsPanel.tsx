@@ -468,6 +468,130 @@ const AdminPrescriptionsPanel: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* New Prescription Modal */}
+      <Dialog open={showNewPrescription} onOpenChange={open => { if (!open) { setShowNewPrescription(false); setNewPrescUserId(null); setNewPrescMap('none'); setNewPrescChallenges([]); setNewPrescSearch(''); } }}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-5 h-5" /> Nova Prescrição
+            </DialogTitle>
+            <DialogDescription>Selecione um usuário e atribua mapa e/ou protocolos</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-2">
+            {/* Step 1: Select user */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Usuário</label>
+              {newPrescUserId ? (
+                <div className="flex items-center justify-between bg-muted/50 rounded-lg px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">
+                      {profiles.find(p => p.user_id === newPrescUserId)?.name || 'Usuário'}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {profiles.find(p => p.user_id === newPrescUserId)?.email}
+                    </span>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setNewPrescUserId(null)}>
+                    <X className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar usuário sem prescrição..."
+                      value={newPrescSearch}
+                      onChange={e => setNewPrescSearch(e.target.value)}
+                      className="pl-10 bg-input border-border"
+                    />
+                  </div>
+                  <div className="max-h-40 overflow-y-auto space-y-1 border border-border rounded-lg p-1">
+                    {unprescribedProfiles.length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-3">Nenhum usuário encontrado</p>
+                    ) : (
+                      unprescribedProfiles.map(p => (
+                        <button
+                          key={p.user_id}
+                          onClick={() => { setNewPrescUserId(p.user_id); setNewPrescSearch(''); }}
+                          className="w-full flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent text-left transition-colors"
+                        >
+                          <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground overflow-hidden shrink-0">
+                            {p.avatar ? <img src={p.avatar} alt="" className="w-full h-full object-cover" /> : p.name?.charAt(0)?.toUpperCase() || '?'}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{p.name || 'Sem nome'}</p>
+                            <p className="text-xs text-muted-foreground truncate">{p.email}</p>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Step 2: Select map */}
+            {newPrescUserId && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Map className="w-4 h-4" /> Mapa
+                  </label>
+                  <Select value={newPrescMap} onValueChange={setNewPrescMap}>
+                    <SelectTrigger className="bg-input border-border">
+                      <SelectValue placeholder="Selecionar mapa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum</SelectItem>
+                      {maps.map(m => (
+                        <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Step 3: Select challenges */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Trophy className="w-4 h-4" /> Protocolos
+                  </label>
+                  <div className="space-y-1.5 max-h-40 overflow-y-auto border border-border rounded-lg p-2">
+                    {challenges.length === 0 ? (
+                      <p className="text-xs text-muted-foreground text-center py-2">Nenhum protocolo disponível</p>
+                    ) : (
+                      challenges.map(c => (
+                        <label
+                          key={c.id}
+                          className="flex items-center gap-3 px-2 py-1.5 rounded-md hover:bg-accent cursor-pointer transition-colors"
+                        >
+                          <Checkbox
+                            checked={newPrescChallenges.includes(c.id)}
+                            onCheckedChange={() => toggleNewPrescChallenge(c.id)}
+                          />
+                          <span className="text-sm">{c.name}</span>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleSaveNewPrescription}
+                  disabled={savingNew || (newPrescMap === 'none' && newPrescChallenges.length === 0)}
+                  className="w-full gap-2"
+                >
+                  {savingNew ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                  Salvar Prescrição
+                </Button>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

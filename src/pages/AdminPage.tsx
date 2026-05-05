@@ -120,6 +120,16 @@ const AdminPage: React.FC = () => {
   const { toast } = useToast();
   const { createUser, isLoading: isCreatingUser } = useCreateUser();
   const [activeTab, setActiveTab] = useState('dashboard');
+  const tabsListRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll the active tab into view when it changes
+  useEffect(() => {
+    if (!tabsListRef.current) return;
+    const activeEl = tabsListRef.current.querySelector('[data-state="active"]') as HTMLElement;
+    if (activeEl) {
+      activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [activeTab]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSendingAccess, setIsSendingAccess] = useState(false);
   const [selectedStudentForCourses, setSelectedStudentForCourses] = useState<AdminUser | null>(null);

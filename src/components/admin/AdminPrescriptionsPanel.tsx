@@ -157,6 +157,52 @@ const AdminPrescriptionsPanel: React.FC = () => {
 
   const hasActiveFilters = filterMap !== 'all' || filterChallenge !== 'all';
 
+  const unprescribedProfiles = useMemo(() => {
+    const prescribed = new Set(prescribedProfiles.map(p => p.user_id));
+    let list = profiles.filter(p => !prescribed.has(p.user_id));
+    if (newPrescSearch) {
+      const q = newPrescSearch.toLowerCase();
+      list = list.filter(p => p.name?.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q));
+    }
+    return list.slice(0, 20);
+  }, [profiles, prescribedProfiles, newPrescSearch]);
+
+  const handleSaveNewPrescription = async () => {
+    if (!newPrescUserId) return;
+    setSavingNew(true);
+    try {
+      const updates: Record<string, any> = {};
+      if (newPrescMap !== 'none') updates.prescribed_map = newPrescMap;
+      if (newPrescChallenges.length > 0) {
+        const profile = profiles.find(p => p.user_id === newPrescUserId);
+        const existing = (profile?.visible_challenges || []) as string[];
+        updates.visible_challenges = [...new Set([...existing, ...newPrescChallenges])];
+      }
+      if (Object.keys(updates).length === 0) {
+        toast({ title: 'Selecione ao menos um mapa ou protocolo', variant: 'destructive' });
+        setSavingNew(false);
+        return;
+      }
+      const { error } = await supabase.from('profiles').update(updates).eq('user_id', newPrescUserId);
+      if (error) throw error;
+      toast({ title: 'Prescrição adicionada com sucesso' });
+      queryClient.invalidateQueries({ queryKey: ['admin-prescriptions-profiles'] });
+      setShowNewPrescription(false);
+      setNewPrescUserId(null);
+      setNewPrescMap('none');
+      setNewPrescChallenges([]);
+      setNewPrescSearch('');
+    } catch (err: any) {
+      toast({ title: 'Erro ao prescrever', description: err.message, variant: 'destructive' });
+    } finally {
+      setSavingNew(false);
+    }
+  };
+
+  const toggleNewPrescChallenge = (id: string) => {
+    setNewPrescChallenges(prev => prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">

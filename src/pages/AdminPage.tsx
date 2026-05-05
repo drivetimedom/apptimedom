@@ -837,7 +837,6 @@ const AdminPage: React.FC = () => {
           <TabsContent value="ai-tools">
             <AdminAiToolsManager />
           </TabsContent>
-          </TabsContent>
 
           {/* Dashboard Tab */}
           <TabsContent value="dashboard" className="space-y-8">

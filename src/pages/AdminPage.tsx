@@ -97,7 +97,8 @@ import AdminDiagnosticos from '@/components/admin/AdminDiagnosticos';
 import AdminTeamMembers from '@/components/admin/AdminTeamMembers';
 import AdminAnnouncementsManager from '@/components/admin/AdminAnnouncementsManager';
 import AdminCalendarManager from '@/components/admin/AdminCalendarManager';
-import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone, CalendarDays, MessageSquare, UserPlus, Wrench } from 'lucide-react';
+import { ClipboardList, Map, Trophy, History, Mail, Stethoscope, Users as UsersIcon2, GraduationCap, Megaphone, CalendarDays, MessageSquare, UserPlus, Wrench, ClipboardCheck } from 'lucide-react';
+import AdminPrescriptionsPanel from '@/components/admin/AdminPrescriptionsPanel';
 import AdminAiToolsManager from '@/components/admin/AdminAiToolsManager';
 import AdminMariaRequests from '@/components/admin/AdminMariaRequests';
 import AdminOnboardingManager from '@/components/admin/AdminOnboardingManager';
@@ -823,7 +824,15 @@ const AdminPage: React.FC = () => {
               <Wrench className="w-4 h-4" />
               Ferramentas IA
             </TabsTrigger>
+            <TabsTrigger value="prescriptions" className="data-[state=active]:bg-accent gap-2">
+              <ClipboardCheck className="w-4 h-4" />
+              Prescrições
+            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="prescriptions">
+            <AdminPrescriptionsPanel />
+          </TabsContent>
 
           <TabsContent value="ai-tools">
             <AdminAiToolsManager />

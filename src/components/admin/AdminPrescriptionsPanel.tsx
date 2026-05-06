@@ -255,6 +255,7 @@ const AdminPrescriptionsPanel: React.FC = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os mapas</SelectItem>
+              <SelectItem value="none">Sem mapa</SelectItem>
               {uniqueMapsInUse.map(m => (
                 <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
               ))}
@@ -272,6 +273,7 @@ const AdminPrescriptionsPanel: React.FC = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os protocolos</SelectItem>
+              <SelectItem value="none">Sem protocolo</SelectItem>
               {uniqueChallengesInUse.map(c => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}

@@ -64,7 +64,7 @@ const AdminPrescriptionsPanel: React.FC = () => {
   }, [profiles]);
 
   const filtered = useMemo(() => {
-    let list = prescribedProfiles;
+    let list = profiles;
 
     if (search) {
       const q = search.toLowerCase();
@@ -74,15 +74,23 @@ const AdminPrescriptionsPanel: React.FC = () => {
     }
 
     if (filterMap !== 'all') {
-      list = list.filter(p => p.prescribed_map === filterMap);
+      if (filterMap === 'none') {
+        list = list.filter(p => !p.prescribed_map || p.prescribed_map === '');
+      } else {
+        list = list.filter(p => p.prescribed_map === filterMap);
+      }
     }
 
     if (filterChallenge !== 'all') {
-      list = list.filter(p => (p.visible_challenges || []).includes(filterChallenge));
+      if (filterChallenge === 'none') {
+        list = list.filter(p => !p.visible_challenges || p.visible_challenges.length === 0);
+      } else {
+        list = list.filter(p => (p.visible_challenges || []).includes(filterChallenge));
+      }
     }
 
     return list;
-  }, [prescribedProfiles, search, filterMap, filterChallenge]);
+  }, [profiles, search, filterMap, filterChallenge]);
 
   const getMapName = (mapId: string) => maps.find(m => m.id === mapId)?.name || mapId;
   const getMapIcon = (mapId: string) => {
@@ -247,6 +255,7 @@ const AdminPrescriptionsPanel: React.FC = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os mapas</SelectItem>
+              <SelectItem value="none">Sem mapa</SelectItem>
               {uniqueMapsInUse.map(m => (
                 <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
               ))}
@@ -264,6 +273,7 @@ const AdminPrescriptionsPanel: React.FC = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os protocolos</SelectItem>
+              <SelectItem value="none">Sem protocolo</SelectItem>
               {uniqueChallengesInUse.map(c => (
                 <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}

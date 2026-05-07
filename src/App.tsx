@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { seedData } from "@/lib/seedData";
+import BoasVindasPage from "@/pages/BoasVindasPage";
 
 // Layout
 import MainLayout from "@/components/layout/MainLayout";
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/onboard/:code" element={<OnboardingForm />} />
             <Route path="/onboard/success" element={<OnboardingSuccess />} />
             <Route path="/termos" element={<TermosPage />} />
+            <Route path="/boas-vindas" element={<BoasVindasPage />} />
             
             {/* Protected routes */}
             <Route element={<MainLayout />}>

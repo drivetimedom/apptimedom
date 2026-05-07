@@ -52,6 +52,7 @@ const App = () => (
             <Route path="/onboard/:code" element={<OnboardingForm />} />
             <Route path="/onboard/success" element={<OnboardingSuccess />} />
             <Route path="/termos" element={<TermosPage />} />
+            <Route path="/boas-vindas" element={<BoasVindasPage />} />
             
             {/* Protected routes */}
             <Route element={<MainLayout />}>

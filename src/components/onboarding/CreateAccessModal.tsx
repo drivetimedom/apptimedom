@@ -292,12 +292,21 @@ const CreateAccessModal = ({ open, onClose, onSuccess, submission }: CreateAcces
             </div>
 
             {sendEmail && (
-              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
-                <p className="text-sm text-primary flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Email enviado com as credenciais para {submission?.email}
-                </p>
-              </div>
+              createdCredentials.emailWarning ? (
+                <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+                  <p className="text-sm text-destructive flex items-start gap-2">
+                    <Mail className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>{createdCredentials.emailWarning}</span>
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+                  <p className="text-sm text-primary flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Email enviado com as credenciais para {submission?.email}
+                  </p>
+                </div>
+              )
             )}
 
             {/* Próximos passos */}

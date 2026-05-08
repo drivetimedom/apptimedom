@@ -33,7 +33,7 @@ const CreateAccessModal = ({ open, onClose, onSuccess, submission }: CreateAcces
   const [generatePassword, setGeneratePassword] = useState(true);
   const [manualPassword, setManualPassword] = useState('');
   const [sendEmail, setSendEmail] = useState(true);
-  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string; userId: string } | null>(null);
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string; userId: string; emailWarning?: string | null } | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, field: string) => {

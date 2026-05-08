@@ -33,7 +33,7 @@ const CreateAccessModal = ({ open, onClose, onSuccess, submission }: CreateAcces
   const [generatePassword, setGeneratePassword] = useState(true);
   const [manualPassword, setManualPassword] = useState('');
   const [sendEmail, setSendEmail] = useState(true);
-  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string; userId: string } | null>(null);
+  const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string; userId: string; emailWarning?: string | null } | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, field: string) => {
@@ -83,25 +83,40 @@ const CreateAccessModal = ({ open, onClose, onSuccess, submission }: CreateAcces
       if (updateError) throw updateError;
 
       // 3. Send welcome email with credentials
+      let emailWarning: string | null = null;
       if (sendEmail) {
-        try {
-          await supabase.functions.invoke('email-boas-vindas', {
-            body: {
-              email: submission.email,
-              nome: submission.full_name,
-              senhaTemporaria: password,
-            },
-          });
-        } catch (e) {
-          console.warn('Email de boas-vindas não enviado:', e);
+        const nome = (submission.full_name || '').trim();
+        if (!nome || nome.length < 2) {
+          emailWarning = 'Nome do mentorado inválido — email não enviado.';
+        } else if (!password || password.length < 6) {
+          emailWarning = 'Senha temporária inválida — email não enviado.';
+        } else {
+          try {
+            const { data: emailData, error: emailError } = await supabase.functions.invoke('email-boas-vindas', {
+              body: {
+                email: submission.email,
+                nome,
+                senhaTemporaria: password,
+              },
+            });
+            if (emailError) throw new Error(emailError.message);
+            if (emailData?.error) throw new Error(emailData.error);
+          } catch (e: any) {
+            console.error('Falha ao enviar email de boas-vindas:', e);
+            emailWarning = `Acesso criado, mas o email falhou: ${e?.message || 'erro desconhecido'}. Copie as credenciais abaixo e envie manualmente.`;
+          }
         }
       }
 
-      return { email: submission.email, password, userId: newUserId };
+      return { email: submission.email, password, userId: newUserId, emailWarning };
     },
     onSuccess: (data) => {
       setCreatedCredentials(data);
-      toast.success('Acesso criado com sucesso!');
+      if (data.emailWarning) {
+        toast.error(data.emailWarning);
+      } else {
+        toast.success('Acesso criado com sucesso!');
+      }
     },
     onError: (error: any) => {
       toast.error(error.message || 'Erro ao criar acesso');
@@ -277,12 +292,21 @@ const CreateAccessModal = ({ open, onClose, onSuccess, submission }: CreateAcces
             </div>
 
             {sendEmail && (
-              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
-                <p className="text-sm text-primary flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Email enviado com as credenciais para {submission?.email}
-                </p>
-              </div>
+              createdCredentials.emailWarning ? (
+                <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">
+                  <p className="text-sm text-destructive flex items-start gap-2">
+                    <Mail className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>{createdCredentials.emailWarning}</span>
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+                  <p className="text-sm text-primary flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Email enviado com as credenciais para {submission?.email}
+                  </p>
+                </div>
+              )
             )}
 
             {/* Próximos passos */}

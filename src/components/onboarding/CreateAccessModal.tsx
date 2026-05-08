@@ -88,8 +88,8 @@ const CreateAccessModal = ({ open, onClose, onSuccess, submission }: CreateAcces
           await supabase.functions.invoke('email-boas-vindas', {
             body: {
               email: submission.email,
-              name: submission.full_name,
-              password,
+              nome: submission.full_name,
+              senhaTemporaria: password,
             },
           });
         } catch (e) {

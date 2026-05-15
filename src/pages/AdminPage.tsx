@@ -111,7 +111,9 @@ import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course }
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory, Category } from '@/hooks/useCategories';
 import { useLessons, useCreateLesson, useUpdateLesson, useDeleteLesson, useBulkCreateLessons, Lesson } from '@/hooks/useLessons';
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner, Banner } from '@/hooks/useBanners';
-import { useAdminUsers, useUpdateAdminUser, useUpdateUserRole, useDeleteAdminUser, useToggleUserBlocked, AdminUser } from '@/hooks/useAdminUsers';
+import { useAdminUsers, useUpdateAdminUser, useUpdateUserRole, useDeleteAdminUser, useToggleUserBlocked, useBulkSetBlocked, AdminUser } from '@/hooks/useAdminUsers';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Download, Ban, ShieldCheck } from 'lucide-react';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import { enviarEmailBoasVindas } from '@/lib/emailService';
 const AdminPage: React.FC = () => {

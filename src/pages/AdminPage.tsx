@@ -178,6 +178,11 @@ const AdminPage: React.FC = () => {
   const { logAction } = useAuditLog();
   const addStudentCourseMutation = useAddStudentCourse();
   const removeStudentCourseMutation = useRemoveStudentCourse();
+  const bulkSetBlockedMutation = useBulkSetBlocked();
+
+  // Bulk selection state for users tab
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [bulkConfirm, setBulkConfirm] = useState<null | { blocked: boolean; includeLinked: boolean }>(null);
 
   // Modal states
   const [userModalOpen, setUserModalOpen] = useState(false);

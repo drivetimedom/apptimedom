@@ -256,6 +256,93 @@ export function useToggleUserBlocked() {
   });
 }
 
+// Bulk set blocked status (with optional cascade to linked users: team members + partners)
+export function useBulkSetBlocked() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { logAction } = useAuditLog();
+
+  return useMutation({
+    mutationFn: async ({
+      userIds,
+      blocked,
+      includeLinked = true,
+    }: {
+      userIds: string[]; // auth user_ids
+      blocked: boolean;
+      includeLinked?: boolean;
+    }) => {
+      const expanded = new Set<string>(userIds);
+
+      if (includeLinked && userIds.length > 0) {
+        // Linked team members: any team_member rows where owner_id is in selection
+        const { data: tms } = await supabase
+          .from('team_members')
+          .select('member_id, owner_id')
+          .in('owner_id', userIds);
+        (tms || []).forEach(t => expanded.add(t.member_id));
+
+        // Linked partners (both directions)
+        const { data: partsA } = await supabase
+          .from('partnerships')
+          .select('primary_user_id, partner_user_id')
+          .in('primary_user_id', userIds);
+        (partsA || []).forEach(p => expanded.add(p.partner_user_id));
+
+        const { data: partsB } = await supabase
+          .from('partnerships')
+          .select('primary_user_id, partner_user_id')
+          .in('partner_user_id', userIds);
+        (partsB || []).forEach(p => expanded.add(p.primary_user_id));
+      }
+
+      const allIds = Array.from(expanded);
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ blocked } as any)
+        .in('user_id', allIds);
+
+      if (error) throw error;
+
+      // Also suspend/reactivate team_member rows whose owner is in the selection
+      if (includeLinked && userIds.length > 0) {
+        await supabase
+          .from('team_members')
+          .update({ status: blocked ? 'suspended' : 'active' } as any)
+          .in('owner_id', userIds);
+      }
+
+      return { affected: allIds.length, blocked };
+    },
+    onSuccess: async ({ affected, blocked }, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-team-members'] });
+      toast({
+        title: blocked ? 'Usuários bloqueados' : 'Usuários desbloqueados',
+        description: `${affected} conta(s) atualizada(s)${variables.includeLinked ? ' (incluindo vinculados)' : ''}.`,
+      });
+
+      try {
+        await Promise.all(
+          variables.userIds.map(uid =>
+            logAction({
+              action: blocked ? 'user_blocked' : 'user_unblocked',
+              targetUserId: uid,
+              details: { includeLinked: variables.includeLinked, totalAffected: affected },
+            })
+          )
+        );
+      } catch (e) {
+        console.error('Failed to log bulk audit action:', e);
+      }
+    },
+    onError: (error: any) => {
+      toast({ title: 'Erro na ação em massa', description: error.message, variant: 'destructive' });
+    },
+  });
+}
+
 // Delete user completely (auth + all data)
 export function useDeleteAdminUser() {
   const queryClient = useQueryClient();

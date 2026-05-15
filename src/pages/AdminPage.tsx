@@ -111,7 +111,9 @@ import { useCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, Course }
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory, Category } from '@/hooks/useCategories';
 import { useLessons, useCreateLesson, useUpdateLesson, useDeleteLesson, useBulkCreateLessons, Lesson } from '@/hooks/useLessons';
 import { useBanners, useCreateBanner, useUpdateBanner, useDeleteBanner, Banner } from '@/hooks/useBanners';
-import { useAdminUsers, useUpdateAdminUser, useUpdateUserRole, useDeleteAdminUser, useToggleUserBlocked, AdminUser } from '@/hooks/useAdminUsers';
+import { useAdminUsers, useUpdateAdminUser, useUpdateUserRole, useDeleteAdminUser, useToggleUserBlocked, useBulkSetBlocked, AdminUser } from '@/hooks/useAdminUsers';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Download, Ban, ShieldCheck } from 'lucide-react';
 import { useAuditLog } from '@/hooks/useAuditLog';
 import { enviarEmailBoasVindas } from '@/lib/emailService';
 const AdminPage: React.FC = () => {
@@ -176,6 +178,11 @@ const AdminPage: React.FC = () => {
   const { logAction } = useAuditLog();
   const addStudentCourseMutation = useAddStudentCourse();
   const removeStudentCourseMutation = useRemoveStudentCourse();
+  const bulkSetBlockedMutation = useBulkSetBlocked();
+
+  // Bulk selection state for users tab
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [bulkConfirm, setBulkConfirm] = useState<null | { blocked: boolean; includeLinked: boolean }>(null);
 
   // Modal states
   const [userModalOpen, setUserModalOpen] = useState(false);
@@ -1028,7 +1035,36 @@ const AdminPage: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  onClick={() => {
+                    const rows = [
+                      ['Nome', 'Email', 'Tipo', 'Status', 'Cadastro'],
+                      ...filteredUsers.map(u => [
+                        u.name,
+                        u.email || '',
+                        u.role,
+                        u.blocked ? 'Bloqueado' : 'Ativo',
+                        new Date(u.created_at).toLocaleDateString('pt-BR'),
+                      ]),
+                    ];
+                    const csv = rows
+                      .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+                      .join('\n');
+                    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `usuarios_${new Date().toISOString().slice(0, 10)}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Exportar CSV
+                </Button>
                 <Button onClick={() => openUserModal()} className="gap-2">
                   <Plus className="w-4 h-4" />
                   Novo Usuário
@@ -1036,14 +1072,59 @@ const AdminPage: React.FC = () => {
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground">
-              {filteredUsers.length} usuário(s) encontrado(s)
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                {filteredUsers.length} usuário(s) encontrado(s)
+                {selectedUserIds.size > 0 && ` · ${selectedUserIds.size} selecionado(s)`}
+              </p>
+              {selectedUserIds.size > 0 && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => setBulkConfirm({ blocked: true, includeLinked: true })}
+                    disabled={bulkSetBlockedMutation.isPending}
+                  >
+                    <Ban className="w-4 h-4 text-destructive" />
+                    Bloquear (e vinculados)
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => setBulkConfirm({ blocked: false, includeLinked: true })}
+                    disabled={bulkSetBlockedMutation.isPending}
+                  >
+                    <ShieldCheck className="w-4 h-4 text-success" />
+                    Desbloquear (e vinculados)
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedUserIds(new Set())}>
+                    Limpar
+                  </Button>
+                </div>
+              )}
+            </div>
 
             <div className="bg-card rounded-xl border border-border overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="border-border hover:bg-transparent">
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={
+                          filteredUsers.length > 0 &&
+                          filteredUsers.every(u => selectedUserIds.has(u.user_id))
+                        }
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedUserIds(new Set(filteredUsers.map(u => u.user_id)));
+                          } else {
+                            setSelectedUserIds(new Set());
+                          }
+                        }}
+                      />
+                    </TableHead>
                     <TableHead className="text-muted-foreground">Usuário</TableHead>
                     <TableHead className="text-muted-foreground">Email</TableHead>
                     <TableHead className="text-muted-foreground">Tipo</TableHead>
@@ -1055,6 +1136,19 @@ const AdminPage: React.FC = () => {
                 <TableBody>
                   {filteredUsers.map(user => (
                     <TableRow key={user.id} className="border-border">
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedUserIds.has(user.user_id)}
+                          onCheckedChange={(checked) => {
+                            setSelectedUserIds(prev => {
+                              const next = new Set(prev);
+                              if (checked) next.add(user.user_id);
+                              else next.delete(user.user_id);
+                              return next;
+                            });
+                          }}
+                        />
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <Avatar className="w-8 h-8">
@@ -1198,6 +1292,41 @@ const AdminPage: React.FC = () => {
                 onClose={() => setPartnerModalUser(null)}
               />
             )}
+
+            {/* Bulk action confirmation */}
+            <AlertDialog open={!!bulkConfirm} onOpenChange={(open) => !open && setBulkConfirm(null)}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {bulkConfirm?.blocked ? 'Bloquear usuários selecionados?' : 'Desbloquear usuários selecionados?'}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação afetará {selectedUserIds.size} usuário(s) selecionado(s)
+                    {bulkConfirm?.includeLinked && ', além de seus membros de equipe e sócios vinculados'}.
+                    {bulkConfirm?.blocked
+                      ? ' Eles perderão acesso à plataforma imediatamente.'
+                      : ' O acesso será restaurado.'}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      if (!bulkConfirm) return;
+                      await bulkSetBlockedMutation.mutateAsync({
+                        userIds: Array.from(selectedUserIds),
+                        blocked: bulkConfirm.blocked,
+                        includeLinked: bulkConfirm.includeLinked,
+                      });
+                      setSelectedUserIds(new Set());
+                      setBulkConfirm(null);
+                    }}
+                  >
+                    Confirmar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </TabsContent>
 
           {/* Courses Tab */}

@@ -1292,6 +1292,41 @@ const AdminPage: React.FC = () => {
                 onClose={() => setPartnerModalUser(null)}
               />
             )}
+
+            {/* Bulk action confirmation */}
+            <AlertDialog open={!!bulkConfirm} onOpenChange={(open) => !open && setBulkConfirm(null)}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {bulkConfirm?.blocked ? 'Bloquear usuários selecionados?' : 'Desbloquear usuários selecionados?'}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Esta ação afetará {selectedUserIds.size} usuário(s) selecionado(s)
+                    {bulkConfirm?.includeLinked && ', além de seus membros de equipe e sócios vinculados'}.
+                    {bulkConfirm?.blocked
+                      ? ' Eles perderão acesso à plataforma imediatamente.'
+                      : ' O acesso será restaurado.'}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={async () => {
+                      if (!bulkConfirm) return;
+                      await bulkSetBlockedMutation.mutateAsync({
+                        userIds: Array.from(selectedUserIds),
+                        blocked: bulkConfirm.blocked,
+                        includeLinked: bulkConfirm.includeLinked,
+                      });
+                      setSelectedUserIds(new Set());
+                      setBulkConfirm(null);
+                    }}
+                  >
+                    Confirmar
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </TabsContent>
 
           {/* Courses Tab */}

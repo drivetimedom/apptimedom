@@ -327,7 +327,7 @@ export function useBulkSetBlocked() {
         await Promise.all(
           variables.userIds.map(uid =>
             logAction({
-              action: blocked ? 'user_blocked_bulk' : 'user_unblocked_bulk',
+              action: blocked ? 'user_blocked' : 'user_unblocked',
               targetUserId: uid,
               details: { includeLinked: variables.includeLinked, totalAffected: affected },
             })

@@ -321,106 +321,108 @@ const CreateTeamMemberModal: React.FC<{ onClose: () => void; adminUsers: any[] }
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="bg-card border-border max-w-lg max-h-[85vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="bg-card border-border max-w-lg max-h-[85vh] flex flex-col p-0">
+        <DialogHeader className="px-6 pt-6">
           <DialogTitle className="text-foreground flex items-center gap-2">
             <UserPlus className="w-5 h-5" />
             Novo Team Member
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
-          <form onSubmit={handleSubmit} className="space-y-5 pb-4">
-            {/* Name */}
-            <div className="space-y-2">
-              <Label>Nome completo *</Label>
-              <Input value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} placeholder="Maria Silva" className="bg-input border-border" required />
-            </div>
-
-            {/* Email */}
-            <div className="space-y-2">
-              <Label>Email *</Label>
-              <Input type="email" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} placeholder="maria@clinica.com.br" className="bg-input border-border" required />
-            </div>
-
-            {/* Owner Search */}
-            <div className="space-y-2">
-              <Label>Vincular ao médico *</Label>
-              {selectedOwner ? (
-                <Card className="p-3 bg-accent/30">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-foreground">{selectedOwner.name}</p>
-                      <p className="text-sm text-muted-foreground">{selectedOwner.email}</p>
-                      {typeof teamCount === 'number' && (
-                        <p className={`text-xs mt-1 ${teamCount >= 5 ? 'text-destructive' : 'text-green-500'}`}>
-                          Acessos: {teamCount}/5 {teamCount >= 5 ? '❌ Limite atingido' : '✅'}
-                        </p>
-                      )}
-                    </div>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedOwner(null)}>✕</Button>
-                  </div>
-                </Card>
-              ) : (
-                <>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input value={ownerSearch} onChange={e => setOwnerSearch(e.target.value)} placeholder="Buscar médico..." className="pl-10 bg-input border-border" />
-                  </div>
-                  {ownerSearch.length >= 2 && (
-                    <div className="border border-border rounded-lg max-h-40 overflow-y-auto">
-                      {doctors.length > 0 ? doctors.map(d => (
-                        <button
-                          type="button"
-                          key={d.id}
-                          onClick={() => { setSelectedOwner({ user_id: d.user_id, name: d.name, email: d.email }); setOwnerSearch(''); }}
-                          className="w-full p-3 text-left hover:bg-accent/50 transition-colors border-b border-border last:border-0"
-                        >
-                          <p className="text-sm font-medium text-foreground">{d.name}</p>
-                          <p className="text-xs text-muted-foreground">{d.email}</p>
-                        </button>
-                      )) : (
-                        <p className="p-3 text-sm text-muted-foreground">Nenhum médico encontrado</p>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* Password */}
-            <div className="space-y-2">
-              <Label>Senha *</Label>
-              <div className="flex gap-2">
-                <Input value={formData.password} onChange={e => setFormData(p => ({ ...p, password: e.target.value }))} placeholder="Mínimo 6 caracteres" className="bg-input border-border" required />
-                <Button type="button" variant="outline" size="sm" onClick={generatePassword} className="whitespace-nowrap">
-                  Gerar
-                </Button>
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4">
+            <div className="space-y-5">
+              {/* Name */}
+              <div className="space-y-2">
+                <Label>Nome completo *</Label>
+                <Input value={formData.name} onChange={e => setFormData(p => ({ ...p, name: e.target.value }))} placeholder="Maria Silva" className="bg-input border-border" required />
               </div>
-              {generatedPassword && (
-                <p className="text-xs text-muted-foreground bg-accent/30 p-2 rounded font-mono">
-                  Senha gerada: {generatedPassword}
+
+              {/* Email */}
+              <div className="space-y-2">
+                <Label>Email *</Label>
+                <Input type="email" value={formData.email} onChange={e => setFormData(p => ({ ...p, email: e.target.value }))} placeholder="maria@clinica.com.br" className="bg-input border-border" required />
+              </div>
+
+              {/* Owner Search */}
+              <div className="space-y-2">
+                <Label>Vincular ao médico *</Label>
+                {selectedOwner ? (
+                  <Card className="p-3 bg-accent/30">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-foreground">{selectedOwner.name}</p>
+                        <p className="text-sm text-muted-foreground">{selectedOwner.email}</p>
+                        {typeof teamCount === 'number' && (
+                          <p className={`text-xs mt-1 ${teamCount >= 5 ? 'text-destructive' : 'text-green-500'}`}>
+                            Acessos: {teamCount}/5 {teamCount >= 5 ? 'Limite atingido' : ''}
+                          </p>
+                        )}
+                      </div>
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedOwner(null)}>✕</Button>
+                    </div>
+                  </Card>
+                ) : (
+                  <>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input value={ownerSearch} onChange={e => setOwnerSearch(e.target.value)} placeholder="Buscar médico..." className="pl-10 bg-input border-border" />
+                    </div>
+                    {ownerSearch.length >= 2 && (
+                      <div className="border border-border rounded-lg max-h-40 overflow-y-auto">
+                        {doctors.length > 0 ? doctors.map(d => (
+                          <button
+                            type="button"
+                            key={d.id}
+                            onClick={() => { setSelectedOwner({ user_id: d.user_id, name: d.name, email: d.email }); setOwnerSearch(''); }}
+                            className="w-full p-3 text-left hover:bg-accent/50 transition-colors border-b border-border last:border-0"
+                          >
+                            <p className="text-sm font-medium text-foreground">{d.name}</p>
+                            <p className="text-xs text-muted-foreground">{d.email}</p>
+                          </button>
+                        )) : (
+                          <p className="p-3 text-sm text-muted-foreground">Nenhum médico encontrado</p>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Password */}
+              <div className="space-y-2">
+                <Label>Senha *</Label>
+                <div className="flex gap-2">
+                  <Input value={formData.password} onChange={e => setFormData(p => ({ ...p, password: e.target.value }))} placeholder="Mínimo 6 caracteres" className="bg-input border-border" required />
+                  <Button type="button" variant="outline" size="sm" onClick={generatePassword} className="whitespace-nowrap">
+                    Gerar
+                  </Button>
+                </div>
+                {generatedPassword && (
+                  <p className="text-xs text-muted-foreground bg-accent/30 p-2 rounded font-mono break-all">
+                    Senha gerada: {generatedPassword}
+                  </p>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="bg-accent/20 border border-accent/30 rounded-lg p-3">
+                <p className="text-xs text-muted-foreground">
+                  As credenciais serão enviadas automaticamente por email para o membro.
                 </p>
-              )}
+              </div>
             </div>
+          </div>
 
-            {/* Info */}
-            <div className="bg-accent/20 border border-accent/30 rounded-lg p-3">
-              <p className="text-xs text-muted-foreground">
-                ℹ️ Salve as credenciais antes de criar. O team member terá acesso limitado conforme as configurações globais.
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={onClose} className="flex-1">Cancelar</Button>
-              <Button type="submit" disabled={isSubmitting || (teamCount !== undefined && teamCount >= 5)} className="flex-1">
-                {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Criar Acesso
-              </Button>
-            </div>
-          </form>
-        </ScrollArea>
+          {/* Sticky Actions */}
+          <div className="flex gap-3 px-6 py-4 border-t border-border bg-card">
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">Cancelar</Button>
+            <Button type="submit" disabled={isSubmitting || (teamCount !== undefined && teamCount >= 5)} className="flex-1">
+              {isSubmitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Criar Acesso
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { enviarEmailBoasVindas } from '@/lib/emailService';
 import { useAdminTeamMembers, useToggleTeamMemberStatus, useDeleteTeamMember, useTeamMemberCount, useTeamMemberGlobalSettings, useUpdateTeamMemberGlobalSettings, TeamMember } from '@/hooks/useTeamMembers';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
 import { useCourses } from '@/hooks/useCourses';
@@ -243,6 +245,7 @@ const AdminTeamMembers: React.FC = () => {
 // === CREATE MODAL ===
 const CreateTeamMemberModal: React.FC<{ onClose: () => void; adminUsers: any[] }> = ({ onClose, adminUsers }) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [ownerSearch, setOwnerSearch] = useState('');
@@ -291,7 +294,23 @@ const CreateTeamMemberModal: React.FC<{ onClose: () => void; adminUsers: any[] }
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
 
-      toast({ title: `✅ Team member criado! Credenciais: ${formData.email} / ${formData.password}` });
+      // Enviar email com credenciais
+      const emailResult = await enviarEmailBoasVindas(formData.email, formData.name, formData.password);
+
+      // Atualizar lista
+      queryClient.invalidateQueries({ queryKey: ['admin-team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['my-team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['team-member-count'] });
+
+      if (emailResult.success) {
+        toast({ title: 'Team member criado!', description: `Credenciais enviadas por email para ${formData.email}` });
+      } else {
+        toast({
+          title: 'Criado, mas falha ao enviar email',
+          description: `Anote as credenciais: ${formData.email} / ${formData.password}. Erro: ${emailResult.error}`,
+          variant: 'destructive',
+        });
+      }
       onClose();
     } catch (err: any) {
       toast({ title: 'Erro ao criar team member', description: err.message, variant: 'destructive' });

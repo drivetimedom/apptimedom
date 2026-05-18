@@ -294,7 +294,23 @@ const CreateTeamMemberModal: React.FC<{ onClose: () => void; adminUsers: any[] }
       if (error) throw new Error(error.message);
       if (data?.error) throw new Error(data.error);
 
-      toast({ title: `✅ Team member criado! Credenciais: ${formData.email} / ${formData.password}` });
+      // Enviar email com credenciais
+      const emailResult = await enviarEmailBoasVindas(formData.email, formData.name, formData.password);
+
+      // Atualizar lista
+      queryClient.invalidateQueries({ queryKey: ['admin-team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['my-team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['team-member-count'] });
+
+      if (emailResult.success) {
+        toast({ title: 'Team member criado!', description: `Credenciais enviadas por email para ${formData.email}` });
+      } else {
+        toast({
+          title: 'Criado, mas falha ao enviar email',
+          description: `Anote as credenciais: ${formData.email} / ${formData.password}. Erro: ${emailResult.error}`,
+          variant: 'destructive',
+        });
+      }
       onClose();
     } catch (err: any) {
       toast({ title: 'Erro ao criar team member', description: err.message, variant: 'destructive' });

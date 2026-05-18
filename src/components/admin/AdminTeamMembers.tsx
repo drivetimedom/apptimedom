@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { enviarEmailBoasVindas } from '@/lib/emailService';
 import { useAdminTeamMembers, useToggleTeamMemberStatus, useDeleteTeamMember, useTeamMemberCount, useTeamMemberGlobalSettings, useUpdateTeamMemberGlobalSettings, TeamMember } from '@/hooks/useTeamMembers';
 import { useAdminUsers } from '@/hooks/useAdminUsers';
 import { useCourses } from '@/hooks/useCourses';

@@ -245,6 +245,7 @@ const AdminTeamMembers: React.FC = () => {
 // === CREATE MODAL ===
 const CreateTeamMemberModal: React.FC<{ onClose: () => void; adminUsers: any[] }> = ({ onClose, adminUsers }) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [ownerSearch, setOwnerSearch] = useState('');

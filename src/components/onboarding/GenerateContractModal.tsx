@@ -15,6 +15,7 @@ import {
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { saveAs } from 'file-saver';
+import { openContract } from '@/lib/contractStorage';
 
 interface GenerateContractModalProps {
   open: boolean;
@@ -119,12 +120,8 @@ const GenerateContractModal = ({ open, onClose, onSuccess, submission }: Generat
 
       if (uploadError) throw uploadError;
 
-      // 6. Get public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('generated-contracts')
-        .getPublicUrl(fileName);
-
-      const contractUrl = publicUrlData.publicUrl;
+      // 6. Store only the file path (bucket is private; signed URLs are generated on demand)
+      const contractUrl = fileName;
 
       // 7. Update submission
       const { error: updateError } = await supabase
@@ -268,7 +265,7 @@ const GenerateContractModal = ({ open, onClose, onSuccess, submission }: Generat
             </div>
 
             <div className="space-y-2">
-              <Button className="w-full" onClick={() => window.open(generatedUrl, '_blank')}>
+              <Button className="w-full" onClick={() => openContract(generatedUrl).catch((e) => toast.error(e.message))}>
                 <Download className="w-4 h-4 mr-2" /> Baixar Novamente
               </Button>
               <Button variant="outline" className="w-full" onClick={handleClose}>

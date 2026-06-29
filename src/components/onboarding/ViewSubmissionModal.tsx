@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Users } from 'lucide-react';
+import { toast } from 'sonner';
+import { openContract } from '@/lib/contractStorage';
 import {
   Dialog,
   DialogContent,
@@ -170,7 +172,7 @@ const ViewSubmissionModal = ({ open, onClose, submission, onGenerateContract, on
             )}
 
             {submission.contract_docx_url && (
-              <Button variant="outline" onClick={() => window.open(submission.contract_docx_url, '_blank')}>
+              <Button variant="outline" onClick={() => openContract(submission.contract_docx_url).catch((e) => toast.error(e.message))}>
                 📥 Baixar Contrato
               </Button>
             )}

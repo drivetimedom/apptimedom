@@ -12,6 +12,8 @@ import GenerateLinkModal from '@/components/onboarding/GenerateLinkModal';
 import ViewSubmissionModal from '@/components/onboarding/ViewSubmissionModal';
 import GenerateContractModal from '@/components/onboarding/GenerateContractModal';
 import CreateAccessModal from '@/components/onboarding/CreateAccessModal';
+import { openContract } from '@/lib/contractStorage';
+import { toast } from 'sonner';
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   pending: { label: 'Aguardando', variant: 'secondary' },
@@ -205,7 +207,7 @@ const AdminOnboardingManager = () => {
                         variant="outline"
                         size="sm"
                         className="gap-1"
-                        onClick={() => window.open(submission.contract_docx_url!, '_blank')}
+                        onClick={() => openContract(submission.contract_docx_url!).catch((e) => toast.error(e.message))}
                       >
                         <Download className="w-3 h-3" />
                         Baixar

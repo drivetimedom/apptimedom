@@ -32,6 +32,8 @@ import NotFound from "@/pages/NotFound";
 import OnboardingForm from "@/pages/OnboardingForm";
 import OnboardingSuccess from "@/pages/OnboardingSuccess";
 import TermosPage from "@/pages/TermosPage";
+import HofBox from "@/pages/HofBox";
+import HofBoxEbook from "@/pages/HofBoxEbook";
 
 // Initialize seed data
 seedData();
@@ -65,6 +67,8 @@ const App = () => (
               <Route path="/financial-system" element={<FinancialSystemPage />} />
               <Route path="/diagnostico" element={<DiagnosticoPage />} />
               <Route path="/ferramentas" element={<FerramentasPage />} />
+              <Route path="/hof-box" element={<HofBox />} />
+              <Route path="/hof-box/:slug" element={<HofBoxEbook />} />
               <Route path="/perfil" element={<ProfilePage />} />
               <Route path="/meu-perfil" element={<ProfilePage />} />
               <Route path="/admin" element={<AdminPage />} />

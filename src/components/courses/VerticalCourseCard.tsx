@@ -214,6 +214,11 @@ const VerticalCourseCard: React.FC<VerticalCourseCardProps> = ({
   // Handle click - challenges go directly to first lesson
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
+
+    if (course.id === '4439eb25-dec9-4432-b638-0c3f7168a6c5') {
+      navigate('/hof-box');
+      return;
+    }
     
     if (course.courseType === 'desafio') {
       const lessons = getFromStorage<Lesson[]>(STORAGE_KEYS.LESSONS, []);

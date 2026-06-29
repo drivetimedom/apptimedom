@@ -56,7 +56,7 @@ const Header: React.FC<HeaderProps> = ({ customization = defaultCustomization })
     { href: '/', label: 'Início', icon: LayoutDashboard, alwaysShow: true },
     { href: '/my-courses', label: 'Meus Cursos', icon: BookOpen, alwaysShow: true },
     { href: '/hoff-circle', label: 'HOF CIRCLE', icon: BookOpen, tmKey: 'hof_circle_access' as const, hideForStudent: true },
-    { href: '/hof-box', label: 'HOF BOX', icon: Box, hideForStudent: true },
+    
     { href: '/financial-system', label: 'Calculadoras', icon: DollarSign, tmKey: 'calculators_access' as const, proForStudent: true },
     { href: '/swipe-file', label: 'Swipe File', icon: FileText, tmKey: 'swipefile_access' as const, proForStudent: true },
   ];

@@ -23,7 +23,7 @@ const MyCoursesCard: React.FC<MyCoursesCardProps> = ({
 
   return (
     <Link
-      to={isLocked ? '#' : `/course/${course.id}`}
+      to={isLocked ? '#' : course.id === '4439eb25-dec9-4432-b638-0c3f7168a6c5' ? '/hof-box' : `/course/${course.id}`}
       className={`group block ${isLocked ? 'cursor-not-allowed' : ''}`}
     >
       <div className="bg-card rounded-xl border border-border overflow-hidden transition-all duration-300 hover:border-border-hover hover:shadow-elegant hover:-translate-y-1 h-full flex flex-col">

@@ -1,69 +1,92 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, ArrowRight, Clock } from 'lucide-react';
+import { Box, ArrowRight, Clock, Home, ChevronRight, ArrowDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { hofBoxCards } from '@/data/hofBoxData';
 
 const categoryColors: Record<string, string> = {
-  Vendas: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  Vendas: 'bg-accent/40 text-foreground border-border',
 };
 
 const HofBox: React.FC = () => {
   const navigate = useNavigate();
 
+  const scrollToContent = () => {
+    document.getElementById('hofbox-content')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const availableCount = hofBoxCards.filter((c) => c.available).length;
+
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#0B0B0C' }}>
-      {/* Header */}
-      <div className="border-b border-white/5 px-4 py-10 md:px-8 lg:px-12">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              className="p-2.5 rounded-xl"
-              style={{ backgroundColor: '#E8813A1A', border: '1px solid #E8813A33' }}
+    <div className="min-h-screen bg-background">
+      {/* Hero Banner */}
+      <section
+        className="relative h-[350px] md:h-[400px] w-full bg-cover bg-center"
+        style={{ backgroundImage: `url(/images/banner-secoes.png)` }}
+      >
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/50 to-background" />
+
+        {/* Content */}
+        <div className="relative z-10 container h-full flex flex-col justify-center">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+            <button
+              onClick={() => navigate('/')}
+              className="hover:text-foreground transition-colors flex items-center gap-1"
             >
-              <Box className="w-5 h-5" style={{ color: '#E8813A' }} />
-            </div>
-            <span className="text-xs font-semibold tracking-widest uppercase text-white/40">
-              HOF CIRCLE
-            </span>
+              <Home className="w-4 h-4" />
+              Início
+            </button>
+            <ChevronRight className="w-4 h-4" />
+            <span className="text-foreground">HOF BOX</span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
-            HOF BOX
-          </h1>
-          <p className="text-white/50 text-base max-w-xl leading-relaxed">
+
+          {/* Title */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+              <Box className="w-10 h-10 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">HOF BOX</h1>
+            </div>
+          </div>
+
+          {/* Subtitle */}
+          <p className="text-lg text-muted-foreground max-w-2xl mb-6">
             Materiais exclusivos para membros. Scripts, sistemas e estratégias que funcionam na prática.
           </p>
+
+          {/* CTA */}
+          <div className="flex items-center gap-4">
+            <Button
+              size="lg"
+              onClick={scrollToContent}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Explorar Materiais
+              <ArrowDown className="w-4 h-4 ml-2" />
+            </Button>
+            <span className="text-sm text-muted-foreground">
+              {availableCount} materiais disponíveis
+            </span>
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Grid */}
-      <div className="px-4 py-10 md:px-8 lg:px-12">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div id="hofbox-content" className="container py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {hofBoxCards.map((card) =>
             card.available ? (
               <div
                 key={card.id}
-                className="group relative rounded-2xl border transition-all duration-300 cursor-pointer hover:border-white/15"
-                style={{
-                  backgroundColor: '#111113',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                }}
+                className="group relative rounded-2xl border border-border bg-card hover:border-border-hover transition-all duration-300 cursor-pointer"
                 onClick={() => navigate(`/hof-box/${card.slug}`)}
               >
-                {/* Glow on hover */}
-                <div
-                  className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                  style={{
-                    background:
-                      'radial-gradient(ellipse at top left, rgba(232,129,58,0.06) 0%, transparent 70%)',
-                  }}
-                />
-
                 <div className="relative p-6 flex flex-col h-full min-h-[220px]">
                   {/* Number */}
-                  <span
-                    className="text-xs font-bold tracking-widest mb-4 block"
-                    style={{ color: '#E8813A60' }}
-                  >
+                  <span className="text-xs font-bold tracking-widest mb-4 block text-muted-foreground">
                     #{String(card.id).padStart(2, '0')}
                   </span>
 
@@ -71,7 +94,7 @@ const HofBox: React.FC = () => {
                   {card.category && (
                     <span
                       className={`inline-flex self-start text-[11px] font-semibold px-2.5 py-1 rounded-full border mb-3 ${
-                        categoryColors[card.category] ?? 'bg-white/5 text-white/40 border-white/10'
+                        categoryColors[card.category] ?? 'bg-accent/40 text-muted-foreground border-border'
                       }`}
                     >
                       {card.category}
@@ -79,19 +102,18 @@ const HofBox: React.FC = () => {
                   )}
 
                   {/* Title */}
-                  <h3 className="text-white font-bold text-[17px] leading-snug mb-2">
+                  <h3 className="text-foreground font-bold text-[17px] leading-snug mb-2">
                     {card.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="text-white/40 text-sm leading-relaxed flex-1">
+                  <p className="text-muted-foreground text-sm leading-relaxed flex-1">
                     {card.description}
                   </p>
 
                   {/* CTA */}
                   <button
-                    className="mt-5 flex items-center gap-2 text-sm font-semibold transition-colors"
-                    style={{ color: '#E8813A' }}
+                    className="mt-5 flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/hof-box/${card.slug}`);
@@ -105,14 +127,10 @@ const HofBox: React.FC = () => {
             ) : (
               <div
                 key={card.id}
-                className="rounded-2xl flex flex-col items-center justify-center min-h-[220px] border"
-                style={{
-                  backgroundColor: '#0E0E10',
-                  border: '1px dashed rgba(255,255,255,0.07)',
-                }}
+                className="rounded-2xl flex flex-col items-center justify-center min-h-[220px] border border-dashed border-border bg-card/40"
               >
-                <Clock className="w-6 h-6 text-white/15 mb-3" />
-                <span className="text-white/20 text-sm font-medium">Em breve</span>
+                <Clock className="w-6 h-6 text-muted-foreground mb-3" />
+                <span className="text-muted-foreground text-sm font-medium">Em breve</span>
               </div>
             )
           )}

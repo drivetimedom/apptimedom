@@ -120,12 +120,8 @@ const GenerateContractModal = ({ open, onClose, onSuccess, submission }: Generat
 
       if (uploadError) throw uploadError;
 
-      // 6. Get public URL
-      const { data: publicUrlData } = supabase.storage
-        .from('generated-contracts')
-        .getPublicUrl(fileName);
-
-      const contractUrl = publicUrlData.publicUrl;
+      // 6. Store only the file path (bucket is private; signed URLs are generated on demand)
+      const contractUrl = fileName;
 
       // 7. Update submission
       const { error: updateError } = await supabase

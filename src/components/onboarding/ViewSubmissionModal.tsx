@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Users } from 'lucide-react';
+import { toast } from 'sonner';
+import { openContract } from '@/lib/contractStorage';
 import {
   Dialog,
   DialogContent,

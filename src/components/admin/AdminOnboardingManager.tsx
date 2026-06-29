@@ -12,6 +12,8 @@ import GenerateLinkModal from '@/components/onboarding/GenerateLinkModal';
 import ViewSubmissionModal from '@/components/onboarding/ViewSubmissionModal';
 import GenerateContractModal from '@/components/onboarding/GenerateContractModal';
 import CreateAccessModal from '@/components/onboarding/CreateAccessModal';
+import { openContract } from '@/lib/contractStorage';
+import { toast } from 'sonner';
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   pending: { label: 'Aguardando', variant: 'secondary' },

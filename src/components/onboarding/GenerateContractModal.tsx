@@ -15,6 +15,7 @@ import {
 import Docxtemplater from 'docxtemplater';
 import PizZip from 'pizzip';
 import { saveAs } from 'file-saver';
+import { openContract } from '@/lib/contractStorage';
 
 interface GenerateContractModalProps {
   open: boolean;

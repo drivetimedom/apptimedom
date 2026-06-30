@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Box, Check } from 'lucide-react';
+import { ArrowLeft, Box, Check, Printer } from 'lucide-react';
 import { ebooks, EbookBlock } from '@/data/hofBoxData';
 
 // ─── Checklist state (persisted per ebook) ───────────────────────────────────
@@ -34,7 +34,7 @@ function useChecklist(ebookSlug: string, listId: string, items: string[]) {
 
 function SectionBlock({ block }: { block: Extract<EbookBlock, { type: 'section' }> }) {
   return (
-    <div className="mt-12 mb-6 flex items-start gap-4">
+    <div className="hofbox-section mt-12 mb-6 flex items-start gap-4">
       <span
         className="text-5xl font-black leading-none select-none text-muted-foreground/30"
         style={{ minWidth: '56px' }}
@@ -52,7 +52,7 @@ function ParagraphBlock({ block }: { block: Extract<EbookBlock, { type: 'paragra
 
 function CalloutBlock({ block }: { block: Extract<EbookBlock, { type: 'callout' }> }) {
   return (
-    <div className="my-6 pl-5 py-4 pr-5 rounded-r-xl border-l-4 border-primary bg-accent/40">
+    <div className="hofbox-block my-6 pl-5 py-4 pr-5 rounded-r-xl border-l-4 border-primary bg-accent/40">
       <p className="text-foreground font-medium leading-relaxed">{block.text}</p>
     </div>
   );
@@ -60,7 +60,7 @@ function CalloutBlock({ block }: { block: Extract<EbookBlock, { type: 'callout' 
 
 function PillarGrid({ block }: { block: Extract<EbookBlock, { type: 'pillar-grid' }> }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+    <div className="hofbox-block grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
       {block.pillars.map((p, i) => (
         <div
           key={i}
@@ -88,7 +88,7 @@ function ChecklistBlock({
   const doneCount = checked.filter(Boolean).length;
 
   return (
-    <div className="my-6 rounded-xl border border-border overflow-hidden bg-card">
+    <div className="hofbox-block my-6 rounded-xl border border-border overflow-hidden bg-card">
       <div className="px-5 py-3 flex items-center justify-between bg-accent border-b border-border">
         <span className="text-sm font-bold tracking-wide text-foreground">Checklist</span>
         <span className="text-xs font-semibold text-muted-foreground">
@@ -125,7 +125,7 @@ function ChecklistBlock({
 
 function TableBlock({ block }: { block: Extract<EbookBlock, { type: 'table' }> }) {
   return (
-    <div className="my-6 rounded-xl overflow-hidden border border-border">
+    <div className="hofbox-block my-6 rounded-xl overflow-hidden border border-border">
       <table className="w-full text-sm">
         <thead>
           <tr className="bg-accent">
@@ -154,7 +154,7 @@ function TableBlock({ block }: { block: Extract<EbookBlock, { type: 'table' }> }
 
 function PhaseBlock({ block }: { block: Extract<EbookBlock, { type: 'phase' }> }) {
   return (
-    <div className="my-4 rounded-xl overflow-hidden border border-border">
+    <div className="hofbox-block my-4 rounded-xl overflow-hidden border border-border">
       <div className="px-5 py-3 bg-accent border-b border-border">
         <span className="text-sm font-bold text-foreground">{block.title}</span>
       </div>
@@ -167,7 +167,7 @@ function PhaseBlock({ block }: { block: Extract<EbookBlock, { type: 'phase' }> }
 
 function ScriptBlock({ block }: { block: Extract<EbookBlock, { type: 'script' }> }) {
   return (
-    <div className="my-4 px-5 py-4 rounded-xl border border-border bg-surface-elevated">
+    <div className="hofbox-block my-4 px-5 py-4 rounded-xl border border-border bg-surface-elevated">
       <p className="text-foreground italic leading-relaxed text-sm">{block.text}</p>
     </div>
   );
@@ -175,7 +175,7 @@ function ScriptBlock({ block }: { block: Extract<EbookBlock, { type: 'script' }>
 
 function DialogBlock({ block }: { block: Extract<EbookBlock, { type: 'dialog' }> }) {
   return (
-    <div className="my-6 space-y-3">
+    <div className="hofbox-block my-6 space-y-3">
       {block.exchanges.map((ex, i) => {
         const isYou = ex.speaker === 'Você';
         return (
@@ -210,7 +210,7 @@ function DialogBlock({ block }: { block: Extract<EbookBlock, { type: 'dialog' }>
 
 function ProcedureGrid({ block }: { block: Extract<EbookBlock, { type: 'procedure-grid' }> }) {
   return (
-    <div className="my-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div className="hofbox-block my-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
       {block.items.map((item, i) => (
         <div key={i} className="rounded-xl p-4 bg-card border border-border">
           <h4 className="font-bold text-foreground text-sm mb-1">{item.title}</h4>
@@ -223,7 +223,7 @@ function ProcedureGrid({ block }: { block: Extract<EbookBlock, { type: 'procedur
 
 function NumberedList({ block }: { block: Extract<EbookBlock, { type: 'numbered-list' }> }) {
   return (
-    <div className="my-4">
+    <div className="hofbox-block my-4">
       {block.title && (
         <h4 className="font-bold text-foreground mb-3">{block.title}</h4>
       )}
@@ -281,6 +281,10 @@ const HofBoxEbook: React.FC = () => {
     window.scrollTo({ top: 0 });
   }, [slug]);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   if (!ebook) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
@@ -298,7 +302,7 @@ const HofBoxEbook: React.FC = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
-      <div className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur px-4 py-3 flex items-center gap-3">
+      <div className="no-print sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => navigate('/hof-box')}
           className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -307,12 +311,19 @@ const HofBoxEbook: React.FC = () => {
           HOF BOX
         </button>
         <span className="text-muted-foreground/40 select-none">/</span>
-        <span className="text-foreground text-sm truncate">{ebook.title}</span>
+        <span className="text-foreground text-sm truncate flex-1">{ebook.title}</span>
+        <button
+          onClick={handlePrint}
+          className="flex items-center gap-2 text-sm font-medium text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-accent transition-colors flex-shrink-0"
+        >
+          <Printer className="w-4 h-4" />
+          <span className="hidden sm:inline">Baixar / Imprimir PDF</span>
+        </button>
       </div>
 
       {/* Hero */}
       <section
-        className="relative w-full bg-cover bg-center"
+        className="hofbox-ebook-content relative w-full bg-cover bg-center"
         style={{ backgroundImage: `url(/images/banner-secoes.png)` }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background" />
@@ -335,7 +346,7 @@ const HofBoxEbook: React.FC = () => {
       </section>
 
       {/* Content */}
-      <div className="px-4 py-10 md:px-8">
+      <div className="hofbox-ebook-content px-4 py-10 md:px-8">
         <div
           className="max-w-[720px] mx-auto bg-card border border-border rounded-2xl shadow-elegant px-6 py-8 md:px-10 md:py-12"
           style={{ minHeight: '60vh' }}
@@ -345,7 +356,7 @@ const HofBoxEbook: React.FC = () => {
       </div>
 
       {/* Footer nav */}
-      <div className="px-4 pb-16 md:px-8">
+      <div className="no-print px-4 pb-16 md:px-8">
         <div className="max-w-[720px] mx-auto">
           <button
             onClick={() => navigate('/hof-box')}

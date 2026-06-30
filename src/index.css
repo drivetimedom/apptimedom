@@ -200,3 +200,29 @@
   background: hsl(var(--border));
   border-radius: 2px;
 }
+
+/* HOF BOX print/PDF styles */
+@media print {
+  nav, aside, header, .no-print {
+    display: none !important;
+  }
+
+  .hofbox-ebook-content {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body {
+    font-size: 12pt;
+    color: #000;
+  }
+
+  .hofbox-block {
+    page-break-inside: avoid;
+  }
+
+  .hofbox-section {
+    page-break-before: auto;
+  }
+}
